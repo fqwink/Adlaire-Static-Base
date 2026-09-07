@@ -1,6 +1,6 @@
 # Adlaire-Static-Base
 
-Adlaire-Static-Base（ASB）は、セルフホスト環境向けの静的コンテンツホスティングシステムです。
+Adlaire-Static-Base（ASB）は、セルフホスト環境向けの静的コンテンツ配信ホスティングシステムです。
 
 Go製の単一バイナリHTTPサーバーとして、プロジェクト管理、ドメイン管理、SSL、ファイル管理、GitHub Webhook、バックアップ、監視ログを提供することを目的とします。
 
