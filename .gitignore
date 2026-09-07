@@ -1,0 +1,22 @@
+# Runtime data
+.asb/
+
+# Build outputs
+asb
+asb-*
+*.test
+
+# Test and coverage outputs
+coverage.out
+*.cover
+
+# Logs
+*.log
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# macOS
+.DS_Store
