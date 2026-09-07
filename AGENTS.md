@@ -78,6 +78,10 @@ Pull Request が merge された場合、作業ブランチは自動削除する
 
 SSH URL は `origin` に設定し、HTTPS URL はバックアップ remote として保持する。
 
+`.gitignore` は作成・使用しない。
+
+`.gitignore` が必要になる生成物、一時ファイル、実行時データ、ビルド成果物が発生した場合は、除外設定で隠蔽せず、生成先、運用、または実装を見直す。
+
 承認済み変更作業が完了した場合、エージェントはユーザーからの追加指示および追加承認なしで、作業ブランチでのcommit、remoteへのpush、Pull Requestの作成または既存Pull Requestの更新まで自動実行する。
 
 Pull Request作成自動化では、`main`への直接pushを行ってはならない。
