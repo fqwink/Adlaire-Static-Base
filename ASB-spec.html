@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ASB 仕様書 Rev.1.11</title>
+<title>ASB 仕様書 Rev.12</title>
 <style>
 :root { color-scheme: light; --bg: #f4f7f9; --panel: #ffffff; --panel-2: #f8fafc; --panel-3: #edf6f3; --line: #d8e1e7; --line-strong: #b7c6cf; --text: #162126; --muted: #5b6d76; --subtle: #83919a; --brand: #0f766e; --brand-2: #14532d; --ok: #16845f; --code-bg: #111827; --code-text: #e8eef4; --toc-w: 310px; --radius: 8px; }
 @media (prefers-color-scheme: dark) { :root { color-scheme: dark; --bg: #0e1416; --panel: #141d20; --panel-2: #101719; --panel-3: #16312d; --line: #27363b; --line-strong: #3d5057; --text: #e6eef0; --muted: #a7b6bb; --subtle: #7e8e94; --brand: #5eead4; --brand-2: #99f6e4; --ok: #6ee7b7; --code-bg: #080d10; --code-text: #edf7f8; } }
@@ -63,7 +63,7 @@ pre code { background: transparent; border: 0; color: inherit; padding: 0; }
     <div class="sidebar-header">
       <span class="logo">Adlaire-Static-Base</span>
       <h1 class="sidebar-title">ASB Developer Docs</h1>
-      <span class="version-pill">Rev.1.11</span>
+      <span class="version-pill">Rev.12</span>
     </div>
     <nav class="toc">
       <a class="toc-l1" href="#セルフホスト型静的コンテンツ配信ホスティングシステム仕様書">セルフホスト型静的コンテンツ配信ホスティングシステム仕様書</a>
@@ -159,13 +159,13 @@ pre code { background: transparent; border: 0; color: inherit; padding: 0; }
     </nav>
   </aside>
   <main class="portal-main">
-    <div class="topbar"><span class="topbar-title">ASB Specification</span><span class="version-pill">Rev.1.11</span></div>
+    <div class="topbar"><span class="topbar-title">ASB Specification</span><span class="version-pill">Rev.12</span></div>
     <div class="content">
       <section class="doc-hero">
         <p class="eyebrow">Adlaire-Static-Base</p>
         <h1>セルフホスト型静的コンテンツ配信ホスティングシステム仕様書</h1>
         <p class="subtitle">ASBの仕様正本 <code>ASB-spec.md</code> に基づくHTML版仕様書。</p>
-        <div class="hero-meta"><span class="meta-chip">Rev.1.11</span><span class="meta-chip">Generated from ASB-spec.md</span></div>
+        <div class="hero-meta"><span class="meta-chip">Rev.12</span><span class="meta-chip">Generated from ASB-spec.md</span></div>
       </section>
       <h1 id="セルフホスト型静的コンテンツ配信ホスティングシステム仕様書">セルフホスト型静的コンテンツ配信ホスティングシステム仕様書</h1>
 <h2 id="1-本書の位置づけ">1 本書の位置づけ</h2>
@@ -202,7 +202,7 @@ pre code { background: transparent; border: 0; color: inherit; padding: 0; }
 <tr><td>提供形態</td><td>HTTP サーバー（単一バイナリ）</td></tr>
 <tr><td>データ保存</td><td>JSON ファイルベース（外部DB不使用）</td></tr>
 <tr><td>ライセンス</td><td>クローズドライセンス</td></tr>
-<tr><td>本書バージョン</td><td>Rev.1.11</td></tr>
+<tr><td>本書バージョン</td><td>Rev.12</td></tr>
 </tbody></table></div>
 <hr>
 <h2 id="3-asb-の責務範囲">3 ASB の責務範囲</h2>
@@ -1297,7 +1297,7 @@ $ sudo systemctl stop asb</code></pre>
 <hr>
 <h2 id="13-実装詳細仕様">13 実装詳細仕様</h2>
 <h3 id="13.1-実装対象の基準">13.1 実装対象の基準</h3>
-<p>Rev.1.11 時点の実装対象は、ASB のセルフホスト型静的コンテンツ配信ホスティングに必要なバックエンド機能に限定する。</p>
+<p>Rev.12 時点の実装対象は、ASB のセルフホスト型静的コンテンツ配信ホスティングに必要なバックエンド機能に限定する。</p>
 <p>実装は以下の順序で進める：</p>
 <ol>
 <li>起動設定、実行時データ検証、HTTP サーバー、共通レスポンス</li>
@@ -1438,7 +1438,7 @@ $ sudo systemctl stop asb</code></pre>
 <li>プロジェクト削除時は関連ドメインを削除する</li>
 </ul>
 <h3 id="13.9-ssl-管理詳細">13.9 SSL 管理詳細</h3>
-<p>Rev.1.11 時点では、SSL 管理は管理境界とデータモデルを実装対象とし、ACME は ASB互換目標に含める。Let&#x27;s Encrypt ACME クライアントの実通信は詳細仕様確定後に実装する。</p>
+<p>Rev.12 時点では、SSL 管理は管理境界とデータモデルを実装対象とし、ACME は ASB互換目標に含める。Let&#x27;s Encrypt ACME クライアントの実通信は詳細仕様確定後に実装する。</p>
 <p>実装対象：</p>
 <ul>
 <li>SSL 証明書IDの管理</li>
@@ -1573,7 +1573,7 @@ $ sudo systemctl stop asb</code></pre>
 <h3 id="15.2-テスト対象外">15.2 テスト対象外</h3>
 <p>以下はモック・スタブで対応：</p>
 <ul>
-<li>Let&#x27;s Encrypt との実際の連携（Rev.1.11 時点では実通信を実装対象外とし、SSL管理境界のみ検証）</li>
+<li>Let&#x27;s Encrypt との実際の連携（Rev.12 時点では実通信を実装対象外とし、SSL管理境界のみ検証）</li>
 <li>GitHub Webhook（テスト用ペイロード）</li>
 <li>実際のファイルストレージ大容量テスト（テスト時は最大100MB）</li>
 </ul>
@@ -1658,17 +1658,17 @@ $ asb-backup-restore backup-v1.tar.gz</code></pre>
 <div class="tbl-wrap"><table><thead>
 <tr><th>バージョン</th><th>日付</th><th>内容</th></tr>
 </thead><tbody>
-<tr><td>Rev.1.11</td><td>2026-09-08</td><td>XServer Static 相当仕様を ASB互換目標へ名称変更し、SSL/ACME を ASB互換目標に含める方針へ整理</td></tr>
-<tr><td>Rev.1.10</td><td>2026-09-08</td><td>XServer Static 相当の機能目標と ASB 独自仕様を追加し、セルフホスト、JSONファイルベース、実行時データ配置、API中心設計、段階実装方針を整理</td></tr>
-<tr><td>Rev.1.9</td><td>2026-09-08</td><td>実装詳細仕様を追加し、API共通規約、起動時検証、実行時データ配置、JSON更新、各機能の実装境界とテスト受け入れ条件を具体化</td></tr>
-<tr><td>Rev.1.8</td><td>2026-09-08</td><td>起動時の実行時データ自動生成を廃止し、設定済み保存先の存在確認・権限検証へ変更</td></tr>
-<tr><td>Rev.1.7</td><td>2025-01-15</td><td>ライセンス・バージョンポリシー詳細化（AEB準拠、ドキュメント/開発版/安定版バージョン管理体系、互換性対応表）</td></tr>
-<tr><td>Rev.1.6</td><td>2025-01-15</td><td>ポリシーセクション拡張（10種類へAEB準拠、4ドメイン別ポリシー・SDK/API・テスト・品質・ライセンス・将来計画管理ポリシー追加）</td></tr>
-<tr><td>Rev.1.5</td><td>2025-01-15</td><td>実装レベル仕様確定（API詳細化、バリデーション、セキュリティ詳細化、パフォーマンス・テスト・マイグレーション戦略追加）</td></tr>
-<tr><td>Rev.1.4</td><td>2025-01-15</td><td>インストール・アップデート自動化スクリプト仕様追加（install.sh、update.sh、asb.service）</td></tr>
-<tr><td>Rev.1.3</td><td>2025-01-15</td><td>インストール・アップデートセクション追加（単一バイナリでのSSH導入）</td></tr>
-<tr><td>Rev.1.2</td><td>2025-01-15</td><td>ビルド対応アーキテクチャ拡張（Linux amd64 + arm64）</td></tr>
-<tr><td>Rev.1.1</td><td>2025-01-15</td><td>仕様改良（データモデル説明追加、JSON構造拡張、エラーハンドリング定義、Phase詳細化）</td></tr>
+<tr><td>Rev.12</td><td>2026-09-08</td><td>XServer Static 相当仕様を ASB互換目標へ名称変更し、SSL/ACME を ASB互換目標に含める方針へ整理</td></tr>
+<tr><td>Rev.11</td><td>2026-09-08</td><td>XServer Static 相当の機能目標と ASB 独自仕様を追加し、セルフホスト、JSONファイルベース、実行時データ配置、API中心設計、段階実装方針を整理</td></tr>
+<tr><td>Rev.10</td><td>2026-09-08</td><td>実装詳細仕様を追加し、API共通規約、起動時検証、実行時データ配置、JSON更新、各機能の実装境界とテスト受け入れ条件を具体化</td></tr>
+<tr><td>Rev.9</td><td>2026-09-08</td><td>起動時の実行時データ自動生成を廃止し、設定済み保存先の存在確認・権限検証へ変更</td></tr>
+<tr><td>Rev.8</td><td>2025-01-15</td><td>ライセンス・バージョンポリシー詳細化（AEB準拠、ドキュメント/開発版/安定版バージョン管理体系、互換性対応表）</td></tr>
+<tr><td>Rev.7</td><td>2025-01-15</td><td>ポリシーセクション拡張（10種類へAEB準拠、4ドメイン別ポリシー・SDK/API・テスト・品質・ライセンス・将来計画管理ポリシー追加）</td></tr>
+<tr><td>Rev.6</td><td>2025-01-15</td><td>実装レベル仕様確定（API詳細化、バリデーション、セキュリティ詳細化、パフォーマンス・テスト・マイグレーション戦略追加）</td></tr>
+<tr><td>Rev.5</td><td>2025-01-15</td><td>インストール・アップデート自動化スクリプト仕様追加（install.sh、update.sh、asb.service）</td></tr>
+<tr><td>Rev.4</td><td>2025-01-15</td><td>インストール・アップデートセクション追加（単一バイナリでのSSH導入）</td></tr>
+<tr><td>Rev.3</td><td>2025-01-15</td><td>ビルド対応アーキテクチャ拡張（Linux amd64 + arm64）</td></tr>
+<tr><td>Rev.2</td><td>2025-01-15</td><td>仕様改良（データモデル説明追加、JSON構造拡張、エラーハンドリング定義、Phase詳細化）</td></tr>
 <tr><td>Rev.1</td><td>2025-01-15</td><td>ゼロベース仕様策定（責務駆動設計アーキテクチャ採用）</td></tr>
 </tbody></table></div>
     </div>
