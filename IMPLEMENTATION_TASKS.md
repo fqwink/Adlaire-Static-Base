@@ -39,13 +39,14 @@
 | 最高 | P0 | v0.1 | 基盤 | 未着手 |
 | 最高 | P1 | v0.2 | API・JSON・起動検証 | 未着手 |
 | 高 | P2 | v0.3 | 静的配信・ファイル管理 | 未着手 |
-| 高 | P3 | v0.4 | ドメイン・無料独自SSL | 未着手 |
-| 高 | P4 | v0.5 | GitHub Webhook デプロイ | 未着手 |
-| 中 | P5 | v0.6 | バックアップ・復旧 | 未着手 |
-| 中 | P6 | v0.7 | ログ・監視 | 未着手 |
-| 中 | P7 | v0.8 | マイグレーション | 未着手 |
-| 低 | P8 | v0.9 | 配布・install/update | 未着手 |
-| 低 | P9 | v0.10 | 禁止機能・非実装確認 | 未着手 |
+| 高 | P3 | v0.4 | ドメイン管理・SSL状態基盤 | 未着手 |
+| 高 | P4 | v0.5 | 無料独自SSL / Let’s Encrypt ACME v2 | 未着手 |
+| 高 | P5 | v0.6 | GitHub Webhook デプロイ | 未着手 |
+| 中 | P6 | v0.7 | バックアップ・復旧 | 未着手 |
+| 中 | P7 | v0.8 | ログ・監視 | 未着手 |
+| 中 | P8 | v0.9 | マイグレーション | 未着手 |
+| 低 | P9 | v0.10 | 配布・install/update | 未着手 |
+| 低 | P10 | v0.11 | 禁止機能・非実装確認 | 未着手 |
 
 ## 3. P0 / v0.1 / 基盤
 
@@ -261,11 +262,11 @@
 - Range request
 - 外部CDN連携
 
-## 6. P3 / v0.4 / ドメイン・無料独自SSL
+## 6. P3 / v0.4 / ドメイン管理・SSL状態基盤
 
 優先度: 高
 
-目的: ドメイン管理とXServer Static互換目標の無料独自SSLを実装する。
+目的: ドメイン管理と無料独自SSLの状態管理基盤を実装する。
 
 ### 実装タスク
 
@@ -278,13 +279,52 @@
 - RFC 1035 準拠のドメインバリデーションを実装する。
 - ドメインの小文字正規化、253文字以下、最大3階層制限を実装する。
 - ドメイン重複割り当てを `ERR_DOMAIN_ALREADY_ASSIGNED` として扱う。
+- 証明書保存先 `certs/` の存在確認と権限検証を実装する。
+- SSL証明書ID、証明書メタデータ、証明書ファイルパス検証、有効期限監視モデル、失敗エラー `ERR_SSL_CERT_GENERATION_FAILED` を実装する。
+- `config/domains.json` の Domain 要素に SSL状態参照を保存できる構造を実装する。
+- 証明書本文と秘密鍵本文の対応確認、有効期限確認、秘密鍵権限検証を Go 標準ライブラリで実装する。
+- SSL状態確認に必要な Entity、Service interface、Repository境界を実装する。
+- このフェーズでは Let’s Encrypt との実通信を行わない。
+- このフェーズでは証明書取得、証明書自動更新、ACME account 登録、order 作成、challenge 応答を実装しない。
+- `internal/management/domain_test.go`、`internal/management/ssl_test.go` を作成する。
+
+### 完了条件
+
+- Domain API の追加、一覧、削除、重複、存在なし参照のテストが成功する。
+- 証明書ファイルの存在、パス、有効期限、秘密鍵権限、証明書と秘密鍵の対応確認テストが成功する。
+- Let’s Encrypt 実通信、ACME account 登録、order 作成、challenge 応答、証明書自動更新が実装されていないことを確認する。
+- `go test ./...` が成功する。
+- `.gitignore` が存在しない。
+
+### 非対象
+
+- 無料独自SSLの有効化 API
+- 無料独自SSLの証明書取得
+- 無料独自SSLの証明書自動更新
+- Let’s Encrypt ACME v2 client
+- HTTP-01 challenge 応答
+- DNS-01 challenge
+- TLS-ALPN-01 challenge
+- wildcard 証明書
+- DNS provider API 連携
+- 複数 CA
+- CA 選定
+- CA failover
+- TLS 終端
+
+## 7. P4 / v0.5 / 無料独自SSL / Let’s Encrypt ACME v2
+
+優先度: 高
+
+目的: XServer Static互換目標の無料独自SSLを、Let’s Encrypt ACME v2 と HTTP-01 に限定して実装する。
+
+### 実装タスク
+
 - 無料独自SSLを実装する。
 - 無料独自SSL 有効化 API `POST /api/projects/:id/domains/:domain/ssl/enable` を実装する。
 - 無料独自SSL 状態確認 API `GET /api/projects/:id/domains/:domain/ssl` を実装する。
 - 無料独自SSL 更新 API `POST /api/projects/:id/domains/:domain/ssl/renew` を実装する。
 - 無料独自SSL 無効化 API `POST /api/projects/:id/domains/:domain/ssl/disable` を実装する。
-- 設定済み証明書保存先 `certs/` の検証と管理を実装する。
-- SSL証明書ID、証明書メタデータ、証明書ファイルパス検証、有効期限監視モデル、失敗エラー `ERR_SSL_CERT_GENERATION_FAILED` を実装する。
 - 無料独自SSLの有効化、無効化、状態確認、証明書取得、証明書自動更新を実装する。
 - Let’s Encrypt ACME v2 client を実装する。
 - ACME account 登録、account key 生成・保存、directory 取得、nonce 管理、order 作成、authorization 取得、HTTP-01 challenge 応答、finalize、certificate download を実装する。
@@ -296,11 +336,10 @@
 - 証明書自動更新スケジューラー、`ssl.renewBefore`、`ssl.renewCheckInterval`、retry / backoff、Let’s Encrypt rate limit 配慮を実装する。
 - 複数 CA、CA 選定、CA failover、任意 ACME directory URL を実装しない。
 - DNS-01 challenge、TLS-ALPN-01 challenge、wildcard 証明書、DNS provider API 連携、手動 TXT 登録、EAB、ARI、OCSP stapling を実装しない。
-- `internal/management/domain_test.go`、`internal/management/ssl_test.go` を作成する。
+- `internal/management/acme_test.go`、`internal/management/ssl_acme_test.go` を作成する。
 
 ### 完了条件
 
-- Domain API の追加、一覧、削除、重複、存在なし参照のテストが成功する。
 - 無料独自SSLの有効化、無効化、状態確認、証明書取得、証明書自動更新のテストが成功する。
 - Let’s Encrypt ACME v2 のHTTP-01 challengeフローをテスト用ACMEサーバーまたはモックで検証する。
 - DNS-01、TLS-ALPN-01、wildcard、DNS provider API、複数CA、CA選定、CA failoverが実装されていないことを確認する。
@@ -318,7 +357,7 @@
 - CA failover
 - TLS 終端
 
-## 7. P4 / v0.5 / GitHub Webhook デプロイ
+## 8. P5 / v0.6 / GitHub Webhook デプロイ
 
 優先度: 高
 
@@ -381,7 +420,7 @@
 - 自動リトライスケジューラー
 - GitHub Actions 実行
 
-## 8. P5 / v0.6 / バックアップ・復旧
+## 9. P6 / v0.7 / バックアップ・復旧
 
 優先度: 中
 
@@ -438,7 +477,7 @@
 - 別障害領域への自動複製
 - ログファイルと証明書ファイルのバックアップ
 
-## 9. P6 / v0.7 / ログ・監視
+## 10. P7 / v0.8 / ログ・監視
 
 優先度: 中
 
@@ -493,7 +532,7 @@
 - 外部監視サービス連携
 - ローテーション済みログAPI
 
-## 10. P7 / v0.8 / マイグレーション
+## 11. P8 / v0.9 / マイグレーション
 
 優先度: 中
 
@@ -501,7 +540,7 @@
 
 ### 実装タスク
 
-- マイグレーション対象を `config/projects.json`、`config/domains.json`、`config/backups.json`、`config/webhooks.json`、`storage/projects/:projectId/files.json` に限定する。
+- マイグレーション対象を `config/projects.json`、`config/domains.json`、`config/backups.json`、`config/webhooks.json`、`config/acme_accounts.json`、`config/acme_orders.json`、`config/acme_authorizations.json`、`config/acme_challenges.json`、`config/acme_renewals.json`、`storage/projects/:projectId/files.json` に限定する。
 - `internal/data/migration_test.go` を作成する。
 - 各実行時 JSON ファイルのトップレベル `schemaVersion` を実装する。
 - `schemaVersion` 未指定の JSON ファイルを `0` として扱う。
@@ -538,7 +577,7 @@
 - 外部DBマイグレーション
 - 外部マイグレーションフレームワーク
 
-## 11. P8 / v0.9 / 配布・install/update
+## 12. P9 / v0.10 / 配布・install/update
 
 優先度: 低
 
@@ -584,7 +623,7 @@
 - Pull Request merge
 - GitHub リポジトリ設定変更
 
-## 12. P9 / v0.10 / 禁止機能・非実装確認
+## 13. P10 / v0.11 / 禁止機能・非実装確認
 
 優先度: 低
 
@@ -632,11 +671,11 @@
 - 未確定タスクの実装
 - 将来計画機能の仕様昇格
 
-## 13. 実装済みフェーズ
+## 14. 実装済みフェーズ
 
 現時点ではなし。
 
-## 14. 実装フェーズ外の仕様未確定タスク
+## 15. 実装フェーズ外の仕様未確定タスク
 
 以下は Rev.43 時点では実装フェーズに含めない。
 
