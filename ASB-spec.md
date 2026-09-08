@@ -39,7 +39,7 @@ ASB は仕様駆動システムである。
 | 提供形態 | HTTP サーバー（単一バイナリ） |
 | データ保存 | JSON ファイルベース（外部DB不使用） |
 | ライセンス | クローズドライセンス |
-| 本書バージョン | Rev.26 |
+| 本書バージョン | Rev.27 |
 
 ---
 
@@ -105,7 +105,7 @@ ASB は、静的コンテンツ専用ホスティングとして XServer Static 
 - `.gitignore` を作成・使用しない
 - ASB API を外部操作面とするヘッドレス構成を採用する
 - Go標準ライブラリで実装可能な部分は Go標準ライブラリで実装する
-- SDK、CA、ACME 実通信など詳細未確定の機能は、仕様確定後に実装対象へ昇格する
+- SDK 本体、SDK 配布、SDK 認証、CA、ACME 実通信など詳細未確定の機能は、仕様確定後に実装対象へ昇格する
 
 ---
 
@@ -321,7 +321,7 @@ ASB 起動時には、設定された保存先に以下の実行時データ領�
 - 最大容量：1GB/プロジェクト（設定可能）
 - 形式：制限なし（HTML, CSS, JavaScript, 画像等）
 - 圧縮：Gzip による自動圧縮
-- Brotli は Rev.26 時点では ASB 本体に実装しない
+- Brotli は Rev.27 時点では ASB 本体に実装しない
 
 **ファイル削除**
 - 個別削除、一括削除に対応
@@ -922,7 +922,7 @@ Delivery Domain は、ファイル管理・GitHub Webhook の責務を担う。
 
 Webhook 処理失敗は、システムログおよび `config/webhooks.json` へ記録する。
 
-Rev.26 時点では、Webhook失敗時の自動リトライスケジュールを実装しない。
+Rev.27 時点では、Webhook失敗時の自動リトライスケジュールを実装しない。
 
 ### 11.3 Data Domain ポリシー
 
@@ -938,8 +938,8 @@ Data Domain は、バックアップ・ストレージの責務を担う。
 **バックアップ・復旧方針**
 - バックアップ取得後はハッシュ検証を実施
 - ASB標準バックアップ保存先は `storage.basePath/backups/` とする
-- バックアップ保存先を別障害領域へ複製する作業は Rev.26 時点ではASB外の運用責務とする
-- 外部ストレージ連携は Rev.26 時点では実装対象外とする
+- バックアップ保存先を別障害領域へ複製する作業は Rev.27 時点ではASB外の運用責務とする
+- 外部ストレージ連携は Rev.27 時点では実装対象外とする
 - 復旧は対象バックアップの存在、SHA-256、JSON構文、スキーマ検証後に実施
 - バックアップ・復旧・検証失敗・復旧操作は監査ログへ記録
 
@@ -954,7 +954,7 @@ System Domain は、監視・ログ管理の責務を担う。
 - 標準構成では `storage.basePath/logs/` 配下へ JSON Lines として保存する
 - アクセスログは `storage.basePath/logs/access.log` に保存する
 - エラーログは `storage.basePath/logs/error.log` に保存する
-- 標準出力（stdout）への通常ログ出力は Rev.26 時点では実装しない
+- 標準出力（stdout）への通常ログ出力は Rev.27 時点では実装しない
 - 起動失敗時のみ標準エラー（stderr）へ単一行の起動エラーを出力する
 
 **必須フィールド**
@@ -973,16 +973,20 @@ System Domain は、監視・ログ管理の責務を担う。
 
 ASB はヘッドレスアーキテクチャを採用し、UI層に依存しない。
 
-Rev.26 時点の確定対象は、ASB 本体が提供する HTTP JSON API である。
+Rev.27 時点の確定対象は、ASB 本体が提供する HTTP JSON API、および将来 SDK が使用する通信規格である。
 
-SDK は実装対象外とし、通信仕様および配布方針が確定した後に実装対象へ昇格する。
+SDK 本体、SDK 配布方針、SDK 認証仕様は Rev.27 時点では実装対象外とする。
+
+SDK 通信規格は、ASB 本体が提供する HTTP JSON API と同一とする。
 
 **API 設計原則**
 - HTTP + JSON を使用する
 - HTTP/2 対応は ASB互換目標として扱い、実装詳細は別途確定する
 - デフォルト接続境界は `localhost:3000` とする
-- 管理 API は Rev.26 時点では認証なしとする
-- APIキー管理、ユーザー認証、SDK通信規格は保留事項として扱う
+- 管理 API は Rev.27 時点では認証なしとする
+- SDK 通信は ASB 管理 API と同じ request / response / error / timestamp / pagination / upload 規約に従う
+- SDK 専用プロトコル、SDK 専用エンドポイント、SDK 専用セッションを追加しない
+- APIキー管理、ユーザー認証、SDK認証仕様は保留事項として扱う
 - 本番公開時の管理 API 保護は、リバースプロキシ、ファイアウォール、VPN、localhost bind 等のASB外の運用境界で行う
 
 **エラーレスポンス形式**
@@ -1050,7 +1054,7 @@ E2E テスト
 - SSL/TLS：本番環境では必須（リバースプロキシで対応）
 
 **レート制限**
-- Rev.26 時点では ASB 本体に実装しない
+- Rev.27 時点では ASB 本体に実装しない
 - Rate limiting は、本番公開時に ASB 外部のリバースプロキシ、WAF、CDN、ファイアウォール等で扱う
 
 **タイムアウト**
@@ -1333,7 +1337,7 @@ ASB の初回インストールとアップデートを自動化するため、`
 | `--version` | 必須 | 更新対象の安定版バージョン |
 | `--arch` | 任意 | `amd64` または `arm64`。未指定時は `uname -m` から判定 |
 
-`latest` 指定、自動最新版選択、未指定バージョンでの実行は Rev.26 時点では禁止する。
+`latest` 指定、自動最新版選択、未指定バージョンでの実行は Rev.27 時点では禁止する。
 
 スクリプトは以下を満たす。
 
@@ -1425,11 +1429,11 @@ $ sudo systemctl stop asb
 
 ### 12.2 保留事項
 
-- ユーザー認証（Rev.26 時点では実装しない）
+- ユーザー認証（Rev.27 時点では実装しない）
 - マルチテナント対応
-- API キー管理（Rev.26 時点では実装しない）
-- SDK通信規格
-- Rate limiting（Rev.26 時点では実装しない）
+- API キー管理（Rev.27 時点では実装しない）
+- SDK 本体・SDK 配布方針・SDK 認証仕様
+- Rate limiting（Rev.27 時点では実装しない）
 - 外部ストレージサービス統合（AWS S3 等）
 
 ### 12.3 検討・調査中事項
@@ -1444,7 +1448,7 @@ $ sudo systemctl stop asb
 
 ### 13.1 実装対象の基準
 
-Rev.26 時点の実装対象は、ASB のセルフホスト型静的コンテンツ配信ホスティングに必要なバックエンド機能に限定する。
+Rev.27 時点の実装対象は、ASB のセルフホスト型静的コンテンツ配信ホスティングに必要なバックエンド機能に限定する。
 
 実装は以下の順序で進める：
 
@@ -1590,7 +1594,7 @@ JSON ファイル更新は以下の方針で行う：
 **圧縮**
 
 - Gzip 圧縮を実装対象とする
-- Brotli 圧縮は Rev.26 時点では ASB 本体に実装しない
+- Brotli 圧縮は Rev.27 時点では ASB 本体に実装しない
 - `Accept-Encoding: br` を受信しても Brotli 応答へ切り替えない
 
 ### 13.8 ドメイン管理詳細
@@ -1604,7 +1608,7 @@ JSON ファイル更新は以下の方針で行う：
 
 ### 13.9 SSL 管理詳細
 
-Rev.26 時点では、SSL 管理は管理境界とデータモデルを実装対象とし、ACME は ASB互換目標に含める。ACME 実通信、CA選定、ワイルドカード証明書対応は詳細仕様確定後に実装対象へ昇格する。
+Rev.27 時点では、SSL 管理は管理境界とデータモデルを実装対象とし、ACME は ASB互換目標に含める。ACME 実通信、CA選定、ワイルドカード証明書対応は詳細仕様確定後に実装対象へ昇格する。
 
 実装対象：
 
@@ -1640,7 +1644,7 @@ GitHub Webhook は Push イベントのみを対象とする。
 - デプロイ処理に失敗した場合は `ERR_WEBHOOK_PROCESSING_FAILED` を返す
 - 同一 GitHub Push イベントを重複受信した場合は、同一 commit hash と対象ブランチの組み合わせを冪等キーとして扱い、二重デプロイを避ける
 - 冪等キーの保存方式は JSON ファイルベースとし、保存先は `storage.basePath` 配下に限定する
-- Webhook失敗時の自動リトライは Rev.26 時点では実装しない
+- Webhook失敗時の自動リトライは Rev.27 時点では実装しない
 - GitHub側からの再送は通常のWebhook受信として扱い、冪等キーで重複判定する
 
 ### 13.11 バックアップ・復旧詳細
@@ -1716,7 +1720,7 @@ GitHub Webhook は Push イベントのみを対象とする。
 
 ### 13.14 実装契約
 
-本節は Rev.26 時点の実装契約である。実装者は本節に反する判断をコード側で独自に行ってはならない。
+本節は Rev.27 時点の実装契約である。実装者は本節に反する判断をコード側で独自に行ってはならない。
 
 #### 13.14.1 パッケージ境界
 
@@ -1861,9 +1865,17 @@ ID 生成、時刻取得、保存処理は Service に注入された依存関�
 
 #### 13.14.9 保留機能の実装禁止契約
 
-Rev.26 時点では以下を実装してはならない。
+Rev.27 時点では以下を実装してはならない。
 
 - SDK
+- SDK 専用プロトコル
+- SDK 専用エンドポイント
+- SDK 専用セッション
+- WebSocket
+- gRPC
+- GraphQL
+- 独自 TCP プロトコル
+- MQTT
 - APIキー管理
 - ユーザー認証
 - 認証 middleware
@@ -1892,7 +1904,7 @@ Rev.26 時点では以下を実装してはならない。
 
 ### 13.15 実装詳細固定仕様
 
-本節は Rev.26 時点で実装時に固定する詳細仕様である。
+本節は Rev.27 時点で実装時に固定する詳細仕様である。
 
 #### 13.15.1 API エンドポイント固定表
 
@@ -2037,7 +2049,7 @@ Domain が存在しても対象 Project が存在しない場合は整合性エ�
 
 `304 Not Modified` ではレスポンスボディを返してはならない。
 
-Range request は Rev.26 時点では実装しない。
+Range request は Rev.27 時点では実装しない。
 
 `Range` ヘッダーを受信した場合も無視し、通常の `200 OK` または `304 Not Modified` 判定を行う。
 
@@ -2079,7 +2091,7 @@ Webhook処理はネットワーク越しにGit操作を行ってはならない�
 
 静的コンテンツ反映元は `deploy.sourcePath` の `after` commit 時点のファイルツリーとする。
 
-Rev.26 時点では、Webhookデプロイ時の対象ファイルパスはリポジトリルート配下の全静的ファイルとする。
+Rev.27 時点では、Webhookデプロイ時の対象ファイルパスはリポジトリルート配下の全静的ファイルとする。
 
 `.git/`、`.github/`、`AGENTS.md`、`ASB-spec.md`、`ASB-spec.html`、`IMPLEMENTATION_TASKS.md`、`DOCUMENT_INDEX.md`、`README.md` は配信対象から除外する。
 
@@ -2097,7 +2109,7 @@ Webhook 処理完了後に処理状態を `config/webhooks.json` へ保存する
 
 失敗時の `status` は `failed` とし、`errorCode` を保存する。
 
-Webhook失敗時の自動リトライは Rev.26 時点では実装しない。
+Webhook失敗時の自動リトライは Rev.27 時点では実装しない。
 
 GitHub側から同一イベントが再送された場合は、`config/webhooks.json` の既存イベントにより重複判定する。
 
@@ -2157,7 +2169,7 @@ Webhook固定仕様のテスト項目は以下とする。
 
 ### 13.16 入出力契約固定仕様
 
-本節は Rev.26 時点で API、JSON保存、ログ、起動時検証の入出力を固定する仕様である。
+本節は Rev.27 時点で API、JSON保存、ログ、起動時検証の入出力を固定する仕様である。
 
 #### 13.16.1 共通成功レスポンス契約
 
@@ -2398,7 +2410,7 @@ HTTP リクエスト処理中に発生したエラーでは、エラーログの
 
 `ERROR` はすべての `log.level` 設定で出力する。
 
-`log.format` は Rev.26 時点では `json` のみ許可する。
+`log.format` は Rev.27 時点では `json` のみ許可する。
 
 通常運用ログを stdout へ出力してはならない。
 
@@ -2416,13 +2428,13 @@ ASB_STARTUP_ERROR code=ERR_STORAGE_VALIDATION_FAILED message="Storage validation
 
 ログローテーション失敗時は対象ログ書き込みを失敗扱いとし、HTTP レスポンスが未送信の場合は `500 Internal Server Error` を返す。
 
-ログ API は `access.log` または `error.log` の現行ファイルのみを読む。ローテーション済みログは Rev.26 時点ではログ API の対象外とする。
+ログ API は `access.log` または `error.log` の現行ファイルのみを読む。ローテーション済みログは Rev.27 時点ではログ API の対象外とする。
 
 ログには内部ファイルパス、スタックトレース、環境変数、シークレットを含めてはならない。
 
 #### 13.16.8 テスト固定項目
 
-Rev.26 の実装では、以下のテストを必須とする。
+Rev.27 の実装では、以下のテストを必須とする。
 
 - 全API成功レスポンスの固定JSONキー検証
 - 全APIエラーレスポンスの固定JSONキー検証
@@ -2434,7 +2446,7 @@ Rev.26 の実装では、以下のテストを必須とする。
 
 ### 13.17 実装境界とファイル操作固定仕様
 
-本節は Rev.26 時点で package 境界、公開 interface、Repository、Storage、複数ファイル更新の実装契約を固定する仕様である。
+本節は Rev.27 時点で package 境界、公開 interface、Repository、Storage、複数ファイル更新の実装契約を固定する仕様である。
 
 #### 13.17.1 package 公開 interface 固定
 
@@ -2639,7 +2651,7 @@ Backup restore は以下の順序で実行する。
 
 途中失敗時に自動ロールバックを実装する場合も、ロールバック失敗時は成功扱いにしてはならない。
 
-Rev.26 時点では、複数JSON更新に外部トランザクション機構を導入してはならない。
+Rev.27 時点では、複数JSON更新に外部トランザクション機構を導入してはならない。
 
 #### 13.17.11 最低テスト分類固定
 
@@ -2658,7 +2670,7 @@ Rev.26 時点では、複数JSON更新に外部トランザクション機構を
 
 ### 13.18 APIキー管理・認証固定仕様
 
-Rev.26 時点では、ASB 本体の管理 API に認証機能を実装しない。
+Rev.27 時点では、ASB 本体の管理 API に認証機能を実装しない。
 
 管理 API とは `/api/` で始まる全 HTTP JSON API を指す。
 
@@ -2666,7 +2678,7 @@ Rev.26 時点では、ASB 本体の管理 API に認証機能を実装しない�
 
 本番環境で管理 API を外部ネットワークから利用可能にする場合は、ASB 外部のリバースプロキシ、ファイアウォール、VPN、SSH tunnel、IP制限等で保護する。
 
-ASB 本体は Rev.26 時点では以下を実装してはならない。
+ASB 本体は Rev.27 時点では以下を実装してはならない。
 
 - APIキー発行
 - APIキー保存
@@ -2685,7 +2697,7 @@ ASB 本体は Rev.26 時点では以下を実装してはならない。
 
 `Authorization` ヘッダーまたは `X-API-Key` ヘッダーを受信しても、ASB は認証判断に使用してはならない。
 
-Rev.26 時点では、`Authorization` ヘッダーまたは `X-API-Key` ヘッダーの有無により、成功・失敗・レスポンス内容を変えてはならない。
+Rev.27 時点では、`Authorization` ヘッダーまたは `X-API-Key` ヘッダーの有無により、成功・失敗・レスポンス内容を変えてはならない。
 
 ASB は APIキー管理のために以下の JSON ファイル、ディレクトリ、設定項目を作成してはならない。
 
@@ -2712,17 +2724,17 @@ APIキー管理を将来実装する場合は、実装前に `ASB-spec.md` を�
 - 監査ログ
 - 既存の認証なし管理 API からの移行手順
 
-SDK 認証仕様は Rev.26 の対象外とし、SDK通信規格を確定する際に別途仕様化する。
+SDK 認証仕様は Rev.27 の対象外とし、SDK通信規格固定後に別途仕様化する。
 
 ---
 
 ### 13.19 Rate limiting 固定仕様
 
-Rev.26 時点では、ASB 本体に Rate limiting を実装しない。
+Rev.27 時点では、ASB 本体に Rate limiting を実装しない。
 
 Rate limiting とは、送信元IP、Host、Domain、Project、APIキー、ユーザー、HTTPメソッド、URL path、リクエスト数、転送量、同時接続数、時間窓等に基づき、HTTP リクエストの受理、拒否、遅延、または優先度を制御する機能を指す。
 
-ASB 本体は Rev.26 時点では以下を実装してはならない。
+ASB 本体は Rev.27 時点では以下を実装してはならない。
 
 - Rate limiting middleware
 - IP別リクエスト制限
@@ -2781,13 +2793,13 @@ Rate limiting を将来実装する場合は、実装前に `ASB-spec.md` を改
 
 ### 13.20 Brotli 圧縮固定仕様
 
-Rev.26 時点では、ASB 本体に Brotli 圧縮を実装しない。
+Rev.27 時点では、ASB 本体に Brotli 圧縮を実装しない。
 
 ASB の標準圧縮機能は、Go 標準ライブラリ `compress/gzip` で実装できる Gzip に限定する。
 
-Brotli 圧縮は Go 標準ライブラリに含まれないため、Rev.26 時点では外部ライブラリ例外採用を行わない。
+Brotli 圧縮は Go 標準ライブラリに含まれないため、Rev.27 時点では外部ライブラリ例外採用を行わない。
 
-ASB 本体は Rev.26 時点では以下を実装してはならない。
+ASB 本体は Rev.27 時点では以下を実装してはならない。
 
 - Brotli 圧縮
 - Brotli 展開
@@ -2837,6 +2849,95 @@ Brotli を将来実装する場合は、実装前に `ASB-spec.md` を改訂し�
 - ETag / Last-Modified / Cache-Control との関係
 - 開発リポジトリ非生成の保証方法
 - 既存 Gzip 仕様からの移行手順
+
+---
+
+### 13.21 SDK 通信規格固定仕様
+
+Rev.27 時点では、SDK 本体を実装しない。
+
+Rev.27 時点では、SDK 配布方針を確定しない。
+
+Rev.27 時点では、SDK 認証仕様を確定しない。
+
+ただし、将来 SDK が ASB と通信する場合の通信規格は、ASB 本体が提供する HTTP JSON API と同一に固定する。
+
+SDK 通信は、以下の ASB 管理 API 規約に従う。
+
+- HTTP method
+- URL path
+- query parameter
+- path parameter
+- request JSON body
+- multipart upload
+- success response JSON
+- error response JSON
+- HTTP status code
+- error code
+- UTC RFC3339 timestamp
+- pagination
+- static file upload 規約
+
+SDK 通信のために、ASB 本体は Rev.27 時点では以下を実装してはならない。
+
+- SDK 専用 HTTP API
+- SDK 専用 URL prefix
+- SDK 専用 request body
+- SDK 専用 response body
+- SDK 専用 error format
+- SDK 専用 pagination
+- SDK 専用 upload protocol
+- SDK 専用 session
+- SDK 専用 token
+- SDK 専用 cookie
+- SDK 専用 handshake
+- SDK 専用 protocol negotiation
+- SDK 専用 version negotiation
+
+ASB 本体は Rev.27 時点では以下の通信方式を SDK 通信として実装してはならない。
+
+- WebSocket
+- gRPC
+- GraphQL
+- 独自 TCP プロトコル
+- UDP
+- MQTT
+- AMQP
+- Server-Sent Events
+- long polling
+
+SDK 通信のために以下の JSON ファイル、ディレクトリ、設定項目を作成してはならない。
+
+- `config/sdk.json`
+- `config/sdk_clients.json`
+- `config/sdk_sessions.json`
+- `storage/sdk/`
+- `storage/sdk_sessions/`
+- `sdk.*`
+- `sdkAuth.*`
+
+開発リポジトリ内にも、`storage.basePath` 配下にも、SDK 通信用のセッション、キャッシュ、handshake 状態、protocol negotiation 状態、client registration 状態を表す実行時データを生成してはならない。
+
+`config/config.json` に SDK 通信関連フィールドが存在する場合は、未知フィールドとして起動失敗とする。
+
+SDK から ASB 管理 API を呼び出す場合でも、Rev.27 時点では `Authorization` ヘッダー、`X-API-Key` ヘッダー、cookie、セッションIDを認証判断に使用してはならない。
+
+SDK 認証仕様を将来実装する場合は、実装前に `ASB-spec.md` を改訂し、APIキー管理、ユーザー認証、SDK配布方針との関係を最低限確定する。
+
+SDK 本体を将来実装する場合は、実装前に `ASB-spec.md` を改訂し、以下を最低限確定する。
+
+- 対象言語
+- package 名
+- 配布方法
+- versioning
+- ASB API version との互換性
+- エラー型
+- retry 方針
+- timeout 方針
+- upload API の扱い
+- 認証仕様
+- generated client の採用可否
+- テスト方法
 
 ---
 
@@ -2906,7 +3007,7 @@ Brotli を将来実装する場合は、実装前に `ASB-spec.md` を改訂し�
 ### 15.2 テスト対象外
 
 以下はモック・スタブで対応：
-- ACME 実通信および CA 連携（Rev.26 時点では実通信を実装対象外とし、SSL管理境界のみ検証）
+- ACME 実通信および CA 連携（Rev.27 時点では実通信を実装対象外とし、SSL管理境界のみ検証）
 - GitHub Webhook（テスト用ペイロード）
 - 実際のファイルストレージ大容量テスト（テスト時は最大100MB）
 
@@ -2956,13 +3057,13 @@ ASB の開発版バージョンは累積連番 `v0.N` とし、メジャー/マ�
 | `config/webhooks.json` | Webhook 冪等キー履歴スキーマ |
 | `storage/projects/:projectId/files.json` | File メタデータスキーマ |
 
-静的コンテンツ実体、ログファイル、証明書ファイル、ビルド済みバイナリは、Rev.26 時点のマイグレーション対象外とする。
+静的コンテンツ実体、ログファイル、証明書ファイル、ビルド済みバイナリは、Rev.27 時点のマイグレーション対象外とする。
 
 ### 16.3 schemaVersion 固定
 
 各実行時 JSON ファイルはトップレベルに `schemaVersion` を持つ。
 
-Rev.26 時点の `schemaVersion` は `1` とする。
+Rev.27 時点の `schemaVersion` は `1` とする。
 
 例：
 
@@ -3059,7 +3160,7 @@ asb migrate --storage /var/asb --from-schema 0 --to-schema 1 --apply
 
 ### 16.8 禁止事項
 
-Rev.26 時点では以下を禁止する。
+Rev.27 時点では以下を禁止する。
 
 - 起動時の自動マイグレーション
 - 開発リポジトリ内でのマイグレーション作業ファイル作成
@@ -3088,6 +3189,7 @@ Rev.26 時点では以下を禁止する。
 
 | バージョン | 日付 | 内容 |
 |-----------|------|------|
+| Rev.27 | 2026-09-08 | SDK 本体は実装対象外のまま、将来 SDK 通信を ASB 管理 HTTP JSON API と同一規格に固定し、SDK 専用プロトコル・エンドポイント・実行時データ非生成を実装レベルで固定 |
 | Rev.26 | 2026-09-08 | Brotli 圧縮を ASB 本体に実装しない方針、Gzip 標準限定、Accept-Encoding br 非対応、Brotli 関連ファイル・設定・キャッシュ非生成を実装レベルで固定 |
 | Rev.25 | 2026-09-08 | Rate limiting を ASB 本体に実装しない方針、Rate limiting 関連 middleware・設定・JSON・実行時カウンタ非生成、外部運用境界を実装レベルで固定 |
 | Rev.24 | 2026-09-08 | APIキー管理とユーザー認証を実装しない方針、認証ヘッダー非使用、認証関連ファイル非生成、外部運用境界を実装レベルで固定 |

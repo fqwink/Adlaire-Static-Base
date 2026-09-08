@@ -6,7 +6,7 @@
 
 本ファイルは、`ASB-spec.md` に基づいて実装タスクを管理する。
 
-参照仕様バージョン: `ASB-spec.md Rev.26`
+参照仕様バージョン: `ASB-spec.md Rev.27`
 
 `ASB-spec.md` で仕様確定済みの事項を実装タスクとしてリスト化する。
 
@@ -75,10 +75,10 @@
 - 保存失敗時に成功レスポンスを返さないことを実装する。
 - 複数JSON更新では最終JSONの保存完了まで成功レスポンスを返さないことを実装する。
 - 複数JSON更新の途中失敗時に更新済みJSON名、未更新JSON名、操作名、requestId をエラーログへ記録する。
-- Rev.26 時点では複数JSON更新に外部トランザクション機構を導入しない。
-- Rev.26 時点の API エンドポイント固定表に記載されたメソッド、パス、成功ステータス、失敗コードを実装する。
-- Rev.26 API 成功レスポンス固定表に記載された JSON キーと型を実装する。
-- 管理 API は Rev.26 時点では認証なしとして実装する。
+- Rev.27 時点では複数JSON更新に外部トランザクション機構を導入しない。
+- Rev.27 時点の API エンドポイント固定表に記載されたメソッド、パス、成功ステータス、失敗コードを実装する。
+- Rev.27 API 成功レスポンス固定表に記載された JSON キーと型を実装する。
+- 管理 API は Rev.27 時点では認証なしとして実装する。
 - 管理 API で `Authorization` ヘッダーと `X-API-Key` ヘッダーを認証判断に使用しないことを実装する。
 - 管理 API で `Authorization` ヘッダーまたは `X-API-Key` ヘッダーの有無により、成功・失敗・レスポンス内容を変えないことを実装する。
 - APIキー発行、APIキー保存、APIキー照合、APIキー失効、APIキーローテーション、APIキー権限スコープ、APIキー監査履歴を実装しないことを確認する。
@@ -87,7 +87,7 @@
 - `auth.*`、`apiKey.*` 設定項目を定義しないことを実装する。
 - `config/config.json` に認証関連フィールドが存在する場合は、未知フィールドとして起動失敗させる。
 - 管理 API の本番公開時保護は ASB 外部のリバースプロキシ、ファイアウォール、VPN、SSH tunnel、IP制限等の運用境界として扱う。
-- Rate limiting は Rev.26 時点では ASB 本体に実装しないことを確認する。
+- Rate limiting は Rev.27 時点では ASB 本体に実装しないことを確認する。
 - Rate limiting middleware、IP別制限、Host別制限、Domain別制限、Project別制限、API別制限、Webhook別制限、静的配信別制限を実装しないことを確認する。
 - token bucket、leaky bucket、sliding window counter、fixed window counter、同時接続数制限、転送量制限を実装しないことを確認する。
 - `429 Too Many Requests` と `Retry-After` ヘッダーを Rate limiting 用に返さないことを確認する。
@@ -96,7 +96,7 @@
 - `config/config.json` に Rate limiting 関連フィールドが存在する場合は、未知フィールドとして起動失敗させる。
 - 管理 API、静的配信、Webhook 受信が Rate limiting の有無により成功・失敗・レスポンス内容を変えないことを実装する。
 - Rate limiting の本番対応は ASB 外部のリバースプロキシ、WAF、CDN、ファイアウォール、ロードバランサ等の運用境界として扱う。
-- Brotli 圧縮は Rev.26 時点では ASB 本体に実装しないことを確認する。
+- Brotli 圧縮は Rev.27 時点では ASB 本体に実装しないことを確認する。
 - 圧縮機能は Go 標準ライブラリ `compress/gzip` による Gzip を標準対象として実装する。
 - `Accept-Encoding: br` を受信しても Brotli 応答へ切り替えないことを実装する。
 - `Accept-Encoding` に `gzip` と `br` の両方が含まれる場合でも、圧縮応答を返す場合は Gzip のみを使用する。
@@ -106,6 +106,16 @@
 - `*.br`、`storage/brotli/`、`storage/cache/brotli/` を作成しないことを実装する。
 - `brotli.*`、`compression.brotli.*` 設定項目を定義しないことを実装する。
 - `config/config.json` に Brotli 関連フィールドが存在する場合は、未知フィールドとして起動失敗させる。
+- SDK 本体は Rev.27 時点では ASB 本体に実装しないことを確認する。
+- SDK 通信規格は ASB 管理 HTTP JSON API と同一として扱う。
+- SDK 通信で、現行 API の HTTP method、URL path、query parameter、path parameter、request JSON body、multipart upload、success response JSON、error response JSON、HTTP status code、error code、UTC RFC3339 timestamp、pagination、static file upload 規約を使用する。
+- SDK 専用 HTTP API、SDK 専用 URL prefix、SDK 専用 request body、SDK 専用 response body、SDK 専用 error format、SDK 専用 pagination、SDK 専用 upload protocol を実装しないことを確認する。
+- SDK 専用 session、SDK 専用 token、SDK 専用 cookie、SDK 専用 handshake、SDK 専用 protocol negotiation、SDK 専用 version negotiation を実装しないことを確認する。
+- WebSocket、gRPC、GraphQL、独自 TCP プロトコル、UDP、MQTT、AMQP、Server-Sent Events、long polling を SDK 通信として実装しないことを確認する。
+- `config/sdk.json`、`config/sdk_clients.json`、`config/sdk_sessions.json`、`storage/sdk/`、`storage/sdk_sessions/` を作成しないことを実装する。
+- `sdk.*`、`sdkAuth.*` 設定項目を定義しないことを実装する。
+- `config/config.json` に SDK 通信関連フィールドが存在する場合は、未知フィールドとして起動失敗させる。
+- SDK から ASB 管理 API を呼び出す場合でも、`Authorization` ヘッダー、`X-API-Key` ヘッダー、cookie、セッションIDを認証判断に使用しないことを確認する。
 - 配列レスポンスは対象データが空でも空配列を返す。
 - URL パラメータ `:id`、`:domain`、`:name` の URL decode、正規化、バリデーションを実装する。
 - `:id` は UUID 形式のみ許可する。
@@ -151,7 +161,7 @@
 - `Last-Modified` を HTTP-date 形式で返す。
 - `Cache-Control` を既定で `public, max-age=60` とする。
 - `If-None-Match` と `If-Modified-Since` による `304 Not Modified` を実装する。
-- Range request は Rev.26 時点では実装せず、`Range` ヘッダーを無視して `206 Partial Content` を返さない。
+- Range request は Rev.27 時点では実装せず、`Range` ヘッダーを無視して `206 Partial Content` を返さない。
 - `Accept-Encoding: br` では Brotli 応答を返さない。
 - Brotli 用の `.br`、キャッシュ、一時ファイル、メタデータを開発リポジトリ内にも `storage.basePath` 配下にも生成しない。
 - 静的配信でディレクトリ一覧を返さない。
@@ -282,7 +292,7 @@
 - バックアップ作成用一時tarを `storage.basePath/backups/.tmp/` 配下に限定する。
 - atomic rename 後に履歴保存へ失敗した場合は、作成済みtar.gzを削除する。
 - バックアップ保存先を別障害領域へ複製する作業をASB外の運用責務として扱う。
-- 外部ストレージ連携を Rev.26 時点では実装対象外として扱う。
+- 外部ストレージ連携を Rev.27 時点では実装対象外として扱う。
 - Backup復旧前退避先を `storage.basePath/backups/restore-staging/{restoreId}/previous/` に固定する。
 - Backup復旧用展開先を `storage.basePath/backups/restore-staging/{restoreId}/next/` に固定する。
 - Backup履歴の `status` が `completed` でない場合は復旧を拒否する。
@@ -307,6 +317,9 @@
 - `Accept-Encoding: br` と `Accept-Encoding: gzip, br` の静的配信レスポンスをテストする。
 - Brotli 用外部ライブラリ、middleware、precompress、`.br`、キャッシュ、設定項目、メタデータを生成しないことをテストする。
 - `config/config.json` に Brotli 関連フィールドが存在する場合に未知フィールドとして起動失敗することをテストする。
+- SDK 通信が ASB 管理 HTTP JSON API と同一規格であることをテストする。
+- SDK 専用プロトコル、SDK 専用エンドポイント、SDK 専用セッション、SDK 専用 JSON ファイルまたはディレクトリを生成しないことをテストする。
+- `config/config.json` に SDK 通信関連フィールドが存在する場合に未知フィールドとして起動失敗することをテストする。
 - 統合テストで全APIエンドポイントのリクエスト・レスポンス仕様を検証する。
 - E2E テスト `tests/e2e.sh` を整備する。
 
@@ -324,9 +337,9 @@
 ## 5. 仕様未確定タスク
 
 - ACME クライアント内製実装、CA選定、テスト方法、失敗時挙動を確定する。
-- SDK通信規格と配布方針を確定する。
+- SDK 本体、SDK 配布方針、SDK 認証仕様を確定する。
 - SSL証明書自動更新の実通信とスケジューリング仕様を確定する。
-- Rev.26 の保留機能実装禁止契約に反する実装が入らないことを確認する。
+- Rev.27 の保留機能実装禁止契約に反する実装が入らないことを確認する。
 - マイグレーションの `schemaVersion`、`--dry-run`、`--apply`、事前バックアップ、途中失敗、ロールバック、開発リポジトリ非生成のテストを整備する。
 
 ## 6. 実装済みリスト
