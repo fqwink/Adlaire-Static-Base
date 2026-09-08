@@ -39,7 +39,7 @@ ASB は仕様駆動システムである。
 | 提供形態 | HTTP サーバー（単一バイナリ） |
 | データ保存 | JSON ファイルベース（外部DB不使用） |
 | ライセンス | クローズドライセンス |
-| 本書バージョン | Rev.20 |
+| 本書バージョン | Rev.21 |
 
 ---
 
@@ -703,7 +703,9 @@ ASB 起動時には、設定された保存先に以下の実行時データ領�
   "projectId": "string",
   "createdAt": "string (ISO 8601)",
   "size": "number",
-  "path": "string"
+  "path": "string",
+  "sha256": "string",
+  "status": "string"
 }
 ```
 
@@ -712,7 +714,9 @@ ASB 起動時には、設定された保存先に以下の実行時データ領�
 - `projectId`：バックアップ対象プロジェクトID
 - `createdAt`：バックアップ作成日時（ISO 8601形式）
 - `size`：バックアップサイズ（バイト）
-- `path`：ストレージ内のバックアップファイルパス
+- `path`：`storage.basePath` からの相対バックアップファイルパス
+- `sha256`：バックアップtar.gzのSHA-256
+- `status`：`completed` または `failed`
 
 ---
 
@@ -745,7 +749,9 @@ ASB 起動時には、設定された保存先に以下の実行時データ領�
       "projectId": "proj-001",
       "createdAt": "2025-01-15T10:00:00Z",
       "size": 536870912,
-      "path": "/storage/backups/backup-001.tar.gz"
+      "path": "backups/backup-001.tar.gz",
+      "sha256": "string",
+      "status": "completed"
     }
   ]
 }
@@ -916,7 +922,7 @@ Delivery Domain は、ファイル管理・GitHub Webhook の責務を担う。
 
 Webhook 処理失敗は、システムログおよび `config/webhooks.json` へ記録する。
 
-Rev.20 時点では、Webhook失敗時の自動リトライスケジュールを実装しない。
+Rev.21 時点では、Webhook失敗時の自動リトライスケジュールを実装しない。
 
 ### 11.3 Data Domain ポリシー
 
@@ -931,8 +937,10 @@ Data Domain は、バックアップ・ストレージの責務を担う。
 
 **バックアップ・復旧方針**
 - バックアップ取得後はハッシュ検証を実施
-- バックアップ保存先は別個の障害領域へ配置
-- 復旧は隔離環境で検証後、運用者承認を経て実施
+- ASB標準バックアップ保存先は `storage.basePath/backups/` とする
+- バックアップ保存先を別障害領域へ複製する作業は Rev.21 時点ではASB外の運用責務とする
+- 外部ストレージ連携は Rev.21 時点では実装対象外とする
+- 復旧は対象バックアップの存在、SHA-256、JSON構文、スキーマ検証後に実施
 - バックアップ・復旧・検証失敗・復旧操作は監査ログへ記録
 
 ### 11.4 System Domain ポリシー
@@ -962,7 +970,7 @@ System Domain は、監視・ログ管理の責務を担う。
 
 ASB はヘッドレスアーキテクチャを採用し、UI層に依存しない。
 
-Rev.20 時点の確定対象は、ASB 本体が提供する HTTP JSON API である。
+Rev.21 時点の確定対象は、ASB 本体が提供する HTTP JSON API である。
 
 SDK は実装対象外とし、通信仕様および配布方針が確定した後に実装対象へ昇格する。
 
@@ -1037,7 +1045,7 @@ E2E テスト
 - SSL/TLS：本番環境では必須（リバースプロキシで対応）
 
 **レート制限**
-- Rev.20 時点では実装対象外とし、保留事項として扱う
+- Rev.21 時点では実装対象外とし、保留事項として扱う
 
 **タイムアウト**
 - リクエスト読み込み：30秒
@@ -1319,7 +1327,7 @@ ASB の初回インストールとアップデートを自動化するため、`
 | `--version` | 必須 | 更新対象の安定版バージョン |
 | `--arch` | 任意 | `amd64` または `arm64`。未指定時は `uname -m` から判定 |
 
-`latest` 指定、自動最新版選択、未指定バージョンでの実行は Rev.20 時点では禁止する。
+`latest` 指定、自動最新版選択、未指定バージョンでの実行は Rev.21 時点では禁止する。
 
 スクリプトは以下を満たす。
 
@@ -1430,7 +1438,7 @@ $ sudo systemctl stop asb
 
 ### 13.1 実装対象の基準
 
-Rev.20 時点の実装対象は、ASB のセルフホスト型静的コンテンツ配信ホスティングに必要なバックエンド機能に限定する。
+Rev.21 時点の実装対象は、ASB のセルフホスト型静的コンテンツ配信ホスティングに必要なバックエンド機能に限定する。
 
 実装は以下の順序で進める：
 
@@ -1589,7 +1597,7 @@ JSON ファイル更新は以下の方針で行う：
 
 ### 13.9 SSL 管理詳細
 
-Rev.20 時点では、SSL 管理は管理境界とデータモデルを実装対象とし、ACME は ASB互換目標に含める。ACME 実通信、CA選定、ワイルドカード証明書対応は詳細仕様確定後に実装対象へ昇格する。
+Rev.21 時点では、SSL 管理は管理境界とデータモデルを実装対象とし、ACME は ASB互換目標に含める。ACME 実通信、CA選定、ワイルドカード証明書対応は詳細仕様確定後に実装対象へ昇格する。
 
 実装対象：
 
@@ -1625,25 +1633,36 @@ GitHub Webhook は Push イベントのみを対象とする。
 - デプロイ処理に失敗した場合は `ERR_WEBHOOK_PROCESSING_FAILED` を返す
 - 同一 GitHub Push イベントを重複受信した場合は、同一 commit hash と対象ブランチの組み合わせを冪等キーとして扱い、二重デプロイを避ける
 - 冪等キーの保存方式は JSON ファイルベースとし、保存先は `storage.basePath` 配下に限定する
-- Webhook失敗時の自動リトライは Rev.20 時点では実装しない
+- Webhook失敗時の自動リトライは Rev.21 時点では実装しない
 - GitHub側からの再送は通常のWebhook受信として扱い、冪等キーで重複判定する
 
 ### 13.11 バックアップ・復旧詳細
 
 **バックアップ**
 
-- バックアップ対象は `config/` と `storage/` とする
+- バックアップ対象は対象 Project の `storage/projects/:projectId/files.json` と `storage/projects/:projectId/contents/` とする
 - バックアップ形式は tar.gz とする
+- バックアップ保存先は `storage.basePath/backups/` とする
+- バックアップファイル名は `backup-{backupId}.tar.gz` とする
+- バックアップパスは `config/backups.json` に `storage.basePath` からの相対パスとして保存する
 - バックアップ作成後に SHA-256 ハッシュを計算する
-- バックアップ履歴は `backups.json` に記録する
-- バックアップ失敗時は成功履歴を作成してはならない
+- バックアップ履歴は `config/backups.json` に記録する
+- バックアップ成功時の `status` は `completed` とする
+- バックアップ失敗時は `status: "completed"` の履歴を作成してはならない
+- バックアップ作成用の一時tarは `storage.basePath/backups/.tmp/` 配下にのみ作成できる
+- 開発リポジトリ内にバックアップtar、一時tar、checksum、退避データを作成してはならない
 
 **復旧**
 
 - 復旧前にバックアップファイルの存在と SHA-256 ハッシュを検証する
+- 復旧前退避先は `storage.basePath/backups/restore-staging/{restoreId}/previous/` とする
+- 復旧用展開先は `storage.basePath/backups/restore-staging/{restoreId}/next/` とする
 - 既存データを退避してから復旧する
 - 復旧後に JSON ファイル構文と必須フィールドを検証する
 - 復旧失敗時は `ERR_BACKUP_RESTORE_FAILED` を返す
+- 復旧失敗時は可能な限り退避済みの `previous/` から復元する
+- 退避領域からの復元に失敗した場合も成功扱いしてはならない
+- 復旧完了後の `restore-staging/{restoreId}/` 削除は best effort とし、削除失敗時は WARN ログへ記録する
 
 ### 13.12 監視・ログ詳細
 
@@ -1675,7 +1694,7 @@ GitHub Webhook は Push イベントのみを対象とする。
 
 ### 13.14 実装契約
 
-本節は Rev.20 時点の実装契約である。実装者は本節に反する判断をコード側で独自に行ってはならない。
+本節は Rev.21 時点の実装契約である。実装者は本節に反する判断をコード側で独自に行ってはならない。
 
 #### 13.14.1 パッケージ境界
 
@@ -1810,8 +1829,8 @@ ID 生成、時刻取得、保存処理は Service に注入された依存関�
 | Domain 追加 | projects/domains JSON | `config/domains.json` | なし |
 | SSL 管理 | domains/certs | SSL メタデータ | なし |
 | Webhook | config/projects/files | contents、files JSON、deploy log | 置換対象ファイル |
-| Backup 作成 | config/storage | backup tar.gz、backups JSON | なし |
-| Backup 復旧 | backup tar.gz、config/storage | config/storage | 復旧対象の既存データ退避 |
+| Backup 作成 | 対象Project files/contents | backup tar.gz、backups JSON | なし |
+| Backup 復旧 | backup tar.gz、対象Project files/contents | 対象Project files/contents | 復旧対象の既存データ退避 |
 | Log API | logs | なし | なし |
 
 複数ファイルにまたがる操作では、途中失敗時に成功レスポンスを返してはならない。
@@ -1820,7 +1839,7 @@ ID 生成、時刻取得、保存処理は Service に注入された依存関�
 
 #### 13.14.9 保留機能の実装禁止契約
 
-Rev.20 時点では以下を実装してはならない。
+Rev.21 時点では以下を実装してはならない。
 
 - SDK
 - APIキー管理
@@ -1837,7 +1856,7 @@ Rev.20 時点では以下を実装してはならない。
 
 ### 13.15 実装詳細固定仕様
 
-本節は Rev.20 時点で実装時に固定する詳細仕様である。
+本節は Rev.21 時点で実装時に固定する詳細仕様である。
 
 #### 13.15.1 API エンドポイント固定表
 
@@ -1853,7 +1872,7 @@ Rev.20 時点では以下を実装してはならない。
 | File 一覧 | GET | `/api/projects/:id/files` | なし | なし | 200 `{files:[]}` | 404, 500 |
 | File 削除 | DELETE | `/api/projects/:id/files/:name` | なし | なし | 200 `{status,projectId,fileName,deletedAt}` | 404, 500 |
 | Backup 一覧 | GET | `/api/backups` | なし | なし | 200 `{backups:[]}` | 500 |
-| Backup 復旧 | POST | `/api/backups/restore/:id` | なし | なし | 200 `{status,backupId,restoredAt}` | 404, 500 |
+| Backup 復旧 | POST | `/api/backups/restore/:id` | なし | なし | 200 `{status,backupId,restoredAt}` | 404, 409, 500 |
 | Monitoring | GET | `/api/monitoring/stats` | なし | なし | 200 Monitoring | 500 |
 | Access log | GET | `/api/logs/access` | なし | `limit`,`offset` | 200 `{logs:[]}` | 400, 500 |
 | Error log | GET | `/api/logs/error` | なし | `limit`,`offset` | 200 `{logs:[]}` | 400, 500 |
@@ -1898,7 +1917,7 @@ Rev.20 時点では以下を実装してはならない。
 |---------|--------|------------------|----------|------|
 | `config/projects.json` | `{"projects":[]}` | `projects` | Project Service | Project 配列を `createdAt` 昇順で保存 |
 | `config/domains.json` | `{"domains":[]}` | `domains` | Domain Service | `domain` は小文字で保存 |
-| `config/backups.json` | `{"backups":[]}` | `backups` | Backup Service | `createdAt` 降順で保存 |
+| `config/backups.json` | `{"backups":[]}` | `backups` | Backup Service | `createdAt` 降順で保存。`path` は `storage.basePath` からの相対パス |
 | `storage/projects/:projectId/files.json` | `{"files":[]}` | `files` | File Service | `name` 昇順で保存 |
 | `config/webhooks.json` | `{"events":[]}` | `events` | Webhook Service | 冪等キー、処理状態、失敗コードを保存 |
 
@@ -1962,7 +1981,7 @@ Webhook処理はネットワーク越しにGit操作を行ってはならない�
 
 静的コンテンツ反映元は `deploy.sourcePath` の `after` commit 時点のファイルツリーとする。
 
-Rev.20 時点では、Webhookデプロイ時の対象ファイルパスはリポジトリルート配下の全静的ファイルとする。
+Rev.21 時点では、Webhookデプロイ時の対象ファイルパスはリポジトリルート配下の全静的ファイルとする。
 
 `.git/`、`.github/`、`AGENTS.md`、`ASB-spec.md`、`ASB-spec.html`、`IMPLEMENTATION_TASKS.md`、`DOCUMENT_INDEX.md`、`README.md` は配信対象から除外する。
 
@@ -1980,7 +1999,7 @@ Webhook 処理完了後に処理状態を `config/webhooks.json` へ保存する
 
 失敗時の `status` は `failed` とし、`errorCode` を保存する。
 
-Webhook失敗時の自動リトライは Rev.20 時点では実装しない。
+Webhook失敗時の自動リトライは Rev.21 時点では実装しない。
 
 GitHub側から同一イベントが再送された場合は、`config/webhooks.json` の既存イベントにより重複判定する。
 
@@ -2040,7 +2059,7 @@ Webhook固定仕様のテスト項目は以下とする。
 
 ### 13.16 入出力契約固定仕様
 
-本節は Rev.20 時点で API、JSON保存、ログ、起動時検証の入出力を固定する仕様である。
+本節は Rev.21 時点で API、JSON保存、ログ、起動時検証の入出力を固定する仕様である。
 
 #### 13.16.1 共通成功レスポンス契約
 
@@ -2148,7 +2167,8 @@ Webhook固定仕様のテスト項目は以下とする。
   "createdAt": "2026-09-08T00:00:00Z",
   "size": 536870912,
   "path": "backups/backup-id.tar.gz",
-  "sha256": "string"
+  "sha256": "string",
+  "status": "completed"
 }
 ```
 
@@ -2244,7 +2264,7 @@ ASB_STARTUP_ERROR code=ERR_STORAGE_VALIDATION_FAILED message="Storage validation
 
 #### 13.16.8 テスト固定項目
 
-Rev.20 の実装では、以下のテストを必須とする。
+Rev.21 の実装では、以下のテストを必須とする。
 
 - 全API成功レスポンスの固定JSONキー検証
 - 全APIエラーレスポンスの固定JSONキー検証
@@ -2256,7 +2276,7 @@ Rev.20 の実装では、以下のテストを必須とする。
 
 ### 13.17 実装境界とファイル操作固定仕様
 
-本節は Rev.20 時点で package 境界、公開 interface、Repository、Storage、複数ファイル更新の実装契約を固定する仕様である。
+本節は Rev.21 時点で package 境界、公開 interface、Repository、Storage、複数ファイル更新の実装契約を固定する仕様である。
 
 #### 13.17.1 package 公開 interface 固定
 
@@ -2370,30 +2390,55 @@ Backup 作成は以下の順序で実行する。
 
 1. 対象 Project の存在を検証する
 2. 対象 Project の JSON と `contents/` を読み込み可能であることを検証する
-3. tar.gz を一時ファイルとして作成する
-4. tar.gz 作成後に SHA-256 を計算する
-5. tar.gz をバックアップ保存先へ atomic rename する
-6. `config/backups.json` に履歴を保存する
-7. 成功レスポンスを返す
+3. `storage.basePath/backups/` が存在し、書き込み可能であることを検証する
+4. `storage.basePath/backups/.tmp/backup-{backupId}.tar.gz.tmp` を作成する
+5. tar.gz には対象Projectの `files.json` と `contents/` のみを含める
+6. tar.gz 作成後に SHA-256 を計算する
+7. `storage.basePath/backups/backup-{backupId}.tar.gz` へ atomic rename する
+8. `config/backups.json` に `status: "completed"` の履歴を保存する
+9. 成功レスポンスを返す
+
+バックアップtar.gzに `logs/`、`certs/`、他Projectの `contents/` を含めてはならない。
+
+`config/backups.json` の `path` には `backups/backup-{backupId}.tar.gz` を保存する。
+
+tar.gz 作成、ハッシュ計算、atomic rename、履歴保存のいずれかに失敗した場合、成功レスポンスを返してはならない。
 
 tar.gz 作成またはハッシュ計算に失敗した場合、`config/backups.json` に履歴を追加してはならない。
+
+atomic rename 後に履歴保存へ失敗した場合は、作成済みtar.gzを削除し、削除失敗時はエラーログへ記録する。
+
+バックアップ作成に使用する一時ファイルは、処理終了時に削除する。
+
+開発リポジトリ内にバックアップtar、一時tar、checksum、退避データを作成してはならない。
 
 #### 13.17.8 Backup復旧処理順序固定
 
 Backup restore は以下の順序で実行する。
 
 1. Backup 履歴の存在を検証する
-2. Backup ファイルの存在を検証する
-3. SHA-256 を検証する
-4. 復旧対象の現行データを退避領域へ移動する
-5. Backup を展開する
-6. 展開後の JSON 構文とスキーマを検証する
-7. 復旧対象へ atomic rename する
-8. 成功レスポンスを返す
+2. Backup 履歴の `status` が `completed` であることを検証する
+3. Backup ファイルの存在を検証する
+4. SHA-256 を検証する
+5. `storage.basePath/backups/restore-staging/{restoreId}/previous/` を作成する
+6. `storage.basePath/backups/restore-staging/{restoreId}/next/` を作成する
+7. 復旧対象Projectの現行 `files.json` と `contents/` を `previous/` へ退避する
+8. Backup を `next/` へ展開する
+9. 展開後の JSON 構文とスキーマを検証する
+10. `next/` の内容を復旧対象へ atomic rename する
+11. 成功レスポンスを返す
 
-4-7 の途中で失敗した場合、可能な限り退避領域から復元する。
+7-10 の途中で失敗した場合、可能な限り `previous/` から復元する。
 
 復元に失敗した場合は `ERR_BACKUP_RESTORE_FAILED` を返し、成功レスポンスを返してはならない。
+
+復旧対象Projectが存在しない場合は `ERR_PROJECT_NOT_FOUND` を返す。
+
+復旧対象Projectの現行データ退避に失敗した場合は、復旧処理を開始してはならない。
+
+復旧後の `restore-staging/{restoreId}/` 削除は best effort とし、削除失敗時は WARN ログへ記録する。
+
+開発リポジトリ内に復旧用一時ファイル、退避データ、展開データを作成してはならない。
 
 #### 13.17.9 複数JSON更新失敗時契約
 
@@ -2405,7 +2450,7 @@ Backup restore は以下の順序で実行する。
 
 途中失敗時に自動ロールバックを実装する場合も、ロールバック失敗時は成功扱いにしてはならない。
 
-Rev.20 時点では、複数JSON更新に外部トランザクション機構を導入してはならない。
+Rev.21 時点では、複数JSON更新に外部トランザクション機構を導入してはならない。
 
 #### 13.17.10 最低テスト分類固定
 
@@ -2488,7 +2533,7 @@ Rev.20 時点では、複数JSON更新に外部トランザクション機構を
 ### 15.2 テスト対象外
 
 以下はモック・スタブで対応：
-- ACME 実通信および CA 連携（Rev.20 時点では実通信を実装対象外とし、SSL管理境界のみ検証）
+- ACME 実通信および CA 連携（Rev.21 時点では実通信を実装対象外とし、SSL管理境界のみ検証）
 - GitHub Webhook（テスト用ペイロード）
 - 実際のファイルストレージ大容量テスト（テスト時は最大100MB）
 
@@ -2538,13 +2583,13 @@ ASB の開発版バージョンは累積連番 `v0.N` とし、メジャー/マ�
 | `config/webhooks.json` | Webhook 冪等キー履歴スキーマ |
 | `storage/projects/:projectId/files.json` | File メタデータスキーマ |
 
-静的コンテンツ実体、ログファイル、証明書ファイル、ビルド済みバイナリは、Rev.20 時点のマイグレーション対象外とする。
+静的コンテンツ実体、ログファイル、証明書ファイル、ビルド済みバイナリは、Rev.21 時点のマイグレーション対象外とする。
 
 ### 16.3 schemaVersion 固定
 
 各実行時 JSON ファイルはトップレベルに `schemaVersion` を持つ。
 
-Rev.20 時点の `schemaVersion` は `1` とする。
+Rev.21 時点の `schemaVersion` は `1` とする。
 
 例：
 
@@ -2641,7 +2686,7 @@ asb migrate --storage /var/asb --from-schema 0 --to-schema 1 --apply
 
 ### 16.8 禁止事項
 
-Rev.20 時点では以下を禁止する。
+Rev.21 時点では以下を禁止する。
 
 - 起動時の自動マイグレーション
 - 開発リポジトリ内でのマイグレーション作業ファイル作成
@@ -2670,6 +2715,7 @@ Rev.20 時点では以下を禁止する。
 
 | バージョン | 日付 | 内容 |
 |-----------|------|------|
+| Rev.21 | 2026-09-08 | バックアップ保存先、tar.gz構成、checksum、復旧退避先、失敗時復元、開発リポジトリ非生成を実装レベルで固定 |
 | Rev.20 | 2026-09-08 | GitHub Webhook署名検証、ローカルcheckoutデプロイ、失敗時リトライ禁止、Webhook処理順序を実装レベルで固定 |
 | Rev.19 | 2026-09-08 | 安定版リリース判定、GitHub Releases配布、checksum、install/update、systemd仕様を実装レベルで固定 |
 | Rev.18 | 2026-09-08 | マイグレーション戦略をASBのJSONファイルベース実行時データ移行契約へ全面置換 |
