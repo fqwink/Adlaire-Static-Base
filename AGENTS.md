@@ -76,13 +76,44 @@ Pull Request の merge はユーザーが行う。
 
 エージェントは Pull Request の merge を行ってはならない。
 
-エージェントは、ユーザーによる Pull Request の merge 完了を確認できた場合、追加承認なしで不要ブランチ削除を自動実行する。
+GitHub リポジトリ設定は、ASB の Git 運用前提として管理する。
 
-不要ブランチ削除の対象は、merge 済み Pull Request の head branch に限定する。
+GitHub リポジトリ設定の変更は変更作業として扱い、事前に変更対象、変更内容、影響範囲を提示し、ユーザーから `承認` を得るまで実行してはならない。
 
-不要ブランチ削除では、remote 作業ブランチを削除する。
+ASB の標準 GitHub リポジトリ設定は以下とする。
 
-不要ブランチ削除では、同名の local 作業ブランチが残っている場合、`main` へ移動した後に local 作業ブランチを削除する。
+- visibility: `public`
+- default branch: `main`
+- delete branch on merge: `true`
+- allow merge commit: `true`
+- allow squash merge: `true`
+- allow rebase merge: `true`
+- allow auto merge: `false`
+- allow update branch: `false`
+- issues: `true`
+- projects: `true`
+- wiki: `true`
+- discussions: `false`
+- secret scanning: `enabled`
+- secret scanning push protection: `enabled`
+- Dependabot security updates: `disabled`
+- main branch protection: 設定対象
+
+`delete_branch_on_merge=true` は、remote branch 自動削除の必須設定とする。
+
+エージェントは、ユーザー承認なしに GitHub リポジトリ設定を変更、無効化、初期化してはならない。
+
+remote branch は、GitHub リポジトリ設定 `delete_branch_on_merge=true` により、Pull Request merge 後に GitHub 側で自動削除する。
+
+remote branch 自動削除の対象は、merge 済み Pull Request の head branch に限定する。
+
+local branch は、GitHub 側の自動削除では削除されない。
+
+エージェントは、ユーザーによる Pull Request の merge 完了を確認できた場合、追加承認なしで対応する local branch の削除を自動実行する。
+
+local branch 削除の対象は、merge 済み Pull Request の head branch と同名の local branch に限定する。
+
+local branch 削除では、`main` へ移動した後に対象 local branch を削除する。
 
 `main`、merge 未完了の作業ブランチ、merge 状態を確認できないブランチ、Pull Request と対応しないブランチは削除してはならない。
 
