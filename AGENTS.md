@@ -76,6 +76,33 @@ Pull Request の merge はユーザーが行う。
 
 エージェントは Pull Request の merge を行ってはならない。
 
+GitHub リポジトリ設定は、ASB の Git 運用前提として管理する。
+
+GitHub リポジトリ設定の変更は変更作業として扱い、事前に変更対象、変更内容、影響範囲を提示し、ユーザーから `承認` を得るまで実行してはならない。
+
+ASB の標準 GitHub リポジトリ設定は以下とする。
+
+- visibility: `public`
+- default branch: `main`
+- delete branch on merge: `true`
+- allow merge commit: `true`
+- allow squash merge: `true`
+- allow rebase merge: `true`
+- allow auto merge: `false`
+- allow update branch: `false`
+- issues: `true`
+- projects: `true`
+- wiki: `true`
+- discussions: `false`
+- secret scanning: `enabled`
+- secret scanning push protection: `enabled`
+- Dependabot security updates: `disabled`
+- main branch protection: 設定対象
+
+`delete_branch_on_merge=true` は、remote branch 自動削除の必須設定とする。
+
+エージェントは、ユーザー承認なしに GitHub リポジトリ設定を変更、無効化、初期化してはならない。
+
 remote branch は、GitHub リポジトリ設定 `delete_branch_on_merge=true` により、Pull Request merge 後に GitHub 側で自動削除する。
 
 remote branch 自動削除の対象は、merge 済み Pull Request の head branch に限定する。
