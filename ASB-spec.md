@@ -4193,7 +4193,7 @@ Rev.38 時点では以下を禁止する。
 
 | バージョン | 日付 | 内容 |
 |-----------|------|------|
-| Rev.38 | 2026-09-08 | UUID・Project名・File名・保存path・Domain・branchの入力制約、request body上限、multipart上限、レスポンスヘッダー、Gzip条件、Webhook payload/対象ファイル、Backup tar.gz安全検証、JSON保存低レベル失敗、install/update/systemd権限を実装契約として固定 |
+| Rev.38 | 2026-09-09 | UUID・Project名・File名・保存path・Domain・branchの入力制約、request body上限、multipart上限、レスポンスヘッダー、Gzip条件、Webhook payload/対象ファイル、Backup tar.gz安全検証、JSON保存低レベル失敗、install/update/systemd権限を実装契約として固定 |
 | Rev.37 | 2026-09-08 | 設定値の未指定・空文字・型不一致、API パス解析、複数ファイル失敗時整合性検証、ログ API 読み込み、install/update 失敗時復旧、起動時検証順序を実装契約として固定 |
 | Rev.36 | 2026-09-08 | File upload、ファイル上書き、Webhook deploy、projects.used 再計算、files.json と実ファイル不整合検出、config/migrations.json 作成条件と保存失敗時の扱いを実装契約として固定 |
 | Rev.35 | 2026-09-08 | Content-Type 判定、JSON charset 許可条件、エラーレスポンス error 固定文言、エラーログ message 固定文言、Backup restore 復元手順、restore-staging 削除失敗時の扱い、requestId 空文字許可条件、テスト fixture 許可範囲を実装契約として固定 |
