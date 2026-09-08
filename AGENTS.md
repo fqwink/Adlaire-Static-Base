@@ -74,13 +74,17 @@
 
 Pull Request の merge はユーザーが行う。
 
-Pull Request が merge された場合、作業ブランチは自動削除する。
+エージェントは Pull Request の merge を行ってはならない。
 
-作業ブランチ削除前には、対象 Pull Request の merge 状態を GitHub 上で確認し、`MERGED` であることを確定する。
+エージェントは、ユーザーによる Pull Request の merge 完了を確認できた場合、追加承認なしで不要ブランチ削除を自動実行する。
 
-merge 済みが確定した場合は、`main` を最新の `origin/main` に同期した上で、対象のローカル作業ブランチおよびリモート作業ブランチを削除する。リモート作業ブランチが既に削除済みの場合は、その状態を確認して完了扱いとする。
+不要ブランチ削除の対象は、merge 済み Pull Request の head branch に限定する。
 
-作業ブランチ削除後は、現在ブランチ、残存ブランチ、作業ツリー状態を確認する。
+不要ブランチ削除では、remote 作業ブランチを削除する。
+
+不要ブランチ削除では、同名の local 作業ブランチが残っている場合、`main` へ移動した後に local 作業ブランチを削除する。
+
+`main`、merge 未完了の作業ブランチ、merge 状態を確認できないブランチ、Pull Request と対応しないブランチは削除してはならない。
 
 SSH URL は `origin` に設定し、HTTPS URL はバックアップ remote として保持する。
 
