@@ -6,7 +6,7 @@
 
 本ファイルは、`ASB-spec.md` に基づいて実装タスクを管理する。
 
-参照仕様バージョン: `ASB-spec.md Rev.16`
+参照仕様バージョン: `ASB-spec.md Rev.17`
 
 `ASB-spec.md` で仕様確定済みの事項を実装タスクとしてリスト化する。
 
@@ -27,10 +27,15 @@
 - ドメイン間の接続を `main.go` で一元管理する。
 - 責務間の循環依存を禁止する構成にする。
 - `config`、`server`、`management`、`delivery`、`data`、`system` の package 境界を整備する。
+- `config.Loader`、`server.Router`、`server.Responder`、`management.ProjectService`、`management.DomainService`、`management.SSLService`、`delivery.FileService`、`delivery.StaticService`、`delivery.WebhookService`、`data.JSONRepository`、`data.StorageService`、`data.BackupService`、`system.LogService`、`system.MonitoringService`、`system.Clock`、`system.IDGenerator` の公開 interface 境界を整備する。
 - `main.go` は設定読み込み、依存関係生成、HTTPサーバー起動、graceful shutdown のみに限定する。
+- 他 package の具象型生成を `main.go` の依存関係生成処理に限定する。
 - Handler、Service、Entity の責務分離を実装する。
 - Handler が JSON ファイルを直接読み書きしない構造にする。
+- Handler が Service interface のみに依存する構造にする。
+- Service が Repository、Storage、Clock、IDGenerator、LogService interface に依存する構造にする。
 - Entity がファイル入出力、HTTP 入出力、時刻取得、ID生成を行わない構造にする。
+- Entity は保存形式とレスポンス形式の型定義のみを持つ構造にする。
 - ASB互換目標の静的コンテンツ専用ホスティング機能目標を実装基準として扱う。
 - ASB 独自仕様であるセルフホスト、Go単一バイナリ、JSONファイルベース、外部DB不使用を実装制約として扱う。
 - 起動時に設定済み実行時データ領域の存在確認と権限検証を実装する。
@@ -62,10 +67,17 @@
 - Project、File、Backup の UUID 形式 ID 生成を `crypto/rand` で実装する。
 - JSON ファイル更新時の読み込み検証、保存前再検証、同一ファイル排他書き込みを実装する。
 - JSON ファイル保存では同一ディレクトリ内の一時ファイル、`fsync`、atomic rename による置換を実装する。
+- `data.JSONRepository` は JSON 読み込み、スキーマ検証、排他、atomic save のみに限定する。
+- `data.JSONRepository` が HTTP ステータス、HTTP リクエスト、HTTP レスポンスを扱わないことを実装する。
+- `data.StorageService` は `storage.basePath` 配下のファイル実体操作のみに限定する。
+- `data.StorageService` が Project、Domain、Webhook の業務判断を行わないことを実装する。
 - 一時ファイルを開発リポジトリ内へ作成しないことを実装する。
 - 保存失敗時に成功レスポンスを返さないことを実装する。
-- Rev.16 時点の API エンドポイント固定表に記載されたメソッド、パス、成功ステータス、失敗コードを実装する。
-- Rev.16 API 成功レスポンス固定表に記載された JSON キーと型を実装する。
+- 複数JSON更新では最終JSONの保存完了まで成功レスポンスを返さないことを実装する。
+- 複数JSON更新の途中失敗時に更新済みJSON名、未更新JSON名、操作名、requestId をエラーログへ記録する。
+- Rev.17 時点では複数JSON更新に外部トランザクション機構を導入しない。
+- Rev.17 時点の API エンドポイント固定表に記載されたメソッド、パス、成功ステータス、失敗コードを実装する。
+- Rev.17 API 成功レスポンス固定表に記載された JSON キーと型を実装する。
 - 配列レスポンスは対象データが空でも空配列を返す。
 - URL パラメータ `:id`、`:domain`、`:name` の URL decode、正規化、バリデーションを実装する。
 - `:id` は UUID 形式のみ許可する。
@@ -77,11 +89,15 @@
 - プロジェクト名、quota、ID、作成日時のバリデーションを実装する。
 - `config/projects.json` によるプロジェクト情報の永続化を実装する。
 - `config/projects.json` の `projects[]` スキーマ、`createdAt` 昇順、同一時刻時 `id` 昇順を実装する。
+- Project削除処理順序を Project検証、関連Domain列挙、関連Backup列挙、`files.json`検証、`contents/`削除、`files.json`削除、`domains.json`更新、`backups.json`更新、`projects.json`更新、成功応答の順に固定して実装する。
+- Project削除を best effort 成功扱いにしないことを実装する。
 - プロジェクト名重複を `ERR_PROJECT_ALREADY_EXISTS` として扱う。
 - 存在しないプロジェクト参照を `ERR_PROJECT_NOT_FOUND` として扱う。
 - ファイルアップロード API `POST /api/projects/:id/files/upload` を実装する。
+- ファイルアップロード処理順序を URL検証、Project検証、multipart検証、ファイル検証、既存JSON検証、一時ファイル書込、fsync、atomic rename、`files.json`更新、`projects.json`更新、成功応答の順に固定して実装する。
 - ファイル一覧 API `GET /api/projects/:id/files` を実装する。
 - ファイル削除 API `DELETE /api/projects/:id/files/:name` を実装する。
+- ファイル削除処理順序を URL検証、Project検証、`files.json`検出、ファイル実体削除、`files.json`更新、`projects.json` used更新、成功応答の順に固定して実装する。
 - `storage/projects/:projectId/files.json` によるファイルメタデータ管理を実装する。
 - `storage/projects/:projectId/files.json` の `files[]` スキーマ、`name` 昇順、相対パス保存を実装する。
 - フォルダ階層を保持した静的ファイル管理を実装する。
@@ -89,6 +105,8 @@
 - ファイル名、サイズ、パス区切り文字禁止のバリデーションを実装する。
 - multipart アップロードのフィールド名を `file` に固定する。
 - 同名ファイル上書き時の使用容量再計算を実装する。
+- 同名ファイル上書き時は旧メタデータ読み込み、新ファイル一時書込、fsync、atomic rename、`files.json`更新、`projects.json` used差分更新の順で実装する。
+- 旧ファイルは新ファイルの atomic rename 成功まで削除しないことを実装する。
 - Gzip による静的ファイル圧縮を実装する。
 - Host ヘッダーと `config/domains.json` の対応に基づく静的配信を実装する。
 - 未割当 Host は `404 Not Found` とする。
@@ -111,6 +129,8 @@
 - 保存JSONの未知フィールド拒否、相対パス保存、ソート順検証テストを整備する。
 - 起動時検証の順序、終了コード、標準エラー形式検証テストを整備する。
 - アクセスログとエラーログのJSON Linesフィールド検証テストを整備する。
+- Unit、Handler、Repository、Storage、Integration、Startup の最低テスト分類を整備する。
+- Project削除、File upload、File overwrite、File delete、Backup作成、Backup復旧の処理順序テストを整備する。
 - Handler が永続化層へ直接依存しないことをコード構造で確認する。
 
 ## 3. 中優先度
@@ -146,9 +166,12 @@
 - `config/backups.json` によるバックアップ履歴管理を実装する。
 - `config/backups.json` の `backups[]` スキーマ、`createdAt` 降順、同一時刻時 `id` 昇順を実装する。
 - tar.gz 形式のバックアップ作成を実装する。
+- Backup作成処理順序を Project検証、対象データ読み込み検証、tar.gz一時作成、SHA-256計算、atomic rename、`backups.json`保存、成功応答の順に固定して実装する。
 - SHA-256 ハッシュによるバックアップ整合性検証を実装する。
 - 復旧前の既存データ退避を実装する。
 - 復旧後の整合性確認を実装する。
+- Backup復旧処理順序を Backup履歴検証、Backupファイル存在検証、SHA-256検証、現行データ退避、展開、展開後JSON検証、atomic rename、成功応答の順に固定して実装する。
+- Backup復旧途中失敗時は可能な限り退避領域から復元し、復元失敗時は `ERR_BACKUP_RESTORE_FAILED` を返す。
 - システムステータス API `GET /api/monitoring/stats` を実装する。
 - CPU、メモリ、ディスク、接続数、リクエスト数の監視値取得を実装する。
 - OS 依存で取得できない監視値は `null` として成功レスポンスに含める。
@@ -189,7 +212,7 @@
 - Webhook失敗時の自動リトライスケジュール仕様を確定する。
 - Brotli 圧縮を採用する場合の外部ライブラリ例外採用可否を確定する。
 - SSL証明書自動更新の実通信とスケジューリング仕様を確定する。
-- Rev.16 の保留機能実装禁止契約に反する実装が入らないことを確認する。
+- Rev.17 の保留機能実装禁止契約に反する実装が入らないことを確認する。
 
 ## 6. 実装済みリスト
 

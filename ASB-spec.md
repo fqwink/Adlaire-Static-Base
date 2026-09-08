@@ -39,7 +39,7 @@ ASB は仕様駆動システムである。
 | 提供形態 | HTTP サーバー（単一バイナリ） |
 | データ保存 | JSON ファイルベース（外部DB不使用） |
 | ライセンス | クローズドライセンス |
-| 本書バージョン | Rev.16 |
+| 本書バージョン | Rev.17 |
 
 ---
 
@@ -913,7 +913,7 @@ System Domain は、監視・ログ管理の責務を担う。
 
 ASB はヘッドレスアーキテクチャを採用し、UI層に依存しない。
 
-Rev.16 時点の確定対象は、ASB 本体が提供する HTTP JSON API である。
+Rev.17 時点の確定対象は、ASB 本体が提供する HTTP JSON API である。
 
 SDK は実装対象外とし、通信仕様および配布方針が確定した後に実装対象へ昇格する。
 
@@ -987,7 +987,7 @@ E2E テスト
 - SSL/TLS：本番環境では必須（リバースプロキシで対応）
 
 **レート制限**
-- Rev.16 時点では実装対象外とし、保留事項として扱う
+- Rev.17 時点では実装対象外とし、保留事項として扱う
 
 **タイムアウト**
 - リクエスト読み込み：30秒
@@ -1302,7 +1302,7 @@ $ sudo systemctl stop asb
 
 ### 13.1 実装対象の基準
 
-Rev.16 時点の実装対象は、ASB のセルフホスト型静的コンテンツ配信ホスティングに必要なバックエンド機能に限定する。
+Rev.17 時点の実装対象は、ASB のセルフホスト型静的コンテンツ配信ホスティングに必要なバックエンド機能に限定する。
 
 実装は以下の順序で進める：
 
@@ -1461,7 +1461,7 @@ JSON ファイル更新は以下の方針で行う：
 
 ### 13.9 SSL 管理詳細
 
-Rev.16 時点では、SSL 管理は管理境界とデータモデルを実装対象とし、ACME は ASB互換目標に含める。ACME 実通信、CA選定、ワイルドカード証明書対応は詳細仕様確定後に実装対象へ昇格する。
+Rev.17 時点では、SSL 管理は管理境界とデータモデルを実装対象とし、ACME は ASB互換目標に含める。ACME 実通信、CA選定、ワイルドカード証明書対応は詳細仕様確定後に実装対象へ昇格する。
 
 実装対象：
 
@@ -1537,7 +1537,7 @@ GitHub Webhook は Push イベントのみを対象とする。
 
 ### 13.14 実装契約
 
-本節は Rev.16 時点の実装契約である。実装者は本節に反する判断をコード側で独自に行ってはならない。
+本節は Rev.17 時点の実装契約である。実装者は本節に反する判断をコード側で独自に行ってはならない。
 
 #### 13.14.1 パッケージ境界
 
@@ -1682,7 +1682,7 @@ ID 生成、時刻取得、保存処理は Service に注入された依存関�
 
 #### 13.14.9 保留機能の実装禁止契約
 
-Rev.16 時点では以下を実装してはならない。
+Rev.17 時点では以下を実装してはならない。
 
 - SDK
 - APIキー管理
@@ -1698,7 +1698,7 @@ Rev.16 時点では以下を実装してはならない。
 
 ### 13.15 実装詳細固定仕様
 
-本節は Rev.16 時点で実装時に固定する詳細仕様である。
+本節は Rev.17 時点で実装時に固定する詳細仕様である。
 
 #### 13.15.1 API エンドポイント固定表
 
@@ -1801,7 +1801,7 @@ GitHub Webhook は `push` event のみ処理する。
 
 Webhook 処理成功後に冪等キーを `config/webhooks.json` へ保存する。
 
-Webhook 署名検証は Rev.16 時点では必須化しない。
+Webhook 署名検証は Rev.17 時点では必須化しない。
 
 #### 13.15.6 実装順序固定
 
@@ -1822,7 +1822,7 @@ Webhook 署名検証は Rev.16 時点では必須化しない。
 
 ### 13.16 入出力契約固定仕様
 
-本節は Rev.16 時点で API、JSON保存、ログ、起動時検証の入出力を固定する仕様である。
+本節は Rev.17 時点で API、JSON保存、ログ、起動時検証の入出力を固定する仕様である。
 
 #### 13.16.1 共通成功レスポンス契約
 
@@ -2023,7 +2023,7 @@ ASB_STARTUP_ERROR code=ERR_STORAGE_VALIDATION_FAILED message="Storage validation
 
 #### 13.16.8 テスト固定項目
 
-Rev.16 の実装では、以下のテストを必須とする。
+Rev.17 の実装では、以下のテストを必須とする。
 
 - 全API成功レスポンスの固定JSONキー検証
 - 全APIエラーレスポンスの固定JSONキー検証
@@ -2032,6 +2032,172 @@ Rev.16 の実装では、以下のテストを必須とする。
 - 保存JSONのソート順検証
 - 起動時検証の順序、終了コード、標準エラー形式検証
 - アクセスログとエラーログのJSON Linesフィールド検証
+
+### 13.17 実装境界とファイル操作固定仕様
+
+本節は Rev.17 時点で package 境界、公開 interface、Repository、Storage、複数ファイル更新の実装契約を固定する仕様である。
+
+#### 13.17.1 package 公開 interface 固定
+
+各 package は以下の公開 interface を境界として実装する。
+
+| package | 公開 interface | 主な責務 |
+|---------|----------------|----------|
+| `config` | `Loader` | 設定読み込み、デフォルト適用、起動時検証 |
+| `server` | `Router`, `Responder` | HTTPルーティング、成功/エラーJSON応答 |
+| `management` | `ProjectService`, `DomainService`, `SSLService` | Project、Domain、SSL管理境界 |
+| `delivery` | `FileService`, `StaticService`, `WebhookService` | ファイル管理、静的配信、Webhook |
+| `data` | `JSONRepository`, `StorageService`, `BackupService` | JSON永続化、ストレージ、バックアップ/復旧 |
+| `system` | `LogService`, `MonitoringService`, `Clock`, `IDGenerator` | ログ、監視、時刻、ID生成 |
+
+Handler は Service interface のみに依存する。
+
+Service は Repository、Storage、Clock、IDGenerator、LogService interface に依存できる。
+
+Entity は interface を定義せず、保存形式とレスポンス形式の型定義のみを持つ。
+
+他 package の具象型を直接生成してよい場所は `main.go` の依存関係生成処理のみとする。
+
+#### 13.17.2 Repository / Storage 責務固定
+
+`JSONRepository` は JSON ファイルの読み込み、スキーマ検証、排他、atomic save のみを担当する。
+
+`JSONRepository` は HTTP ステータス、HTTP リクエスト、HTTP レスポンスを扱ってはならない。
+
+`StorageService` は `storage.basePath` 配下のファイル実体操作のみを担当する。
+
+`StorageService` は Project、Domain、Webhook の業務判断を行ってはならない。
+
+Service は業務判断、整合性判断、複数Repository/Storage操作の順序制御を担当する。
+
+複数JSONまたはJSONとファイル実体をまたぐ操作では、Service が処理全体の成功/失敗を決定する。
+
+#### 13.17.3 ファイルアップロード処理順序固定
+
+File upload は以下の順序で実行する。
+
+1. URL `:id` を検証する
+2. Project の存在を検証する
+3. multipart field `file` の存在を検証する
+4. ファイル名、サイズ、quota を検証する
+5. 既存 `files.json` を読み込み検証する
+6. 保存先相対パスを決定する
+7. ファイル実体を `contents/` 配下の一時ファイルへ書き込む
+8. 書き込み内容を `fsync` する
+9. 一時ファイルを公開先へ atomic rename する
+10. `files.json` を更新する
+11. `projects.json` の `used` を更新する
+12. 成功レスポンスを返す
+
+7-11 の途中で失敗した場合、成功レスポンスを返してはならない。
+
+公開先への rename 後に JSON 更新が失敗した場合は、エラーログを記録し、次回起動時検証または整合性検証で検出できる状態にする。
+
+#### 13.17.4 ファイル上書き処理順序固定
+
+同名ファイル上書きは以下の順序で実行する。
+
+1. 旧ファイルメタデータを読み込む
+2. 新ファイルを一時ファイルへ書き込む
+3. 新ファイルを `fsync` する
+4. 新ファイルを公開先へ atomic rename する
+5. `files.json` の `size`、`uploadedAt`、`path` を更新する
+6. `projects.json` の `used` を差分更新する
+
+旧ファイルは、新ファイルの atomic rename が成功するまで削除してはならない。
+
+上書き後の `used` は旧サイズを差し引き、新サイズを加算して計算する。
+
+#### 13.17.5 ファイル削除処理順序固定
+
+File delete は以下の順序で実行する。
+
+1. URL `:id` と `:name` を検証する
+2. Project の存在を検証する
+3. `files.json` から対象ファイルを検出する
+4. ファイル実体を削除する
+5. `files.json` から対象メタデータを削除する
+6. `projects.json` の `used` を差分更新する
+7. 成功レスポンスを返す
+
+ファイル実体が存在しないが `files.json` にメタデータが存在する場合は、整合性エラーとして `ERR_FILE_NOT_FOUND` を返す。
+
+JSON 更新失敗時は成功レスポンスを返してはならない。
+
+#### 13.17.6 Project削除処理順序固定
+
+Project delete は以下の順序で実行する。
+
+1. Project の存在を検証する
+2. 対象 Project に紐づく Domain を列挙する
+3. 対象 Project に紐づく Backup を列挙する
+4. 対象 Project の `files.json` を読み込み検証する
+5. 対象 Project の `contents/` 配下を削除する
+6. 対象 Project の `files.json` を削除する
+7. `config/domains.json` から関連 Domain を削除する
+8. `config/backups.json` から関連 Backup 履歴を削除する
+9. `config/projects.json` から対象 Project を削除する
+10. 成功レスポンスを返す
+
+5-9 の途中で失敗した場合、成功レスポンスを返してはならない。
+
+Project削除は best effort 成功扱いにしてはならない。
+
+#### 13.17.7 Backup作成処理順序固定
+
+Backup 作成は以下の順序で実行する。
+
+1. 対象 Project の存在を検証する
+2. 対象 Project の JSON と `contents/` を読み込み可能であることを検証する
+3. tar.gz を一時ファイルとして作成する
+4. tar.gz 作成後に SHA-256 を計算する
+5. tar.gz をバックアップ保存先へ atomic rename する
+6. `config/backups.json` に履歴を保存する
+7. 成功レスポンスを返す
+
+tar.gz 作成またはハッシュ計算に失敗した場合、`config/backups.json` に履歴を追加してはならない。
+
+#### 13.17.8 Backup復旧処理順序固定
+
+Backup restore は以下の順序で実行する。
+
+1. Backup 履歴の存在を検証する
+2. Backup ファイルの存在を検証する
+3. SHA-256 を検証する
+4. 復旧対象の現行データを退避領域へ移動する
+5. Backup を展開する
+6. 展開後の JSON 構文とスキーマを検証する
+7. 復旧対象へ atomic rename する
+8. 成功レスポンスを返す
+
+4-7 の途中で失敗した場合、可能な限り退避領域から復元する。
+
+復元に失敗した場合は `ERR_BACKUP_RESTORE_FAILED` を返し、成功レスポンスを返してはならない。
+
+#### 13.17.9 複数JSON更新失敗時契約
+
+複数JSON更新は、操作順序を Service に閉じ込める。
+
+複数JSON更新では、最終JSONの保存が完了するまで成功レスポンスを返してはならない。
+
+途中失敗時は、更新済みJSON名、未更新JSON名、操作名、requestId をエラーログへ記録する。
+
+途中失敗時に自動ロールバックを実装する場合も、ロールバック失敗時は成功扱いにしてはならない。
+
+Rev.17 時点では、複数JSON更新に外部トランザクション機構を導入してはならない。
+
+#### 13.17.10 最低テスト分類固定
+
+`go test ./...` に含める最低テスト分類は以下とする。
+
+| 分類 | 対象 |
+|------|------|
+| Unit | Entity validation、Service validation、Repository validation |
+| Handler | ルーティング、Content-Type、Body decode、レスポンスJSON |
+| Repository | unknown field、atomic save、sort order、保存失敗 |
+| Storage | path traversal、relative path、upload、overwrite、delete |
+| Integration | Project/File/Domain/Backup/Webhook の成功系と主要失敗系 |
+| Startup | 起動時検証順序、終了コード、stderr |
 
 ---
 
@@ -2101,7 +2267,7 @@ Rev.16 の実装では、以下のテストを必須とする。
 ### 15.2 テスト対象外
 
 以下はモック・スタブで対応：
-- ACME 実通信および CA 連携（Rev.16 時点では実通信を実装対象外とし、SSL管理境界のみ検証）
+- ACME 実通信および CA 連携（Rev.17 時点では実通信を実装対象外とし、SSL管理境界のみ検証）
 - GitHub Webhook（テスト用ペイロード）
 - 実際のファイルストレージ大容量テスト（テスト時は最大100MB）
 
@@ -2209,6 +2375,7 @@ $ asb-backup-restore backup-v1.tar.gz
 
 | バージョン | 日付 | 内容 |
 |-----------|------|------|
+| Rev.17 | 2026-09-08 | package公開interface、Repository/Storage責務、ファイル操作、Project削除、Backup/Restore、複数JSON更新失敗時契約を固定 |
 | Rev.16 | 2026-09-08 | API成功/エラーレスポンス、保存JSONスキーマ、起動時検証出力、ログJSON Linesを固定 |
 | Rev.15 | 2026-09-08 | API、設定値、JSONファイル、静的配信、Webhook、実装順序を実装単位で固定 |
 | Rev.14 | 2026-09-08 | 実装契約を追加し、パッケージ境界、HTTP契約、JSON保存、起動時検証、Handler/Service/Entity責務、副作用、保留機能禁止を具体化 |
