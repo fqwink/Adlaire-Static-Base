@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ASB 仕様書 Rev.25</title>
+<title>ASB 仕様書 Rev.26</title>
 <style>
 :root { color-scheme: light; --bg: #f4f7f9; --panel: #ffffff; --panel-2: #f8fafc; --panel-3: #edf6f3; --line: #d8e1e7; --line-strong: #b7c6cf; --text: #162126; --muted: #5b6d76; --subtle: #83919a; --brand: #0f766e; --brand-2: #14532d; --ok: #16845f; --code-bg: #111827; --code-text: #e8eef4; --toc-w: 310px; --radius: 8px; }
 @media (prefers-color-scheme: dark) { :root { color-scheme: dark; --bg: #0e1416; --panel: #141d20; --panel-2: #101719; --panel-3: #16312d; --line: #27363b; --line-strong: #3d5057; --text: #e6eef0; --muted: #a7b6bb; --subtle: #7e8e94; --brand: #5eead4; --brand-2: #99f6e4; --ok: #6ee7b7; --code-bg: #080d10; --code-text: #edf7f8; } }
@@ -71,7 +71,7 @@ pre code { background: transparent; border: 0; color: inherit; padding: 0; }
     <div class="sidebar-header">
       <span class="logo">Adlaire-Static-Base</span>
       <h1 class="sidebar-title">ASB Developer Docs</h1>
-      <span class="version-pill">Rev.25</span>
+      <span class="version-pill">Rev.26</span>
     </div>
     <nav class="toc" id="asb-toc">
       <a class="toc-l1" href="#セルフホスト型静的コンテンツ配信ホスティングシステム仕様書">セルフホスト型静的コンテンツ配信ホスティングシステム仕様書</a>
@@ -160,6 +160,7 @@ pre code { background: transparent; border: 0; color: inherit; padding: 0; }
 <a class="toc-l3" href="#13.17-実装境界とファイル操作固定仕様">13.17 実装境界とファイル操作固定仕様</a>
 <a class="toc-l3" href="#13.18-apiキー管理認証固定仕様">13.18 APIキー管理・認証固定仕様</a>
 <a class="toc-l3" href="#13.19-rate-limiting-固定仕様">13.19 Rate limiting 固定仕様</a>
+<a class="toc-l3" href="#13.20-brotli-圧縮固定仕様">13.20 Brotli 圧縮固定仕様</a>
 <a class="toc-l2" href="#14-パフォーマンス要件">14 パフォーマンス要件</a>
 <a class="toc-l3" href="#14.1-推奨リソース">14.1 推奨リソース</a>
 <a class="toc-l3" href="#14.2-スケーリング基準">14.2 スケーリング基準</a>
@@ -182,13 +183,13 @@ pre code { background: transparent; border: 0; color: inherit; padding: 0; }
     </nav>
   </aside>
   <main class="portal-main">
-    <div class="topbar"><div class="topbar-left"><button class="sidebar-toggle" type="button" aria-label="目次を折りたたむ" aria-expanded="true" aria-controls="asb-toc">☰</button><span class="topbar-title">ASB Specification</span></div><span class="version-pill">Rev.25</span></div>
+    <div class="topbar"><div class="topbar-left"><button class="sidebar-toggle" type="button" aria-label="目次を折りたたむ" aria-expanded="true" aria-controls="asb-toc">☰</button><span class="topbar-title">ASB Specification</span></div><span class="version-pill">Rev.26</span></div>
     <div class="content">
       <section class="doc-hero">
         <p class="eyebrow">Adlaire-Static-Base</p>
         <h1>セルフホスト型静的コンテンツ配信ホスティングシステム仕様書</h1>
         <p class="subtitle">ASBの仕様正本 <code>ASB-spec.md</code> に基づくHTML版仕様書。</p>
-        <div class="hero-meta"><span class="meta-chip">Rev.25</span><span class="meta-chip">Generated from ASB-spec.md</span></div>
+        <div class="hero-meta"><span class="meta-chip">Rev.26</span><span class="meta-chip">Generated from ASB-spec.md</span></div>
       </section>
       <h1 id="セルフホスト型静的コンテンツ配信ホスティングシステム仕様書">セルフホスト型静的コンテンツ配信ホスティングシステム仕様書</h1>
 <h2 id="1-本書の位置づけ">1 本書の位置づけ</h2>
@@ -225,7 +226,7 @@ pre code { background: transparent; border: 0; color: inherit; padding: 0; }
 <tr><td>提供形態</td><td>HTTP サーバー（単一バイナリ）</td></tr>
 <tr><td>データ保存</td><td>JSON ファイルベース（外部DB不使用）</td></tr>
 <tr><td>ライセンス</td><td>クローズドライセンス</td></tr>
-<tr><td>本書バージョン</td><td>Rev.25</td></tr>
+<tr><td>本書バージョン</td><td>Rev.26</td></tr>
 </tbody></table></div>
 <hr>
 <h2 id="3-asb-の責務範囲">3 ASB の責務範囲</h2>
@@ -474,7 +475,7 @@ CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -o asb-linux-arm64 ./main.go</cod
 <li>最大容量：1GB/プロジェクト（設定可能）</li>
 <li>形式：制限なし（HTML, CSS, JavaScript, 画像等）</li>
 <li>圧縮：Gzip による自動圧縮</li>
-<li>Brotli は外部ライブラリ例外が仕様に追加されるまで実装対象外</li>
+<li>Brotli は Rev.26 時点では ASB 本体に実装しない</li>
 </ul>
 <p><strong>ファイル削除</strong></p>
 <ul>
@@ -1010,7 +1011,7 @@ CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -o asb-linux-arm64 ./main.go</cod
 <li>エラー時の通知とログ記録</li>
 </ul>
 <p>Webhook 処理失敗は、システムログおよび <code>config/webhooks.json</code> へ記録する。</p>
-<p>Rev.25 時点では、Webhook失敗時の自動リトライスケジュールを実装しない。</p>
+<p>Rev.26 時点では、Webhook失敗時の自動リトライスケジュールを実装しない。</p>
 <h3 id="11.3-data-domain-ポリシー">11.3 Data Domain ポリシー</h3>
 <p>Data Domain は、バックアップ・ストレージの責務を担う。</p>
 <p><strong>責務優先順位</strong></p>
@@ -1024,8 +1025,8 @@ CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -o asb-linux-arm64 ./main.go</cod
 <ul>
 <li>バックアップ取得後はハッシュ検証を実施</li>
 <li>ASB標準バックアップ保存先は <code>storage.basePath/backups/</code> とする</li>
-<li>バックアップ保存先を別障害領域へ複製する作業は Rev.25 時点ではASB外の運用責務とする</li>
-<li>外部ストレージ連携は Rev.25 時点では実装対象外とする</li>
+<li>バックアップ保存先を別障害領域へ複製する作業は Rev.26 時点ではASB外の運用責務とする</li>
+<li>外部ストレージ連携は Rev.26 時点では実装対象外とする</li>
 <li>復旧は対象バックアップの存在、SHA-256、JSON構文、スキーマ検証後に実施</li>
 <li>バックアップ・復旧・検証失敗・復旧操作は監査ログへ記録</li>
 </ul>
@@ -1039,7 +1040,7 @@ CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -o asb-linux-arm64 ./main.go</cod
 <li>標準構成では <code>storage.basePath/logs/</code> 配下へ JSON Lines として保存する</li>
 <li>アクセスログは <code>storage.basePath/logs/access.log</code> に保存する</li>
 <li>エラーログは <code>storage.basePath/logs/error.log</code> に保存する</li>
-<li>標準出力（stdout）への通常ログ出力は Rev.25 時点では実装しない</li>
+<li>標準出力（stdout）への通常ログ出力は Rev.26 時点では実装しない</li>
 <li>起動失敗時のみ標準エラー（stderr）へ単一行の起動エラーを出力する</li>
 </ul>
 <p><strong>必須フィールド</strong></p>
@@ -1058,14 +1059,14 @@ CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -o asb-linux-arm64 ./main.go</cod
 </ul>
 <h3 id="11.5-api-sdk-ポリシー">11.5 API/SDK ポリシー</h3>
 <p>ASB はヘッドレスアーキテクチャを採用し、UI層に依存しない。</p>
-<p>Rev.25 時点の確定対象は、ASB 本体が提供する HTTP JSON API である。</p>
+<p>Rev.26 時点の確定対象は、ASB 本体が提供する HTTP JSON API である。</p>
 <p>SDK は実装対象外とし、通信仕様および配布方針が確定した後に実装対象へ昇格する。</p>
 <p><strong>API 設計原則</strong></p>
 <ul>
 <li>HTTP + JSON を使用する</li>
 <li>HTTP/2 対応は ASB互換目標として扱い、実装詳細は別途確定する</li>
 <li>デフォルト接続境界は <code>localhost:3000</code> とする</li>
-<li>管理 API は Rev.25 時点では認証なしとする</li>
+<li>管理 API は Rev.26 時点では認証なしとする</li>
 <li>APIキー管理、ユーザー認証、SDK通信規格は保留事項として扱う</li>
 <li>本番公開時の管理 API 保護は、リバースプロキシ、ファイアウォール、VPN、localhost bind 等のASB外の運用境界で行う</li>
 </ul>
@@ -1134,7 +1135,7 @@ CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -o asb-linux-arm64 ./main.go</cod
 </ul>
 <p><strong>レート制限</strong></p>
 <ul>
-<li>Rev.25 時点では ASB 本体に実装しない</li>
+<li>Rev.26 時点では ASB 本体に実装しない</li>
 <li>Rate limiting は、本番公開時に ASB 外部のリバースプロキシ、WAF、CDN、ファイアウォール等で扱う</li>
 </ul>
 <p><strong>タイムアウト</strong></p>
@@ -1361,7 +1362,7 @@ $ sudo systemctl is-active --quiet asb</code></pre>
 <tr><td><code>--version</code></td><td>必須</td><td>更新対象の安定版バージョン</td></tr>
 <tr><td><code>--arch</code></td><td>任意</td><td><code>amd64</code> または <code>arm64</code>。未指定時は <code>uname -m</code> から判定</td></tr>
 </tbody></table></div>
-<p><code>latest</code> 指定、自動最新版選択、未指定バージョンでの実行は Rev.25 時点では禁止する。</p>
+<p><code>latest</code> 指定、自動最新版選択、未指定バージョンでの実行は Rev.26 時点では禁止する。</p>
 <p>スクリプトは以下を満たす。</p>
 <ol>
 <li><code>set -eu</code> で実行する</li>
@@ -1443,11 +1444,11 @@ $ sudo systemctl stop asb</code></pre>
 </ul>
 <h3 id="12.2-保留事項">12.2 保留事項</h3>
 <ul>
-<li>ユーザー認証（Rev.25 時点では実装しない）</li>
+<li>ユーザー認証（Rev.26 時点では実装しない）</li>
 <li>マルチテナント対応</li>
-<li>API キー管理（Rev.25 時点では実装しない）</li>
+<li>API キー管理（Rev.26 時点では実装しない）</li>
 <li>SDK通信規格</li>
-<li>Rate limiting（Rev.25 時点では実装しない）</li>
+<li>Rate limiting（Rev.26 時点では実装しない）</li>
 <li>外部ストレージサービス統合（AWS S3 等）</li>
 </ul>
 <h3 id="12.3-検討調査中事項">12.3 検討・調査中事項</h3>
@@ -1459,7 +1460,7 @@ $ sudo systemctl stop asb</code></pre>
 <hr>
 <h2 id="13-実装詳細仕様">13 実装詳細仕様</h2>
 <h3 id="13.1-実装対象の基準">13.1 実装対象の基準</h3>
-<p>Rev.25 時点の実装対象は、ASB のセルフホスト型静的コンテンツ配信ホスティングに必要なバックエンド機能に限定する。</p>
+<p>Rev.26 時点の実装対象は、ASB のセルフホスト型静的コンテンツ配信ホスティングに必要なバックエンド機能に限定する。</p>
 <p>実装は以下の順序で進める：</p>
 <ol>
 <li>起動設定、実行時データ検証、HTTP サーバー、共通レスポンス</li>
@@ -1589,7 +1590,8 @@ $ sudo systemctl stop asb</code></pre>
 <p><strong>圧縮</strong></p>
 <ul>
 <li>Gzip 圧縮を実装対象とする</li>
-<li>Brotli 圧縮は Go 標準ライブラリに存在しないため、外部ライブラリ例外が仕様に追加されるまで実装対象外とする</li>
+<li>Brotli 圧縮は Rev.26 時点では ASB 本体に実装しない</li>
+<li><code>Accept-Encoding: br</code> を受信しても Brotli 応答へ切り替えない</li>
 </ul>
 <h3 id="13.8-ドメイン管理詳細">13.8 ドメイン管理詳細</h3>
 <ul>
@@ -1601,7 +1603,7 @@ $ sudo systemctl stop asb</code></pre>
 <li>プロジェクト削除時は関連ドメインを削除する</li>
 </ul>
 <h3 id="13.9-ssl-管理詳細">13.9 SSL 管理詳細</h3>
-<p>Rev.25 時点では、SSL 管理は管理境界とデータモデルを実装対象とし、ACME は ASB互換目標に含める。ACME 実通信、CA選定、ワイルドカード証明書対応は詳細仕様確定後に実装対象へ昇格する。</p>
+<p>Rev.26 時点では、SSL 管理は管理境界とデータモデルを実装対象とし、ACME は ASB互換目標に含める。ACME 実通信、CA選定、ワイルドカード証明書対応は詳細仕様確定後に実装対象へ昇格する。</p>
 <p>実装対象：</p>
 <ul>
 <li>SSL 証明書IDの管理</li>
@@ -1635,7 +1637,7 @@ $ sudo systemctl stop asb</code></pre>
 <li>デプロイ処理に失敗した場合は <code>ERR_WEBHOOK_PROCESSING_FAILED</code> を返す</li>
 <li>同一 GitHub Push イベントを重複受信した場合は、同一 commit hash と対象ブランチの組み合わせを冪等キーとして扱い、二重デプロイを避ける</li>
 <li>冪等キーの保存方式は JSON ファイルベースとし、保存先は <code>storage.basePath</code> 配下に限定する</li>
-<li>Webhook失敗時の自動リトライは Rev.25 時点では実装しない</li>
+<li>Webhook失敗時の自動リトライは Rev.26 時点では実装しない</li>
 <li>GitHub側からの再送は通常のWebhook受信として扱い、冪等キーで重複判定する</li>
 </ul>
 <h3 id="13.11-バックアップ復旧詳細">13.11 バックアップ・復旧詳細</h3>
@@ -1707,7 +1709,7 @@ $ sudo systemctl stop asb</code></pre>
 <li>仕様上保留の機能が実装されていないことを確認する</li>
 </ul>
 <h3 id="13.14-実装契約">13.14 実装契約</h3>
-<p>本節は Rev.25 時点の実装契約である。実装者は本節に反する判断をコード側で独自に行ってはならない。</p>
+<p>本節は Rev.26 時点の実装契約である。実装者は本節に反する判断をコード側で独自に行ってはならない。</p>
 <h4 id="13.14.1-パッケージ境界">13.14.1 パッケージ境界</h4>
 <div class="tbl-wrap"><table><thead>
 <tr><th>パッケージ</th><th>責務</th><th>外部副作用</th></tr>
@@ -1792,7 +1794,7 @@ $ sudo systemctl stop asb</code></pre>
 </tbody></table></div>
 <p>複数ファイルにまたがる操作では、途中失敗時に成功レスポンスを返してはならない。</p>
 <h4 id="13.14.9-保留機能の実装禁止契約">13.14.9 保留機能の実装禁止契約</h4>
-<p>Rev.25 時点では以下を実装してはならない。</p>
+<p>Rev.26 時点では以下を実装してはならない。</p>
 <ul>
 <li>SDK</li>
 <li>APIキー管理</li>
@@ -1807,6 +1809,10 @@ $ sudo systemctl stop asb</code></pre>
 <li>token bucket / leaky bucket 実装</li>
 <li>Rate limiting 用永続カウンタ</li>
 <li>Rate limiting 用設定項目</li>
+<li>Brotli 圧縮</li>
+<li>Brotli 用外部ライブラリ</li>
+<li><code>.br</code> ファイル自動生成</li>
+<li>Brotli 用キャッシュ生成</li>
 <li>ACME 実通信</li>
 <li>CA 選定固定</li>
 <li><code>webhook.githubSecret</code> 未設定時のWebhook署名検証必須化</li>
@@ -1817,7 +1823,7 @@ $ sudo systemctl stop asb</code></pre>
 </ul>
 <p>上記を実装する場合は、先に <code>ASB-spec.md</code> を改訂し、確定仕様として昇格させる。</p>
 <h3 id="13.15-実装詳細固定仕様">13.15 実装詳細固定仕様</h3>
-<p>本節は Rev.25 時点で実装時に固定する詳細仕様である。</p>
+<p>本節は Rev.26 時点で実装時に固定する詳細仕様である。</p>
 <h4 id="13.15.1-api-エンドポイント固定表">13.15.1 API エンドポイント固定表</h4>
 <div class="tbl-wrap"><table><thead>
 <tr><th>機能</th><th>Method</th><th>Path</th><th>Body</th><th>Query</th><th>成功</th><th>主な失敗</th></tr>
@@ -1928,7 +1934,7 @@ $ sudo systemctl stop asb</code></pre>
 <p><code>If-None-Match</code> が <code>ETag</code> と一致する場合は <code>304 Not Modified</code> を返す。</p>
 <p><code>If-Modified-Since</code> が <code>Last-Modified</code> 以降の場合は <code>304 Not Modified</code> を返す。</p>
 <p><code>304 Not Modified</code> ではレスポンスボディを返してはならない。</p>
-<p>Range request は Rev.25 時点では実装しない。</p>
+<p>Range request は Rev.26 時点では実装しない。</p>
 <p><code>Range</code> ヘッダーを受信した場合も無視し、通常の <code>200 OK</code> または <code>304 Not Modified</code> 判定を行う。</p>
 <p>Gzip 圧縮済みファイルを返す場合は <code>Content-Encoding: gzip</code> を設定する。</p>
 <p>静的配信処理は開発リポジトリ内に配信用一時ファイル、キャッシュファイル、ログ以外の実行時データを作成してはならない。</p>
@@ -1950,7 +1956,7 @@ $ sudo systemctl stop asb</code></pre>
 <li>Webhook処理はネットワーク越しにGit操作を行ってはならない</li>
 <li><code>deploy.sourcePath</code> が存在しない、Git worktreeでない、または <code>after</code> commit を参照できない場合は <code>ERR_WEBHOOK_SOURCE_INVALID</code> を返す</li>
 <li>静的コンテンツ反映元は <code>deploy.sourcePath</code> の <code>after</code> commit 時点のファイルツリーとする</li>
-<li>Rev.25 時点では、Webhookデプロイ時の対象ファイルパスはリポジトリルート配下の全静的ファイルとする</li>
+<li>Rev.26 時点では、Webhookデプロイ時の対象ファイルパスはリポジトリルート配下の全静的ファイルとする</li>
 <li><code>.git/</code>、<code>.github/</code>、<code>AGENTS.md</code>、<code>ASB-spec.md</code>、<code>ASB-spec.html</code>、<code>IMPLEMENTATION_TASKS.md</code>、<code>DOCUMENT_INDEX.md</code>、<code>README.md</code> は配信対象から除外する</li>
 <li>デプロイ先は対象Projectの <code>storage/projects/:projectId/contents/</code> 配下に限定する</li>
 <li>Webhookデプロイは開発リポジトリ内へ実行時データ、一時ファイル、ログファイルを作成してはならない</li>
@@ -1959,7 +1965,7 @@ $ sudo systemctl stop asb</code></pre>
 <li>Webhook 処理完了後に処理状態を <code>config/webhooks.json</code> へ保存する</li>
 <li>成功時の <code>status</code> は <code>deployed</code> とする</li>
 <li>失敗時の <code>status</code> は <code>failed</code> とし、<code>errorCode</code> を保存する</li>
-<li>Webhook失敗時の自動リトライは Rev.25 時点では実装しない</li>
+<li>Webhook失敗時の自動リトライは Rev.26 時点では実装しない</li>
 <li>GitHub側から同一イベントが再送された場合は、<code>config/webhooks.json</code> の既存イベントにより重複判定する</li>
 </ul>
 <p>Webhookデプロイ処理順序は以下に固定する。</p>
@@ -2013,7 +2019,7 @@ $ sudo systemctl stop asb</code></pre>
 </ol>
 <p>各段階は <code>go test ./...</code> が通る単位で完了させる。</p>
 <h3 id="13.16-入出力契約固定仕様">13.16 入出力契約固定仕様</h3>
-<p>本節は Rev.25 時点で API、JSON保存、ログ、起動時検証の入出力を固定する仕様である。</p>
+<p>本節は Rev.26 時点で API、JSON保存、ログ、起動時検証の入出力を固定する仕様である。</p>
 <h4 id="13.16.1-共通成功レスポンス契約">13.16.1 共通成功レスポンス契約</h4>
 <ul>
 <li>成功レスポンスは常に JSON object とする</li>
@@ -2180,7 +2186,7 @@ $ sudo systemctl stop asb</code></pre>
 <p><code>INFO</code> は <code>debug</code> または <code>info</code> 設定時に出力する。</p>
 <p><code>WARN</code> は <code>debug</code>、<code>info</code>、<code>warn</code> 設定時に出力する。</p>
 <p><code>ERROR</code> はすべての <code>log.level</code> 設定で出力する。</p>
-<p><code>log.format</code> は Rev.25 時点では <code>json</code> のみ許可する。</p>
+<p><code>log.format</code> は Rev.26 時点では <code>json</code> のみ許可する。</p>
 <p>通常運用ログを stdout へ出力してはならない。</p>
 <p>起動時検証失敗時のみ、stderr へ以下の形式で単一行を出力する。</p>
 <pre><code>ASB_STARTUP_ERROR code=ERR_STORAGE_VALIDATION_FAILED message="Storage validation failed"</code></pre>
@@ -2188,7 +2194,7 @@ $ sudo systemctl stop asb</code></pre>
 <p>ローテーションでは現在ログファイルを <code>access.log.{unixTime}</code> または <code>error.log.{unixTime}</code> へ rename し、新しい <code>access.log</code> または <code>error.log</code> を作成する。</p>
 <p>ローテーション済みログの削除対象は、ファイル名末尾の unixTime が現在時刻から7日より古いものに限定する。</p>
 <p>ログローテーション失敗時は対象ログ書き込みを失敗扱いとし、HTTP レスポンスが未送信の場合は <code>500 Internal Server Error</code> を返す。</p>
-<p>ログ API は <code>access.log</code> または <code>error.log</code> の現行ファイルのみを読む。ローテーション済みログは Rev.25 時点ではログ API の対象外とする。</p>
+<p>ログ API は <code>access.log</code> または <code>error.log</code> の現行ファイルのみを読む。ローテーション済みログは Rev.26 時点ではログ API の対象外とする。</p>
 <p>ログには内部ファイルパス、スタックトレース、環境変数、シークレットを含めてはならない。</p>
 <h4 id="13.16.8-テスト固定項目">13.16.8 テスト固定項目</h4>
 <ul>
@@ -2201,7 +2207,7 @@ $ sudo systemctl stop asb</code></pre>
 <li>アクセスログとエラーログのJSON Linesフィールド検証</li>
 </ul>
 <h3 id="13.17-実装境界とファイル操作固定仕様">13.17 実装境界とファイル操作固定仕様</h3>
-<p>本節は Rev.25 時点で package 境界、公開 interface、Repository、Storage、複数ファイル更新の実装契約を固定する仕様である。</p>
+<p>本節は Rev.26 時点で package 境界、公開 interface、Repository、Storage、複数ファイル更新の実装契約を固定する仕様である。</p>
 <h4 id="13.17.1-package-公開-interface-固定">13.17.1 package 公開 interface 固定</h4>
 <div class="tbl-wrap"><table><thead>
 <tr><th>package</th><th>公開 interface</th><th>主な責務</th></tr>
@@ -2355,7 +2361,7 @@ $ sudo systemctl stop asb</code></pre>
 <li>複数JSON更新では、最終JSONの保存が完了するまで成功レスポンスを返してはならない</li>
 <li>途中失敗時は、更新済みJSON名、未更新JSON名、操作名、requestId をエラーログへ記録する</li>
 <li>途中失敗時に自動ロールバックを実装する場合も、ロールバック失敗時は成功扱いにしてはならない</li>
-<li>Rev.25 時点では、複数JSON更新に外部トランザクション機構を導入してはならない</li>
+<li>Rev.26 時点では、複数JSON更新に外部トランザクション機構を導入してはならない</li>
 </ul>
 <h4 id="13.17.11-最低テスト分類固定">13.17.11 最低テスト分類固定</h4>
 <div class="tbl-wrap"><table><thead>
@@ -2369,11 +2375,11 @@ $ sudo systemctl stop asb</code></pre>
 <tr><td>Startup</td><td>起動時検証順序、終了コード、stderr</td></tr>
 </tbody></table></div>
 <h3 id="13.18-apiキー管理認証固定仕様">13.18 APIキー管理・認証固定仕様</h3>
-<p>Rev.25 時点では、ASB 本体の管理 API に認証機能を実装しない。</p>
+<p>Rev.26 時点では、ASB 本体の管理 API に認証機能を実装しない。</p>
 <p>管理 API とは <code>/api/</code> で始まる全 HTTP JSON API を指す。</p>
 <p>管理 API は、ASB の標準構成では <code>server.host=localhost</code> で待ち受け、外部公開を前提としない。</p>
 <p>本番環境で管理 API を外部ネットワークから利用可能にする場合は、ASB 外部のリバースプロキシ、ファイアウォール、VPN、SSH tunnel、IP制限等で保護する。</p>
-<p>ASB 本体は Rev.25 時点では以下を実装してはならない。</p>
+<p>ASB 本体は Rev.26 時点では以下を実装してはならない。</p>
 <ul>
 <li>APIキー発行</li>
 <li>APIキー保存</li>
@@ -2391,7 +2397,7 @@ $ sudo systemctl stop asb</code></pre>
 <li>認証 middleware</li>
 </ul>
 <p><code>Authorization</code> ヘッダーまたは <code>X-API-Key</code> ヘッダーを受信しても、ASB は認証判断に使用してはならない。</p>
-<p>Rev.25 時点では、<code>Authorization</code> ヘッダーまたは <code>X-API-Key</code> ヘッダーの有無により、成功・失敗・レスポンス内容を変えてはならない。</p>
+<p>Rev.26 時点では、<code>Authorization</code> ヘッダーまたは <code>X-API-Key</code> ヘッダーの有無により、成功・失敗・レスポンス内容を変えてはならない。</p>
 <p>ASB は APIキー管理のために以下の JSON ファイル、ディレクトリ、設定項目を作成してはならない。</p>
 <ul>
 <li><code>config/api_keys.json</code></li>
@@ -2415,11 +2421,11 @@ $ sudo systemctl stop asb</code></pre>
 <li>監査ログ</li>
 <li>既存の認証なし管理 API からの移行手順</li>
 </ul>
-<p>SDK 認証仕様は Rev.25 の対象外とし、SDK通信規格を確定する際に別途仕様化する。</p>
+<p>SDK 認証仕様は Rev.26 の対象外とし、SDK通信規格を確定する際に別途仕様化する。</p>
 <h3 id="13.19-rate-limiting-固定仕様">13.19 Rate limiting 固定仕様</h3>
-<p>Rev.25 時点では、ASB 本体に Rate limiting を実装しない。</p>
+<p>Rev.26 時点では、ASB 本体に Rate limiting を実装しない。</p>
 <p>Rate limiting とは、送信元IP、Host、Domain、Project、APIキー、ユーザー、HTTPメソッド、URL path、リクエスト数、転送量、同時接続数、時間窓等に基づき、HTTP リクエストの受理、拒否、遅延、または優先度を制御する機能を指す。</p>
-<p>ASB 本体は Rev.25 時点では以下を実装してはならない。</p>
+<p>ASB 本体は Rev.26 時点では以下を実装してはならない。</p>
 <ul>
 <li>Rate limiting middleware</li>
 <li>IP別リクエスト制限</li>
@@ -2468,6 +2474,56 @@ $ sudo systemctl stop asb</code></pre>
 <li>SDK との関係</li>
 <li>ログ、監査、メトリクス</li>
 <li>既存の Rate limiting なし構成からの移行手順</li>
+</ul>
+<h3 id="13.20-brotli-圧縮固定仕様">13.20 Brotli 圧縮固定仕様</h3>
+<p>Rev.26 時点では、ASB 本体に Brotli 圧縮を実装しない。</p>
+<p>ASB の標準圧縮機能は、Go 標準ライブラリ <code>compress/gzip</code> で実装できる Gzip に限定する。</p>
+<p>Brotli 圧縮は Go 標準ライブラリに含まれないため、Rev.26 時点では外部ライブラリ例外採用を行わない。</p>
+<p>ASB 本体は Rev.26 時点では以下を実装してはならない。</p>
+<ul>
+<li>Brotli 圧縮</li>
+<li>Brotli 展開</li>
+<li>Brotli 用外部ライブラリ</li>
+<li>Brotli 用 middleware</li>
+<li>Brotli 用 precompress 処理</li>
+<li>Brotli 用動的圧縮</li>
+<li>Brotli 用事前圧縮</li>
+<li><code>.br</code> ファイル自動生成</li>
+<li><code>.br</code> ファイル自動削除</li>
+<li>Brotli 用キャッシュ生成</li>
+<li>Brotli 用キャッシュ削除</li>
+<li>Brotli 用 Content negotiation</li>
+<li>Brotli 用 <code>Content-Encoding: br</code> 返却</li>
+</ul>
+<p><code>Accept-Encoding: br</code> を受信しても、ASB は Brotli 応答へ切り替えてはならない。</p>
+<p><code>Accept-Encoding</code> に <code>gzip</code> と <code>br</code> の両方が含まれる場合でも、ASB が圧縮応答を返す場合は Gzip のみを使用する。</p>
+<p><code>Accept-Encoding</code> に <code>br</code> のみが含まれる場合、ASB は Brotli 圧縮を行わず、未圧縮応答または既存 Gzip 仕様に従った応答のみを返す。</p>
+<p>ASB は Brotli のために以下のファイル、ディレクトリ、設定項目を作成してはならない。</p>
+<ul>
+<li><code>*.br</code></li>
+<li><code>storage/brotli/</code></li>
+<li><code>storage/cache/brotli/</code></li>
+<li><code>brotli.*</code></li>
+<li><code>compression.brotli.*</code></li>
+</ul>
+<p>開発リポジトリ内にも、<code>storage.basePath</code> 配下にも、Brotli 用の事前圧縮ファイル、キャッシュファイル、一時ファイル、メタデータを生成してはならない。</p>
+<p><code>config/config.json</code> に Brotli 関連フィールドが存在する場合は、未知フィールドとして起動失敗とする。</p>
+<p>Brotli を将来実装する場合は、実装前に <code>ASB-spec.md</code> を改訂し、以下を最低限確定する。</p>
+<ul>
+<li>外部ライブラリ例外採用理由</li>
+<li>対象 MIME type</li>
+<li>圧縮タイミング</li>
+<li>事前圧縮の有無</li>
+<li>動的圧縮の有無</li>
+<li>保存先</li>
+<li>キャッシュ方針</li>
+<li><code>.br</code> ファイルの生成、更新、削除条件</li>
+<li><code>Content-Encoding: br</code> の返却条件</li>
+<li><code>Accept-Encoding</code> の優先順位</li>
+<li>Gzip との優先順位</li>
+<li>ETag / Last-Modified / Cache-Control との関係</li>
+<li>開発リポジトリ非生成の保証方法</li>
+<li>既存 Gzip 仕様からの移行手順</li>
 </ul>
 <hr>
 <h2 id="14-パフォーマンス要件">14 パフォーマンス要件</h2>
@@ -2537,7 +2593,7 @@ $ sudo systemctl stop asb</code></pre>
 <h3 id="15.2-テスト対象外">15.2 テスト対象外</h3>
 <p>以下はモック・スタブで対応：</p>
 <ul>
-<li>ACME 実通信および CA 連携（Rev.25 時点では実通信を実装対象外とし、SSL管理境界のみ検証）</li>
+<li>ACME 実通信および CA 連携（Rev.26 時点では実通信を実装対象外とし、SSL管理境界のみ検証）</li>
 <li>GitHub Webhook（テスト用ペイロード）</li>
 <li>実際のファイルストレージ大容量テスト（テスト時は最大100MB）</li>
 </ul>
@@ -2573,10 +2629,10 @@ $ ./tests/e2e.sh</code></pre>
 <tr><td><code>config/webhooks.json</code></td><td>Webhook 冪等キー履歴スキーマ</td></tr>
 <tr><td><code>storage/projects/:projectId/files.json</code></td><td>File メタデータスキーマ</td></tr>
 </tbody></table></div>
-<p>静的コンテンツ実体、ログファイル、証明書ファイル、ビルド済みバイナリは、Rev.25 時点のマイグレーション対象外とする。</p>
+<p>静的コンテンツ実体、ログファイル、証明書ファイル、ビルド済みバイナリは、Rev.26 時点のマイグレーション対象外とする。</p>
 <h3 id="16.3-schemaversion-固定">16.3 schemaVersion 固定</h3>
 <p>各実行時 JSON ファイルはトップレベルに <code>schemaVersion</code> を持つ。</p>
-<p>Rev.25 時点の <code>schemaVersion</code> は <code>1</code> とする。</p>
+<p>Rev.26 時点の <code>schemaVersion</code> は <code>1</code> とする。</p>
 <pre><code>{
   "schemaVersion": 1,
   "projects": []
@@ -2634,7 +2690,7 @@ asb migrate --storage /var/asb --from-schema 0 --to-schema 1 --apply</code></pre
 <p>ロールバックに失敗した場合は、標準エラー、エラーログ、<code>config/migrations.json</code> に <code>failed</code> として記録する。</p>
 <p>ロールバック失敗時に成功扱いとしてはならない。</p>
 <h3 id="16.8-禁止事項">16.8 禁止事項</h3>
-<p>Rev.25 時点では以下を禁止する。</p>
+<p>Rev.26 時点では以下を禁止する。</p>
 <ul>
 <li>起動時の自動マイグレーション</li>
 <li>開発リポジトリ内でのマイグレーション作業ファイル作成</li>
@@ -2660,6 +2716,7 @@ asb migrate --storage /var/asb --from-schema 0 --to-schema 1 --apply</code></pre
 <div class="tbl-wrap"><table><thead>
 <tr><th>バージョン</th><th>日付</th><th>内容</th></tr>
 </thead><tbody>
+<tr><td>Rev.26</td><td>2026-09-08</td><td>Brotli 圧縮を ASB 本体に実装しない方針、Gzip 標準限定、Accept-Encoding br 非対応、Brotli 関連ファイル・設定・キャッシュ非生成を実装レベルで固定</td></tr>
 <tr><td>Rev.25</td><td>2026-09-08</td><td>Rate limiting を ASB 本体に実装しない方針、Rate limiting 関連 middleware・設定・JSON・実行時カウンタ非生成、外部運用境界を実装レベルで固定</td></tr>
 <tr><td>Rev.24</td><td>2026-09-08</td><td>APIキー管理とユーザー認証を実装しない方針、認証ヘッダー非使用、認証関連ファイル非生成、外部運用境界を実装レベルで固定</td></tr>
 <tr><td>Rev.23</td><td>2026-09-08</td><td>ログ保存先、JSON Lines項目、requestId、ログAPI、stdout/stderr、ローテーション、開発リポジトリ非生成を実装レベルで固定</td></tr>
