@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ASB 仕様書 Rev.1.8</title>
+<title>ASB 仕様書 Rev.12</title>
 <style>
 :root { color-scheme: light; --bg: #f4f7f9; --panel: #ffffff; --panel-2: #f8fafc; --panel-3: #edf6f3; --line: #d8e1e7; --line-strong: #b7c6cf; --text: #162126; --muted: #5b6d76; --subtle: #83919a; --brand: #0f766e; --brand-2: #14532d; --ok: #16845f; --code-bg: #111827; --code-text: #e8eef4; --toc-w: 310px; --radius: 8px; }
 @media (prefers-color-scheme: dark) { :root { color-scheme: dark; --bg: #0e1416; --panel: #141d20; --panel-2: #101719; --panel-3: #16312d; --line: #27363b; --line-strong: #3d5057; --text: #e6eef0; --muted: #a7b6bb; --subtle: #7e8e94; --brand: #5eead4; --brand-2: #99f6e4; --ok: #6ee7b7; --code-bg: #080d10; --code-text: #edf7f8; } }
@@ -63,7 +63,7 @@ pre code { background: transparent; border: 0; color: inherit; padding: 0; }
     <div class="sidebar-header">
       <span class="logo">Adlaire-Static-Base</span>
       <h1 class="sidebar-title">ASB Developer Docs</h1>
-      <span class="version-pill">Rev.1.8</span>
+      <span class="version-pill">Rev.12</span>
     </div>
     <nav class="toc">
       <a class="toc-l1" href="#セルフホスト型静的コンテンツ配信ホスティングシステム仕様書">セルフホスト型静的コンテンツ配信ホスティングシステム仕様書</a>
@@ -73,6 +73,7 @@ pre code { background: transparent; border: 0; color: inherit; padding: 0; }
 <a class="toc-l2" href="#2-プロジェクト情報">2 プロジェクト情報</a>
 <a class="toc-l2" href="#3-asb-の責務範囲">3 ASB の責務範囲</a>
 <a class="toc-l3" href="#3.1-asb-の目的および責任範囲">3.1 ASB の目的および責任範囲</a>
+<a class="toc-l3" href="#3.2-asb互換目標と-asb-独自仕様">3.2 ASB互換目標と ASB 独自仕様</a>
 <a class="toc-l2" href="#4-設計思想">4 設計思想</a>
 <a class="toc-l3" href="#4.1-内製化ゼロ外部依存設計">4.1 内製化・ゼロ外部依存設計</a>
 <a class="toc-l3" href="#4.2-設計思想責務駆動設計">4.2 設計思想：責務駆動設計</a>
@@ -128,6 +129,20 @@ pre code { background: transparent; border: 0; color: inherit; padding: 0; }
 <a class="toc-l3" href="#12.1.1-phase-別詳細">12.1.1 Phase 別詳細</a>
 <a class="toc-l3" href="#12.2-保留事項">12.2 保留事項</a>
 <a class="toc-l3" href="#12.3-検討調査中事項">12.3 検討・調査中事項</a>
+<a class="toc-l2" href="#13-実装詳細仕様">13 実装詳細仕様</a>
+<a class="toc-l3" href="#13.1-実装対象の基準">13.1 実装対象の基準</a>
+<a class="toc-l3" href="#13.2-共通実装規約">13.2 共通実装規約</a>
+<a class="toc-l3" href="#13.3-起動時検証">13.3 起動時検証</a>
+<a class="toc-l3" href="#13.4-実行時データ配置">13.4 実行時データ配置</a>
+<a class="toc-l3" href="#13.5-json-ファイル更新方針">13.5 JSON ファイル更新方針</a>
+<a class="toc-l3" href="#13.6-プロジェクト管理詳細">13.6 プロジェクト管理詳細</a>
+<a class="toc-l3" href="#13.7-ファイル管理詳細">13.7 ファイル管理詳細</a>
+<a class="toc-l3" href="#13.8-ドメイン管理詳細">13.8 ドメイン管理詳細</a>
+<a class="toc-l3" href="#13.9-ssl-管理詳細">13.9 SSL 管理詳細</a>
+<a class="toc-l3" href="#13.10-webhook-詳細">13.10 Webhook 詳細</a>
+<a class="toc-l3" href="#13.11-バックアップ復旧詳細">13.11 バックアップ・復旧詳細</a>
+<a class="toc-l3" href="#13.12-監視ログ詳細">13.12 監視・ログ詳細</a>
+<a class="toc-l3" href="#13.13-テスト受け入れ条件">13.13 テスト受け入れ条件</a>
 <a class="toc-l2" href="#14-パフォーマンス要件">14 パフォーマンス要件</a>
 <a class="toc-l3" href="#14.1-推奨リソース">14.1 推奨リソース</a>
 <a class="toc-l3" href="#14.2-スケーリング基準">14.2 スケーリング基準</a>
@@ -144,13 +159,13 @@ pre code { background: transparent; border: 0; color: inherit; padding: 0; }
     </nav>
   </aside>
   <main class="portal-main">
-    <div class="topbar"><span class="topbar-title">ASB Specification</span><span class="version-pill">Rev.1.8</span></div>
+    <div class="topbar"><span class="topbar-title">ASB Specification</span><span class="version-pill">Rev.12</span></div>
     <div class="content">
       <section class="doc-hero">
         <p class="eyebrow">Adlaire-Static-Base</p>
         <h1>セルフホスト型静的コンテンツ配信ホスティングシステム仕様書</h1>
         <p class="subtitle">ASBの仕様正本 <code>ASB-spec.md</code> に基づくHTML版仕様書。</p>
-        <div class="hero-meta"><span class="meta-chip">Rev.1.8</span><span class="meta-chip">Generated from ASB-spec.md</span></div>
+        <div class="hero-meta"><span class="meta-chip">Rev.12</span><span class="meta-chip">Generated from ASB-spec.md</span></div>
       </section>
       <h1 id="セルフホスト型静的コンテンツ配信ホスティングシステム仕様書">セルフホスト型静的コンテンツ配信ホスティングシステム仕様書</h1>
 <h2 id="1-本書の位置づけ">1 本書の位置づけ</h2>
@@ -162,7 +177,7 @@ pre code { background: transparent; border: 0; color: inherit; padding: 0; }
 </thead><tbody>
 <tr><td>プロジェクト管理</td><td>プロジェクト作成・削除・情報取得</td></tr>
 <tr><td>ドメイン管理</td><td>DNS ドメイン割り当て・管理</td></tr>
-<tr><td>SSL管理</td><td>無料SSL証明書発行・更新・管理</td></tr>
+<tr><td>SSL管理</td><td>無料SSL証明書管理</td></tr>
 <tr><td>ファイル管理</td><td>ファイルアップロード・削除・圧縮</td></tr>
 <tr><td>Webhook</td><td>GitHub自動デプロイ処理</td></tr>
 <tr><td>バックアップ・復旧</td><td>データ保全・復旧手順</td></tr>
@@ -187,7 +202,7 @@ pre code { background: transparent; border: 0; color: inherit; padding: 0; }
 <tr><td>提供形態</td><td>HTTP サーバー（単一バイナリ）</td></tr>
 <tr><td>データ保存</td><td>JSON ファイルベース（外部DB不使用）</td></tr>
 <tr><td>ライセンス</td><td>クローズドライセンス</td></tr>
-<tr><td>本書バージョン</td><td>Rev.1.8</td></tr>
+<tr><td>本書バージョン</td><td>Rev.12</td></tr>
 </tbody></table></div>
 <hr>
 <h2 id="3-asb-の責務範囲">3 ASB の責務範囲</h2>
@@ -206,7 +221,7 @@ pre code { background: transparent; border: 0; color: inherit; padding: 0; }
 </thead><tbody>
 <tr><td>プロジェクト管理</td><td>プロジェクト作成・削除・情報管理</td></tr>
 <tr><td>ドメイン管理</td><td>DNS ドメイン割り当て・管理</td></tr>
-<tr><td>SSL管理</td><td>Let&#x27;s Encrypt との統合・証明書自動更新</td></tr>
+<tr><td>SSL管理</td><td>無料SSL証明書の管理</td></tr>
 <tr><td>ファイル管理</td><td>ファイルアップロード・削除・圧縮</td></tr>
 <tr><td>Webhook 処理</td><td>GitHub との連携・自動デプロイ</td></tr>
 <tr><td>バックアップ・復旧</td><td>データ保全・復旧手順</td></tr>
@@ -220,6 +235,35 @@ pre code { background: transparent; border: 0; color: inherit; padding: 0; }
 <tr><td>ユーザー認証・管理</td><td>セルフホスト・スタンドアロン運用</td></tr>
 <tr><td>組織・チーム管理</td><td>単一ユーザー想定</td></tr>
 </tbody></table></div>
+<h3 id="3.2-asb互換目標と-asb-独自仕様">3.2 ASB互換目標と ASB 独自仕様</h3>
+<p>ASB は、静的コンテンツ専用ホスティングとして XServer Static 等の利用体験を参考基準とし、ASB互換目標として定義する。</p>
+<p>本節の「ASB互換目標」とは、外部サービスとの完全互換ではなく、セルフホスト環境で同種の運用体験を提供するための機能目標を指す。</p>
+<p><strong>ASB互換目標</strong></p>
+<ul>
+<li>静的コンテンツ専用ホスティングとして動作する</li>
+<li>HTML、CSS、JavaScript、画像等の静的ファイルを配信する</li>
+<li>プロジェクト単位で公開対象を管理する</li>
+<li>独自ドメインをプロジェクトへ割り当てる</li>
+<li>無料SSL証明書の管理に対応する</li>
+<li>ACME による証明書取得・更新を目標に含める</li>
+<li>HTTP/2 対応を目標とする</li>
+<li>GitHub 連携による自動デプロイを提供する</li>
+<li>ファイルアップロードおよびフォルダ階層を保持したファイル管理を提供する</li>
+<li>SSL更新状態、デプロイ状態、ログを確認できる</li>
+</ul>
+<p><strong>ASB 独自仕様</strong></p>
+<ul>
+<li>セルフホスト型として動作する</li>
+<li>Go 単一バイナリとして提供する</li>
+<li>JSON ファイルベースで実行時データを管理し、外部DBを使用しない</li>
+<li>実行時データは <code>storage.basePath</code> 配下にのみ配置する</li>
+<li>開発リポジトリを実行時データ保存先として扱わない</li>
+<li>起動時に実行時データ用ディレクトリまたはファイルを自動生成しない</li>
+<li><code>.gitignore</code> を作成・使用しない</li>
+<li>ASB API を外部操作面とするヘッドレス構成を採用する</li>
+<li>Go標準ライブラリで実装可能な部分は Go標準ライブラリで実装する</li>
+<li>SDK、CA など ASB互換目標に含めない機能は、仕様確定後に実装対象へ昇格する</li>
+</ul>
 <hr>
 <h2 id="4-設計思想">4 設計思想</h2>
 <h3 id="4.1-内製化ゼロ外部依存設計">4.1 内製化・ゼロ外部依存設計</h3>
@@ -258,9 +302,9 @@ pre code { background: transparent; border: 0; color: inherit; padding: 0; }
 <tr><td>HTTP サーバー</td><td>Go 標準 <code>net/http</code></td></tr>
 <tr><td>JSON 処理</td><td>Go 標準 <code>encoding/json</code></td></tr>
 <tr><td>ファイル操作</td><td>Go 標準 <code>os</code>, <code>io</code></td></tr>
-<tr><td>圧縮</td><td>Go 標準 <code>archive/tar</code>, <code>compress/gzip</code>, <code>compress/brotli</code></td></tr>
+<tr><td>圧縮</td><td>Go 標準 <code>archive/tar</code>, <code>compress/gzip</code></td></tr>
 <tr><td>暗号化</td><td>Go 標準 <code>crypto</code></td></tr>
-<tr><td>SSL 証明書</td><td>Let&#x27;s Encrypt（ACME クライアント内製）</td></tr>
+<tr><td>SSL 証明書</td><td>Let&#x27;s Encrypt（ACME 実通信は詳細仕様確定後）</td></tr>
 <tr><td>対応 OS</td><td>Linux</td></tr>
 <tr><td>対応アーキテクチャ</td><td>amd64（x86_64）、arm64（aarch64）</td></tr>
 </tbody></table></div>
@@ -382,7 +426,7 @@ CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -o asb-linux-arm64 ./main.go</cod
 <ul>
 <li>複数ドメイン割り当て対応</li>
 <li>サブドメイン対応</li>
-<li>無料 SSL 証明書自動発行</li>
+<li>無料 SSL 証明書管理対象ドメイン対応</li>
 </ul>
 <p><strong>ドメイン構造</strong></p>
 <pre><code>{
@@ -393,18 +437,20 @@ CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -o asb-linux-arm64 ./main.go</cod
   &quot;createdAt&quot;: &quot;2025-01-15T10:00:00Z&quot;
 }</code></pre>
 <h3 id="7.3-ssl-管理">7.3 SSL 管理</h3>
-<p><strong>Let&#x27;s Encrypt 統合</strong></p>
+<p><strong>SSL 管理境界</strong></p>
 <ul>
-<li>ACME クライアント内製実装</li>
-<li>自動更新（90日前に更新）</li>
-<li>エラー時の通知・ログ記録</li>
+<li>証明書IDと有効期限の管理</li>
+<li>証明書保存先 <code>certs/</code> の検証</li>
+<li>証明書生成・更新失敗時のログ記録</li>
+<li>ACME 実通信は詳細仕様確定後に実装</li>
 </ul>
 <h3 id="7.4-ファイル管理">7.4 ファイル管理</h3>
 <p><strong>ファイルアップロード</strong></p>
 <ul>
 <li>最大容量：1GB/プロジェクト（設定可能）</li>
 <li>形式：制限なし（HTML, CSS, JavaScript, 画像等）</li>
-<li>圧縮：Gzip/Brotli による自動圧縮</li>
+<li>圧縮：Gzip による自動圧縮</li>
+<li>Brotli は外部ライブラリ例外が仕様に追加されるまで実装対象外</li>
 </ul>
 <p><strong>ファイル削除</strong></p>
 <ul>
@@ -421,9 +467,8 @@ CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -o asb-linux-arm64 ./main.go</cod
 <h3 id="7.6-バックアップ復旧">7.6 バックアップ・復旧</h3>
 <p><strong>バックアップ対象</strong></p>
 <ul>
-<li>projects.json（プロジェクト情報）</li>
-<li>backups.json（バックアップ履歴）</li>
-<li>storage/（ファイルデータ）</li>
+<li>config/（設定・管理JSON）</li>
+<li>storage/（プロジェクトファイルデータ）</li>
 </ul>
 <p><strong>バックアップ形式</strong></p>
 <ul>
@@ -959,7 +1004,7 @@ CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -o asb-linux-arm64 ./main.go</cod
 <p>E2E テスト</p>
 <ul>
 <li>対象：ワークフロー全体</li>
-<li>検証シナリオ：プロジェクト作成 → ファイルアップロード → 削除、ドメイン割り当て → SSL発行、バックアップ → 復旧</li>
+<li>検証シナリオ：プロジェクト作成 → ファイルアップロード → 削除、ドメイン割り当て → SSL管理データ確認、バックアップ → 復旧</li>
 <li>ツール：bash スクリプト + curl</li>
 </ul>
 <p><strong>品質基準</strong></p>
@@ -1250,6 +1295,217 @@ $ sudo systemctl stop asb</code></pre>
 <li>バックアップのクラウドストレージ連携（オプション）</li>
 </ul>
 <hr>
+<h2 id="13-実装詳細仕様">13 実装詳細仕様</h2>
+<h3 id="13.1-実装対象の基準">13.1 実装対象の基準</h3>
+<p>Rev.12 時点の実装対象は、ASB のセルフホスト型静的コンテンツ配信ホスティングに必要なバックエンド機能に限定する。</p>
+<p>実装は以下の順序で進める：</p>
+<ol>
+<li>起動設定、実行時データ検証、HTTP サーバー、共通レスポンス</li>
+<li>プロジェクト管理</li>
+<li>ファイル管理</li>
+<li>ドメイン管理</li>
+<li>ログ・監視</li>
+<li>バックアップ・復旧</li>
+<li>GitHub Webhook</li>
+<li>SSL 証明書管理</li>
+</ol>
+<p>ASB互換目標は機能目標として扱い、ASB 独自仕様は実装制約として扱う。</p>
+<p>保留事項または検討中事項は、仕様上の扱いが確定するまで実装してはならない。</p>
+<h3 id="13.2-共通実装規約">13.2 共通実装規約</h3>
+<p><strong>HTTP</strong></p>
+<ul>
+<li>API のレスポンスは <code>application/json; charset=utf-8</code> とする</li>
+<li>JSON リクエストは <code>Content-Type: application/json</code> を要求する</li>
+<li>ファイルアップロード API のみ <code>multipart/form-data</code> を許可する</li>
+<li>未定義の API パスは <code>404 Not Found</code> を返す</li>
+<li>未対応の HTTP メソッドは <code>405 Method Not Allowed</code> を返す</li>
+<li>サーバーは graceful shutdown に対応する</li>
+</ul>
+<p><strong>JSON</strong></p>
+<ul>
+<li>JSON の未知フィールドは拒否する</li>
+<li>空リクエストが許可されない API では空 Body を <code>400 Bad Request</code> とする</li>
+<li>日時は UTC の RFC 3339 形式で保存・返却する</li>
+<li>JSON ファイルは UTF-8 で保存する</li>
+</ul>
+<p><strong>ID</strong></p>
+<ul>
+<li>Project、File、Backup の <code>id</code> は UUID 形式の文字列とする</li>
+<li>UUID 生成には Go 標準ライブラリの <code>crypto/rand</code> を使用する</li>
+<li>Domain は <code>domain</code> 文字列を一意キーとして扱う</li>
+</ul>
+<p><strong>エラー</strong></p>
+<ul>
+<li>エラーレスポンスには <code>error</code>、<code>code</code>、<code>timestamp</code>、<code>httpStatus</code> を含める</li>
+<li>内部ファイルパス、スタックトレース、機密値をレスポンスへ含めてはならない</li>
+<li>仕様に定義済みのエラーコードを優先して使用する</li>
+</ul>
+<h3 id="13.3-起動時検証">13.3 起動時検証</h3>
+<p>ASB は起動時に実行時データを自動生成しない。起動時には以下を検証する：</p>
+<ul>
+<li>設定ファイルが存在する</li>
+<li><code>storage.basePath</code> が存在する</li>
+<li><code>storage.basePath</code> 配下に <code>config/</code>、<code>storage/</code>、<code>logs/</code>、<code>certs/</code> が存在する</li>
+<li>必要な JSON ファイルが存在し、JSON として読み込める</li>
+<li>書き込みが必要な領域に書き込み権限がある</li>
+<li><code>server.port</code>、<code>server.host</code>、<code>shutdownTimeout</code>、<code>storage.maxProjectSize</code>、<code>ssl.renewBefore</code>、<code>log.level</code> が妥当である</li>
+</ul>
+<p>検証に失敗した場合、ASB は HTTP サーバーを開始せず、エラーを標準エラーへ出力して終了する。</p>
+<h3 id="13.4-実行時データ配置">13.4 実行時データ配置</h3>
+<p>実行時データは <code>storage.basePath</code> 配下に配置する。</p>
+<p>標準構成は以下とする：</p>
+<pre><code>/var/asb/
+├── config/
+│   ├── config.json
+│   ├── projects.json
+│   ├── domains.json
+│   └── backups.json
+├── storage/
+│   └── projects/
+│       └── {projectId}/
+│           ├── files.json
+│           └── contents/
+├── logs/
+│   ├── access.log
+│   └── error.log
+└── certs/</code></pre>
+<p>開発リポジトリは仕様書、ドキュメント、ソースコード、テストコード、運用スクリプトを管理する領域であり、ASB の実行時データ保存先として扱わない。</p>
+<h3 id="13.5-json-ファイル更新方針">13.5 JSON ファイル更新方針</h3>
+<p>JSON ファイル更新は以下の方針で行う：</p>
+<ul>
+<li>更新前に対象 JSON を読み込み、構文と必須フィールドを検証する</li>
+<li>更新後に保存予定データをメモリ上で再検証する</li>
+<li>同一 JSON ファイルへの同時書き込みを排他する</li>
+<li>書き込み失敗時は API エラーとして扱い、成功レスポンスを返してはならない</li>
+<li>プロジェクト削除など複数ファイルにまたがる操作では、失敗時に整合性を検証し、エラーをログへ記録する</li>
+</ul>
+<h3 id="13.6-プロジェクト管理詳細">13.6 プロジェクト管理詳細</h3>
+<p><strong>作成</strong></p>
+<ul>
+<li><code>name</code> は 1〜255 文字とする</li>
+<li><code>name</code> は英数字、ハイフン、アンダースコアのみ許可する</li>
+<li><code>quota</code> が未指定の場合は <code>storage.maxProjectSize</code> を使用する</li>
+<li><code>quota</code> は 100MB 以上 1TB 以下とする</li>
+<li>同名プロジェクトが存在する場合は <code>ERR_PROJECT_ALREADY_EXISTS</code> を返す</li>
+<li>作成時の <code>used</code> は <code>0</code> とする</li>
+</ul>
+<p><strong>削除</strong></p>
+<ul>
+<li>対象プロジェクトが存在しない場合は <code>ERR_PROJECT_NOT_FOUND</code> を返す</li>
+<li>削除対象には、プロジェクト情報、関連ドメイン、関連ファイルメタデータ、関連バックアップ履歴を含める</li>
+<li>削除完了後に <code>deletedAt</code> を含むレスポンスを返す</li>
+</ul>
+<p><strong>一覧</strong></p>
+<ul>
+<li><code>GET /api/projects</code> は <code>createdAt</code> 昇順で返す</li>
+<li>レスポンスには <code>projects</code> 配列を含める</li>
+</ul>
+<h3 id="13.7-ファイル管理詳細">13.7 ファイル管理詳細</h3>
+<p><strong>アップロード</strong></p>
+<ul>
+<li>対象プロジェクトが存在しない場合は <code>ERR_PROJECT_NOT_FOUND</code> を返す</li>
+<li>multipart のフィールド名は <code>file</code> とする</li>
+<li>ファイル名は 1〜255 文字とし、パス区切り文字を含めてはならない</li>
+<li>ファイルサイズは 1B 以上 1GB 以下とする</li>
+<li>アップロード後の使用量が <code>quota</code> を超える場合は <code>ERR_QUOTA_EXCEEDED</code> を返す</li>
+<li>同名ファイルは上書き可能とする</li>
+<li>上書き時は旧ファイルサイズを差し引いた上で <code>used</code> を再計算する</li>
+<li>成功時は File モデルを返す</li>
+</ul>
+<p><strong>一覧</strong></p>
+<ul>
+<li><code>GET /api/projects/:id/files</code> はファイル名昇順で返す</li>
+<li>レスポンスには <code>files</code> 配列を含める</li>
+</ul>
+<p><strong>削除</strong></p>
+<ul>
+<li>対象ファイルが存在しない場合は <code>ERR_FILE_NOT_FOUND</code> を返す</li>
+<li>削除後はプロジェクトの <code>used</code> を再計算する</li>
+<li>削除成功時は <code>status</code>、<code>projectId</code>、<code>fileName</code>、<code>deletedAt</code> を返す</li>
+</ul>
+<p><strong>圧縮</strong></p>
+<ul>
+<li>Gzip 圧縮を実装対象とする</li>
+<li>Brotli 圧縮は Go 標準ライブラリに存在しないため、外部ライブラリ例外が仕様に追加されるまで実装対象外とする</li>
+</ul>
+<h3 id="13.8-ドメイン管理詳細">13.8 ドメイン管理詳細</h3>
+<ul>
+<li>ドメインは小文字へ正規化して保存する</li>
+<li>ドメインは RFC 1035 に準拠し、各ラベルは 1〜63 文字とする</li>
+<li>ドメイン全体は 253 文字以下とする</li>
+<li>ドメインは最大3階層までとする</li>
+<li>既に別プロジェクトへ割り当て済みの場合は <code>ERR_DOMAIN_ALREADY_ASSIGNED</code> を返す</li>
+<li>プロジェクト削除時は関連ドメインを削除する</li>
+</ul>
+<h3 id="13.9-ssl-管理詳細">13.9 SSL 管理詳細</h3>
+<p>Rev.12 時点では、SSL 管理は管理境界とデータモデルを実装対象とし、ACME は ASB互換目標に含める。Let&#x27;s Encrypt ACME クライアントの実通信は詳細仕様確定後に実装する。</p>
+<p>実装対象：</p>
+<ul>
+<li>SSL 証明書IDの管理</li>
+<li>証明書保存先 <code>certs/</code> の存在確認</li>
+<li>証明書有効期限の監視モデル</li>
+<li>SSL 証明書生成失敗時の <code>ERR_SSL_CERT_GENERATION_FAILED</code></li>
+</ul>
+<p>実装保留：</p>
+<ul>
+<li>ACME アカウント登録</li>
+<li>HTTP-01 / DNS-01 challenge</li>
+<li>証明書発行リクエスト</li>
+<li>証明書自動更新の実通信</li>
+</ul>
+<h3 id="13.10-webhook-詳細">13.10 Webhook 詳細</h3>
+<p>GitHub Webhook は Push イベントのみを対象とする。</p>
+<ul>
+<li><code>POST /api/webhook/github</code> は GitHub Webhook ペイロードを受け取る</li>
+<li>対象ブランチは設定ファイルで指定する</li>
+<li>対象外ブランチのイベントは成功扱いで無視する</li>
+<li>ペイロード形式が不正な場合は <code>400 Bad Request</code> を返す</li>
+<li>デプロイ処理に失敗した場合は <code>ERR_WEBHOOK_PROCESSING_FAILED</code> を返す</li>
+<li>Webhook 署名検証の必須化は詳細仕様確定後に実装する</li>
+</ul>
+<h3 id="13.11-バックアップ復旧詳細">13.11 バックアップ・復旧詳細</h3>
+<p><strong>バックアップ</strong></p>
+<ul>
+<li>バックアップ対象は <code>config/</code> と <code>storage/</code> とする</li>
+<li>バックアップ形式は tar.gz とする</li>
+<li>バックアップ作成後に SHA-256 ハッシュを計算する</li>
+<li>バックアップ履歴は <code>backups.json</code> に記録する</li>
+<li>バックアップ失敗時は成功履歴を作成してはならない</li>
+</ul>
+<p><strong>復旧</strong></p>
+<ul>
+<li>復旧前にバックアップファイルの存在と SHA-256 ハッシュを検証する</li>
+<li>既存データを退避してから復旧する</li>
+<li>復旧後に JSON ファイル構文と必須フィールドを検証する</li>
+<li>復旧失敗時は <code>ERR_BACKUP_RESTORE_FAILED</code> を返す</li>
+</ul>
+<h3 id="13.12-監視ログ詳細">13.12 監視・ログ詳細</h3>
+<p><strong>監視</strong></p>
+<ul>
+<li><code>/api/monitoring/stats</code> は CPU、メモリ、ディスク、接続数、リクエスト数を返す</li>
+<li>OS 依存で取得できない項目は <code>null</code> とし、レスポンス自体は成功扱いとする</li>
+</ul>
+<p><strong>ログ</strong></p>
+<ul>
+<li>アクセスログは全 HTTP リクエストを対象とする</li>
+<li>エラーログは WARN 以上を対象とする</li>
+<li>ログ形式は JSON Lines とする</li>
+<li>ログ API は <code>limit</code> と <code>offset</code> を受け付ける</li>
+<li><code>limit</code> のデフォルトは 100、最大は 1000 とする</li>
+<li>ログには機密値を含めてはならない</li>
+</ul>
+<h3 id="13.13-テスト受け入れ条件">13.13 テスト受け入れ条件</h3>
+<p>実装完了判定には以下を必須とする：</p>
+<ul>
+<li><code>go test ./...</code> が成功する</li>
+<li>Project API の作成、一覧、削除テストが成功する</li>
+<li>File API のアップロード、一覧、上書き、削除、quota 超過テストが成功する</li>
+<li>JSON ファイル読み込み失敗時の起動失敗テストが成功する</li>
+<li>未定義ルート 404、メソッド不一致 405 のテストが成功する</li>
+<li>共通エラーレスポンス形式のテストが成功する</li>
+<li>仕様上保留の機能が実装されていないことを確認する</li>
+</ul>
+<hr>
 <h2 id="14-パフォーマンス要件">14 パフォーマンス要件</h2>
 <h3 id="14.1-推奨リソース">14.1 推奨リソース</h3>
 <p><strong>最小要件</strong></p>
@@ -1310,14 +1566,14 @@ $ sudo systemctl stop asb</code></pre>
 <li>対象：ワークフロー全体</li>
 <li>検証シナリオ：</li>
 <li>プロジェクト作成 → ファイルアップロード → 削除</li>
-<li>ドメイン割り当て → SSL証明書発行</li>
+<li>ドメイン割り当て → SSL管理データ確認</li>
 <li>バックアップ → 復旧</li>
 <li>ツール：bash スクリプト + curl</li>
 </ul>
 <h3 id="15.2-テスト対象外">15.2 テスト対象外</h3>
 <p>以下はモック・スタブで対応：</p>
 <ul>
-<li>Let&#x27;s Encrypt との実際の連携（テスト環境では fake ACME サーバーを使用）</li>
+<li>Let&#x27;s Encrypt との実際の連携（Rev.12 時点では実通信を実装対象外とし、SSL管理境界のみ検証）</li>
 <li>GitHub Webhook（テスト用ペイロード）</li>
 <li>実際のファイルストレージ大容量テスト（テスト時は最大100MB）</li>
 </ul>
@@ -1402,14 +1658,17 @@ $ asb-backup-restore backup-v1.tar.gz</code></pre>
 <div class="tbl-wrap"><table><thead>
 <tr><th>バージョン</th><th>日付</th><th>内容</th></tr>
 </thead><tbody>
-<tr><td>Rev.1.8</td><td>2026-09-08</td><td>起動時の実行時データ自動生成を廃止し、設定済み保存先の存在確認・権限検証へ変更</td></tr>
-<tr><td>Rev.1.7</td><td>2025-01-15</td><td>ライセンス・バージョンポリシー詳細化（AEB準拠、ドキュメント/開発版/安定版バージョン管理体系、互換性対応表）</td></tr>
-<tr><td>Rev.1.6</td><td>2025-01-15</td><td>ポリシーセクション拡張（10種類へAEB準拠、4ドメイン別ポリシー・SDK/API・テスト・品質・ライセンス・将来計画管理ポリシー追加）</td></tr>
-<tr><td>Rev.1.5</td><td>2025-01-15</td><td>実装レベル仕様確定（API詳細化、バリデーション、セキュリティ詳細化、パフォーマンス・テスト・マイグレーション戦略追加）</td></tr>
-<tr><td>Rev.1.4</td><td>2025-01-15</td><td>インストール・アップデート自動化スクリプト仕様追加（install.sh、update.sh、asb.service）</td></tr>
-<tr><td>Rev.1.3</td><td>2025-01-15</td><td>インストール・アップデートセクション追加（単一バイナリでのSSH導入）</td></tr>
-<tr><td>Rev.1.2</td><td>2025-01-15</td><td>ビルド対応アーキテクチャ拡張（Linux amd64 + arm64）</td></tr>
-<tr><td>Rev.1.1</td><td>2025-01-15</td><td>仕様改良（データモデル説明追加、JSON構造拡張、エラーハンドリング定義、Phase詳細化）</td></tr>
+<tr><td>Rev.12</td><td>2026-09-08</td><td>XServer Static 相当仕様を ASB互換目標へ名称変更し、SSL/ACME を ASB互換目標に含める方針へ整理</td></tr>
+<tr><td>Rev.11</td><td>2026-09-08</td><td>XServer Static 相当の機能目標と ASB 独自仕様を追加し、セルフホスト、JSONファイルベース、実行時データ配置、API中心設計、段階実装方針を整理</td></tr>
+<tr><td>Rev.10</td><td>2026-09-08</td><td>実装詳細仕様を追加し、API共通規約、起動時検証、実行時データ配置、JSON更新、各機能の実装境界とテスト受け入れ条件を具体化</td></tr>
+<tr><td>Rev.9</td><td>2026-09-08</td><td>起動時の実行時データ自動生成を廃止し、設定済み保存先の存在確認・権限検証へ変更</td></tr>
+<tr><td>Rev.8</td><td>2025-01-15</td><td>ライセンス・バージョンポリシー詳細化（AEB準拠、ドキュメント/開発版/安定版バージョン管理体系、互換性対応表）</td></tr>
+<tr><td>Rev.7</td><td>2025-01-15</td><td>ポリシーセクション拡張（10種類へAEB準拠、4ドメイン別ポリシー・SDK/API・テスト・品質・ライセンス・将来計画管理ポリシー追加）</td></tr>
+<tr><td>Rev.6</td><td>2025-01-15</td><td>実装レベル仕様確定（API詳細化、バリデーション、セキュリティ詳細化、パフォーマンス・テスト・マイグレーション戦略追加）</td></tr>
+<tr><td>Rev.5</td><td>2025-01-15</td><td>インストール・アップデート自動化スクリプト仕様追加（install.sh、update.sh、asb.service）</td></tr>
+<tr><td>Rev.4</td><td>2025-01-15</td><td>インストール・アップデートセクション追加（単一バイナリでのSSH導入）</td></tr>
+<tr><td>Rev.3</td><td>2025-01-15</td><td>ビルド対応アーキテクチャ拡張（Linux amd64 + arm64）</td></tr>
+<tr><td>Rev.2</td><td>2025-01-15</td><td>仕様改良（データモデル説明追加、JSON構造拡張、エラーハンドリング定義、Phase詳細化）</td></tr>
 <tr><td>Rev.1</td><td>2025-01-15</td><td>ゼロベース仕様策定（責務駆動設計アーキテクチャ採用）</td></tr>
 </tbody></table></div>
     </div>
