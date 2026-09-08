@@ -2,7 +2,7 @@
 
 Adlaire-Static-Base（ASB）は、セルフホスト環境向けの静的コンテンツ配信ホスティングシステムです。
 
-Go製の単一バイナリHTTPサーバーとして、プロジェクト管理、ドメイン管理、SSL、ファイル管理、GitHub Webhook、バックアップ、監視ログを提供することを目的とします。
+Go製の単一バイナリHTTPサーバーとして、プロジェクト管理、ドメイン管理、SSL証明書管理境界、ファイル管理、GitHub Webhook、バックアップ、監視ログを提供することを目的とします。
 
 ## Status
 
@@ -10,8 +10,8 @@ Go製の単一バイナリHTTPサーバーとして、プロジェクト管理�
 
 ## Documents
 
-- `ASB-spec.md`: 仕様正本
-- `ASB-spec.html`: HTML版仕様書
+- `ASB-spec.md`: 仕様正本（Rev.39）
+- `ASB-spec.html`: `ASB-spec.md` から生成するHTML版仕様書
 - `DOCUMENT_INDEX.md`: 文書索引
-- `IMPLEMENTATION_TASKS.md`: ASB実装タスクリスト
-- `AGENTS.md`: 作業ルールブック
+- `IMPLEMENTATION_TASKS.md`: `ASB-spec.md` に基づく実装フェーズ別タスクリスト
+- `AGENTS.md`: 最上位作業ルールブック
