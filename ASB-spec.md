@@ -39,7 +39,7 @@ ASB は仕様駆動システムである。
 | 提供形態 | HTTP サーバー（単一バイナリ） |
 | データ保存 | JSON ファイルベース（外部DB不使用） |
 | ライセンス | クローズドライセンス |
-| 本書バージョン | Rev.19 |
+| 本書バージョン | Rev.20 |
 
 ---
 
@@ -550,8 +550,8 @@ ASB 起動時には、設定された保存先に以下の実行時データ領�
 | 項目 | 内容 |
 |-----|------|
 | リクエスト | GitHub Webhook ペイロード |
-| レスポンス | `{ "status": "received" }` |
-| ステータス | 200 OK, 400 Bad Request |
+| レスポンス | `{ "status": "deployed" }`、`{ "status": "ignored" }`、`{ "status": "duplicate" }` |
+| ステータス | 200 OK, 400 Bad Request, 401 Unauthorized, 500 Internal Server Error |
 
 ### 8.7 エラーハンドリング
 
@@ -572,6 +572,7 @@ ASB 起動時には、設定された保存先に以下の実行時データ領�
 | 200 | OK | リクエスト成功 |
 | 201 | Created | リソース作成成功 |
 | 400 | Bad Request | リクエスト形式エラー（バリデーション失敗等） |
+| 401 | Unauthorized | Webhook署名検証失敗 |
 | 404 | Not Found | リソース未検出 |
 | 409 | Conflict | リソース競合（既存データの重複等） |
 | 413 | Payload Too Large | ファイルサイズ超過 |
@@ -595,6 +596,9 @@ ASB 起動時には、設定された保存先に以下の実行時データ領�
 | ERR_BACKUP_NOT_FOUND | 404 | Backup not found | バックアップが存在しない |
 | ERR_BACKUP_RESTORE_FAILED | 500 | Backup restore failed | バックアップ復旧失敗 |
 | ERR_SSL_CERT_GENERATION_FAILED | 500 | SSL certificate generation failed | SSL証明書生成失敗 |
+| ERR_WEBHOOK_SIGNATURE_INVALID | 401 | Invalid webhook signature | Webhook署名が不正 |
+| ERR_WEBHOOK_SOURCE_INVALID | 500 | Webhook source invalid | Webhookデプロイ元が不正 |
+| ERR_WEBHOOK_PROJECT_NOT_CONFIGURED | 500 | Webhook project not configured | Webhookデプロイ先Projectが未設定 |
 | ERR_WEBHOOK_PROCESSING_FAILED | 500 | Webhook processing failed | Webhook処理失敗 |
 | ERR_INVALID_JSON | 400 | Invalid JSON | JSON構文不正 |
 | ERR_UNKNOWN_FIELD | 400 | Unknown field | 未知フィールド |
@@ -768,6 +772,14 @@ ASB 起動時には、設定された保存先に以下の実行時データ領�
     "level": "info",
     "format": "json",
     "maxSize": 104857600
+  },
+  "deploy": {
+    "projectId": "",
+    "sourcePath": "/srv/asb/source",
+    "branch": "main"
+  },
+  "webhook": {
+    "githubSecret": ""
   }
 }
 ```
@@ -786,6 +798,10 @@ ASB 起動時には、設定された保存先に以下の実行時データ領�
 | log | level | string | info | ログレベル（debug/info/warn/error） |
 | log | format | string | json | ログ形式（JSON Lines） |
 | log | maxSize | number | 104857600 | ログファイル最大サイズ（バイト、デフォルト100MB） |
+| deploy | projectId | string | 空文字 | Webhookデプロイ先Project ID。空文字の場合、Webhookデプロイは失敗扱い |
+| deploy | sourcePath | string | /srv/asb/source | Webhookデプロイ元ローカルcheckout絶対パス |
+| deploy | branch | string | main | Webhookデプロイ対象ブランチ |
+| webhook | githubSecret | string | 空文字 | GitHub Webhook署名検証用secret。空文字の場合は署名検証を行わない |
 
 ### 10.4 config/domains.json
 
@@ -829,7 +845,10 @@ ASB 起動時には、設定された保存先に以下の実行時データ領�
       "key": "main:abcdef1234567890",
       "branch": "main",
       "after": "abcdef1234567890",
-      "receivedAt": "2026-09-08T00:00:00Z"
+      "status": "deployed",
+      "receivedAt": "2026-09-08T00:00:00Z",
+      "completedAt": "2026-09-08T00:00:05Z",
+      "errorCode": ""
     }
   ]
 }
@@ -839,7 +858,10 @@ ASB 起動時には、設定された保存先に以下の実行時データ領�
 - `key`：Webhook 冪等キー（branch + ":" + after）
 - `branch`：GitHub Push イベントの対象ブランチ
 - `after`：GitHub Push イベントの after commit hash
-- `receivedAt`：Webhook 処理成功日時（ISO 8601形式）
+- `status`：`deployed`、`failed`、`duplicate`、`ignored` のいずれか
+- `receivedAt`：Webhook 受信日時（ISO 8601形式）
+- `completedAt`：Webhook 処理完了日時（ISO 8601形式）
+- `errorCode`：失敗時のエラーコード。成功時は空文字
 
 ### 10.7 config/migrations.json
 
@@ -892,7 +914,9 @@ Delivery Domain は、ファイル管理・GitHub Webhook の責務を担う。
 - Webhook：指定ブランチの変更を検出し自動デプロイ
 - エラー時の通知とログ記録
 
-Webhook 処理失敗は、システムログへ記録し、自動リトライスケジュールの仕様を備える。
+Webhook 処理失敗は、システムログおよび `config/webhooks.json` へ記録する。
+
+Rev.20 時点では、Webhook失敗時の自動リトライスケジュールを実装しない。
 
 ### 11.3 Data Domain ポリシー
 
@@ -938,7 +962,7 @@ System Domain は、監視・ログ管理の責務を担う。
 
 ASB はヘッドレスアーキテクチャを採用し、UI層に依存しない。
 
-Rev.19 時点の確定対象は、ASB 本体が提供する HTTP JSON API である。
+Rev.20 時点の確定対象は、ASB 本体が提供する HTTP JSON API である。
 
 SDK は実装対象外とし、通信仕様および配布方針が確定した後に実装対象へ昇格する。
 
@@ -1013,7 +1037,7 @@ E2E テスト
 - SSL/TLS：本番環境では必須（リバースプロキシで対応）
 
 **レート制限**
-- Rev.19 時点では実装対象外とし、保留事項として扱う
+- Rev.20 時点では実装対象外とし、保留事項として扱う
 
 **タイムアウト**
 - リクエスト読み込み：30秒
@@ -1295,7 +1319,7 @@ ASB の初回インストールとアップデートを自動化するため、`
 | `--version` | 必須 | 更新対象の安定版バージョン |
 | `--arch` | 任意 | `amd64` または `arm64`。未指定時は `uname -m` から判定 |
 
-`latest` 指定、自動最新版選択、未指定バージョンでの実行は Rev.19 時点では禁止する。
+`latest` 指定、自動最新版選択、未指定バージョンでの実行は Rev.20 時点では禁止する。
 
 スクリプトは以下を満たす。
 
@@ -1406,7 +1430,7 @@ $ sudo systemctl stop asb
 
 ### 13.1 実装対象の基準
 
-Rev.19 時点の実装対象は、ASB のセルフホスト型静的コンテンツ配信ホスティングに必要なバックエンド機能に限定する。
+Rev.20 時点の実装対象は、ASB のセルフホスト型静的コンテンツ配信ホスティングに必要なバックエンド機能に限定する。
 
 実装は以下の順序で進める：
 
@@ -1565,7 +1589,7 @@ JSON ファイル更新は以下の方針で行う：
 
 ### 13.9 SSL 管理詳細
 
-Rev.19 時点では、SSL 管理は管理境界とデータモデルを実装対象とし、ACME は ASB互換目標に含める。ACME 実通信、CA選定、ワイルドカード証明書対応は詳細仕様確定後に実装対象へ昇格する。
+Rev.20 時点では、SSL 管理は管理境界とデータモデルを実装対象とし、ACME は ASB互換目標に含める。ACME 実通信、CA選定、ワイルドカード証明書対応は詳細仕様確定後に実装対象へ昇格する。
 
 実装対象：
 
@@ -1586,13 +1610,23 @@ Rev.19 時点では、SSL 管理は管理境界とデータモデルを実装対
 GitHub Webhook は Push イベントのみを対象とする。
 
 - `POST /api/webhook/github` は GitHub Webhook ペイロードを受け取る
-- 対象ブランチは設定ファイルで指定する
+- 対象ブランチは `deploy.branch` で指定する
 - 対象外ブランチのイベントは成功扱いで無視する
+- Webhook 署名検証は `webhook.githubSecret` が空文字でない場合のみ実行する
+- `webhook.githubSecret` が空文字でない場合、`X-Hub-Signature-256` ヘッダーを必須とする
+- 署名検証は Go 標準ライブラリの `crypto/hmac` と `crypto/sha256` で行う
+- 署名値比較は `hmac.Equal` で行う
+- GitHub Push payload の `repository.clone_url` および `repository.ssh_url` をデプロイ元として使用してはならない
+- デプロイ先Projectは `deploy.projectId` で指定する
+- `deploy.projectId` が空文字の場合は `ERR_WEBHOOK_PROJECT_NOT_CONFIGURED` を返す
+- デプロイ元は `deploy.sourcePath` に指定されたローカルcheckoutに限定する
+- Webhook受信時は `deploy.sourcePath` が存在し、Git worktreeであり、対象 `after` commit を参照可能であることを検証する
 - ペイロード形式が不正な場合は `400 Bad Request` を返す
 - デプロイ処理に失敗した場合は `ERR_WEBHOOK_PROCESSING_FAILED` を返す
 - 同一 GitHub Push イベントを重複受信した場合は、同一 commit hash と対象ブランチの組み合わせを冪等キーとして扱い、二重デプロイを避ける
 - 冪等キーの保存方式は JSON ファイルベースとし、保存先は `storage.basePath` 配下に限定する
-- Webhook 署名検証の必須化は詳細仕様確定後に実装する
+- Webhook失敗時の自動リトライは Rev.20 時点では実装しない
+- GitHub側からの再送は通常のWebhook受信として扱い、冪等キーで重複判定する
 
 ### 13.11 バックアップ・復旧詳細
 
@@ -1641,7 +1675,7 @@ GitHub Webhook は Push イベントのみを対象とする。
 
 ### 13.14 実装契約
 
-本節は Rev.19 時点の実装契約である。実装者は本節に反する判断をコード側で独自に行ってはならない。
+本節は Rev.20 時点の実装契約である。実装者は本節に反する判断をコード側で独自に行ってはならない。
 
 #### 13.14.1 パッケージ境界
 
@@ -1786,14 +1820,15 @@ ID 生成、時刻取得、保存処理は Service に注入された依存関�
 
 #### 13.14.9 保留機能の実装禁止契約
 
-Rev.19 時点では以下を実装してはならない。
+Rev.20 時点では以下を実装してはならない。
 
 - SDK
 - APIキー管理
 - Rate limiting
 - ACME 実通信
 - CA 選定固定
-- Webhook 署名検証の必須化
+- `webhook.githubSecret` 未設定時のWebhook署名検証必須化
+- Webhook失敗時の自動リトライスケジューラー
 - 外部DB
 - 外部ストレージ連携
 - `.gitignore` を必要とする生成物設計
@@ -1802,7 +1837,7 @@ Rev.19 時点では以下を実装してはならない。
 
 ### 13.15 実装詳細固定仕様
 
-本節は Rev.19 時点で実装時に固定する詳細仕様である。
+本節は Rev.20 時点で実装時に固定する詳細仕様である。
 
 #### 13.15.1 API エンドポイント固定表
 
@@ -1848,6 +1883,10 @@ Rev.19 時点では以下を実装してはならない。
 | `log.level` | 任意 | `info` | `debug`,`info`,`warn`,`error` | 許可外 |
 | `log.format` | 任意 | `json` | `json` | `json` 以外 |
 | `log.maxSize` | 任意 | `104857600` | `1048576`-`1073741824` | 範囲外、数値以外 |
+| `deploy.projectId` | 任意 | 空文字 | UUID形式または空文字 | UUID形式以外 |
+| `deploy.sourcePath` | 任意 | `/srv/asb/source` | 絶対パス | 相対パス、存在しない、Git worktreeでない |
+| `deploy.branch` | 任意 | `main` | Git ref name | 空文字、空白文字を含む、`..` を含む |
+| `webhook.githubSecret` | 任意 | 空文字 | 文字列 | 文字列以外 |
 
 設定ファイルに未知フィールドがある場合は起動失敗とする。
 
@@ -1861,7 +1900,7 @@ Rev.19 時点では以下を実装してはならない。
 | `config/domains.json` | `{"domains":[]}` | `domains` | Domain Service | `domain` は小文字で保存 |
 | `config/backups.json` | `{"backups":[]}` | `backups` | Backup Service | `createdAt` 降順で保存 |
 | `storage/projects/:projectId/files.json` | `{"files":[]}` | `files` | File Service | `name` 昇順で保存 |
-| `config/webhooks.json` | `{"events":[]}` | `events` | Webhook Service | 冪等キー履歴を保存 |
+| `config/webhooks.json` | `{"events":[]}` | `events` | Webhook Service | 冪等キー、処理状態、失敗コードを保存 |
 
 上記 JSON ファイルは起動時に存在していなければならない。
 
@@ -1895,17 +1934,92 @@ GitHub Webhook は `push` event のみ処理する。
 
 `X-GitHub-Event` が `push` 以外の場合は `200 OK` とし、`{"status":"ignored"}` を返す。
 
-対象ブランチは設定ファイルで指定する。
+対象ブランチは `deploy.branch` で指定する。
 
 対象外ブランチの場合は `200 OK` とし、`{"status":"ignored"}` を返す。
+
+`webhook.githubSecret` が空文字でない場合は、`X-Hub-Signature-256` を必須とする。
+
+署名ヘッダーは `sha256=<hex>` 形式のみ許可する。
+
+署名検証はリクエストBodyの生バイト列に対してHMAC-SHA256を計算し、`hmac.Equal` で比較する。
+
+署名ヘッダーが存在しない、形式不正、または署名不一致の場合は `401 Unauthorized` とし、`ERR_WEBHOOK_SIGNATURE_INVALID` を返す。
+
+`webhook.githubSecret` が空文字の場合、署名ヘッダーの有無にかかわらず署名検証を行わない。
+
+デプロイ元は `deploy.sourcePath` のローカルcheckoutに限定する。
+
+デプロイ先Projectは `deploy.projectId` で指定する。
+
+`deploy.projectId` が空文字の場合は `ERR_WEBHOOK_PROJECT_NOT_CONFIGURED` を返す。
+
+GitHub Push payload の `repository.clone_url`、`repository.ssh_url`、`repository.html_url` から clone、fetch、pull してはならない。
+
+Webhook処理はネットワーク越しにGit操作を行ってはならない。
+
+`deploy.sourcePath` が存在しない、Git worktreeでない、または `after` commit を参照できない場合は `ERR_WEBHOOK_SOURCE_INVALID` を返す。
+
+静的コンテンツ反映元は `deploy.sourcePath` の `after` commit 時点のファイルツリーとする。
+
+Rev.20 時点では、Webhookデプロイ時の対象ファイルパスはリポジトリルート配下の全静的ファイルとする。
+
+`.git/`、`.github/`、`AGENTS.md`、`ASB-spec.md`、`ASB-spec.html`、`IMPLEMENTATION_TASKS.md`、`DOCUMENT_INDEX.md`、`README.md` は配信対象から除外する。
+
+デプロイ先は対象Projectの `storage/projects/:projectId/contents/` 配下に限定する。
+
+Webhookデプロイは開発リポジトリ内へ実行時データ、一時ファイル、ログファイルを作成してはならない。
 
 冪等キーは `branch + ":" + after` とする。
 
 同一冪等キーが `config/webhooks.json` に存在する場合は `200 OK` とし、`{"status":"duplicate"}` を返す。
 
-Webhook 処理成功後に冪等キーを `config/webhooks.json` へ保存する。
+Webhook 処理完了後に処理状態を `config/webhooks.json` へ保存する。
 
-Webhook 署名検証は Rev.19 時点では必須化しない。
+成功時の `status` は `deployed` とする。
+
+失敗時の `status` は `failed` とし、`errorCode` を保存する。
+
+Webhook失敗時の自動リトライは Rev.20 時点では実装しない。
+
+GitHub側から同一イベントが再送された場合は、`config/webhooks.json` の既存イベントにより重複判定する。
+
+Webhookデプロイ処理順序は以下に固定する。
+
+1. `X-GitHub-Event` を確認する
+2. 必要な場合のみ `X-Hub-Signature-256` を検証する
+3. GitHub Push payload をJSONとして解析する
+4. `ref` から対象ブランチを取得する
+5. 対象外ブランチの場合は `ignored` として終了する
+6. `after` と `deploy.branch` から冪等キーを生成する
+7. 同一冪等キーが存在する場合は `duplicate` として終了する
+8. `deploy.sourcePath` の存在、Git worktree、`after` commit 参照可否を検証する
+9. `deploy.projectId` の対象Project存在を検証する
+10. `after` commit の静的ファイルツリーを列挙する
+11. 配信対象外ファイルを除外する
+12. 対象Projectの `contents/` へ一時ディレクトリを作成する
+13. 静的ファイルを一時ディレクトリへコピーする
+14. `fsync` 後に atomic rename で `contents/` を置き換える
+15. `storage/projects/:projectId/files.json` を更新する
+16. `config/webhooks.json` に `deployed` を保存する
+17. 成功レスポンスを返す
+
+8-15 の途中で失敗した場合は `failed` を `config/webhooks.json` に保存し、`ERR_WEBHOOK_PROCESSING_FAILED` または具体的なエラーコードを返す。
+
+Webhook固定仕様のテスト項目は以下とする。
+
+- secret未設定時に署名なしリクエストを受け付ける
+- secret設定時に署名なしリクエストを `401` で拒否する
+- secret設定時に不正署名を `401` で拒否する
+- secret設定時に正しい `X-Hub-Signature-256` を受け付ける
+- `push` 以外のイベントを `ignored` とする
+- 対象外ブランチを `ignored` とする
+- 同一冪等キーを `duplicate` とする
+- payload の remote URL をデプロイ元として使わない
+- `deploy.sourcePath` が存在しない場合に失敗する
+- `after` commit を参照できない場合に失敗する
+- Webhook失敗時に自動リトライを作成しない
+- 開発リポジトリ内に実行時データ、一時ファイル、ログファイルを作成しない
 
 #### 13.15.6 実装順序固定
 
@@ -1926,7 +2040,7 @@ Webhook 署名検証は Rev.19 時点では必須化しない。
 
 ### 13.16 入出力契約固定仕様
 
-本節は Rev.19 時点で API、JSON保存、ログ、起動時検証の入出力を固定する仕様である。
+本節は Rev.20 時点で API、JSON保存、ログ、起動時検証の入出力を固定する仕様である。
 
 #### 13.16.1 共通成功レスポンス契約
 
@@ -1958,7 +2072,7 @@ Webhook 署名検証は Rev.19 時点では必須化しない。
 | Monitoring | 200 | `{"cpu":number|null,"memory":number|null,"disk":number|null,"connections":number|null,"requests":number|null,"checkedAt":string}` |
 | Access log | 200 | `{"logs":[AccessLog...],"limit":number,"offset":number}` |
 | Error log | 200 | `{"logs":[ErrorLog...],"limit":number,"offset":number}` |
-| GitHub Webhook 処理 | 200 | `{"status":"received","branch":string,"after":string,"processedAt":string}` |
+| GitHub Webhook 処理 | 200 | `{"status":"deployed","branch":string,"after":string,"processedAt":string}` |
 | GitHub Webhook 無視 | 200 | `{"status":"ignored","reason":string}` |
 | GitHub Webhook 重複 | 200 | `{"status":"duplicate","key":string}` |
 
@@ -2045,7 +2159,10 @@ Webhook 署名検証は Rev.19 時点では必須化しない。
   "key": "main:abcdef1234567890",
   "branch": "main",
   "after": "abcdef1234567890",
-  "receivedAt": "2026-09-08T00:00:00Z"
+  "status": "deployed",
+  "receivedAt": "2026-09-08T00:00:00Z",
+  "completedAt": "2026-09-08T00:00:05Z",
+  "errorCode": ""
 }
 ```
 
@@ -2127,7 +2244,7 @@ ASB_STARTUP_ERROR code=ERR_STORAGE_VALIDATION_FAILED message="Storage validation
 
 #### 13.16.8 テスト固定項目
 
-Rev.19 の実装では、以下のテストを必須とする。
+Rev.20 の実装では、以下のテストを必須とする。
 
 - 全API成功レスポンスの固定JSONキー検証
 - 全APIエラーレスポンスの固定JSONキー検証
@@ -2139,7 +2256,7 @@ Rev.19 の実装では、以下のテストを必須とする。
 
 ### 13.17 実装境界とファイル操作固定仕様
 
-本節は Rev.19 時点で package 境界、公開 interface、Repository、Storage、複数ファイル更新の実装契約を固定する仕様である。
+本節は Rev.20 時点で package 境界、公開 interface、Repository、Storage、複数ファイル更新の実装契約を固定する仕様である。
 
 #### 13.17.1 package 公開 interface 固定
 
@@ -2288,7 +2405,7 @@ Backup restore は以下の順序で実行する。
 
 途中失敗時に自動ロールバックを実装する場合も、ロールバック失敗時は成功扱いにしてはならない。
 
-Rev.19 時点では、複数JSON更新に外部トランザクション機構を導入してはならない。
+Rev.20 時点では、複数JSON更新に外部トランザクション機構を導入してはならない。
 
 #### 13.17.10 最低テスト分類固定
 
@@ -2371,7 +2488,7 @@ Rev.19 時点では、複数JSON更新に外部トランザクション機構を
 ### 15.2 テスト対象外
 
 以下はモック・スタブで対応：
-- ACME 実通信および CA 連携（Rev.19 時点では実通信を実装対象外とし、SSL管理境界のみ検証）
+- ACME 実通信および CA 連携（Rev.20 時点では実通信を実装対象外とし、SSL管理境界のみ検証）
 - GitHub Webhook（テスト用ペイロード）
 - 実際のファイルストレージ大容量テスト（テスト時は最大100MB）
 
@@ -2421,13 +2538,13 @@ ASB の開発版バージョンは累積連番 `v0.N` とし、メジャー/マ�
 | `config/webhooks.json` | Webhook 冪等キー履歴スキーマ |
 | `storage/projects/:projectId/files.json` | File メタデータスキーマ |
 
-静的コンテンツ実体、ログファイル、証明書ファイル、ビルド済みバイナリは、Rev.19 時点のマイグレーション対象外とする。
+静的コンテンツ実体、ログファイル、証明書ファイル、ビルド済みバイナリは、Rev.20 時点のマイグレーション対象外とする。
 
 ### 16.3 schemaVersion 固定
 
 各実行時 JSON ファイルはトップレベルに `schemaVersion` を持つ。
 
-Rev.19 時点の `schemaVersion` は `1` とする。
+Rev.20 時点の `schemaVersion` は `1` とする。
 
 例：
 
@@ -2524,7 +2641,7 @@ asb migrate --storage /var/asb --from-schema 0 --to-schema 1 --apply
 
 ### 16.8 禁止事項
 
-Rev.19 時点では以下を禁止する。
+Rev.20 時点では以下を禁止する。
 
 - 起動時の自動マイグレーション
 - 開発リポジトリ内でのマイグレーション作業ファイル作成
@@ -2553,6 +2670,7 @@ Rev.19 時点では以下を禁止する。
 
 | バージョン | 日付 | 内容 |
 |-----------|------|------|
+| Rev.20 | 2026-09-08 | GitHub Webhook署名検証、ローカルcheckoutデプロイ、失敗時リトライ禁止、Webhook処理順序を実装レベルで固定 |
 | Rev.19 | 2026-09-08 | 安定版リリース判定、GitHub Releases配布、checksum、install/update、systemd仕様を実装レベルで固定 |
 | Rev.18 | 2026-09-08 | マイグレーション戦略をASBのJSONファイルベース実行時データ移行契約へ全面置換 |
 | Rev.17 | 2026-09-08 | package公開interface、Repository/Storage責務、ファイル操作、Project削除、Backup/Restore、複数JSON更新失敗時契約を固定 |

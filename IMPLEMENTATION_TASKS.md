@@ -6,7 +6,7 @@
 
 本ファイルは、`ASB-spec.md` に基づいて実装タスクを管理する。
 
-参照仕様バージョン: `ASB-spec.md Rev.19`
+参照仕様バージョン: `ASB-spec.md Rev.20`
 
 `ASB-spec.md` で仕様確定済みの事項を実装タスクとしてリスト化する。
 
@@ -75,9 +75,9 @@
 - 保存失敗時に成功レスポンスを返さないことを実装する。
 - 複数JSON更新では最終JSONの保存完了まで成功レスポンスを返さないことを実装する。
 - 複数JSON更新の途中失敗時に更新済みJSON名、未更新JSON名、操作名、requestId をエラーログへ記録する。
-- Rev.19 時点では複数JSON更新に外部トランザクション機構を導入しない。
-- Rev.19 時点の API エンドポイント固定表に記載されたメソッド、パス、成功ステータス、失敗コードを実装する。
-- Rev.19 API 成功レスポンス固定表に記載された JSON キーと型を実装する。
+- Rev.20 時点では複数JSON更新に外部トランザクション機構を導入しない。
+- Rev.20 時点の API エンドポイント固定表に記載されたメソッド、パス、成功ステータス、失敗コードを実装する。
+- Rev.20 API 成功レスポンス固定表に記載された JSON キーと型を実装する。
 - 配列レスポンスは対象データが空でも空配列を返す。
 - URL パラメータ `:id`、`:domain`、`:name` の URL decode、正規化、バリデーションを実装する。
 - `:id` は UUID 形式のみ許可する。
@@ -185,11 +185,28 @@
 - Webhook処理成功・失敗ログを実装する。
 - Webhook 処理の冪等性方針を仕様に従って実装する。
 - `config/webhooks.json` による Webhook 冪等キー履歴保存を実装する。
-- `config/webhooks.json` の `events[]` スキーマ、`receivedAt` 降順、同一時刻時 `key` 昇順を実装する。
+- `config/webhooks.json` の `events[]` スキーマ、`status`、`completedAt`、`errorCode`、`receivedAt` 降順、同一時刻時 `key` 昇順を実装する。
 - `X-GitHub-Event` が `push` 以外の場合は `200 OK` と `{"status":"ignored"}` を返す。
 - 対象外ブランチの場合は `200 OK` と `{"status":"ignored"}` を返す。
 - 同一冪等キー受信時は `200 OK` と `{"status":"duplicate"}` を返す。
-- Webhook 処理成功後にのみ冪等キーを保存する。
+- `webhook.githubSecret` 未設定時はWebhook署名検証を行わない。
+- `webhook.githubSecret` 設定時は `X-Hub-Signature-256` を必須にする。
+- Webhook署名をGo標準ライブラリ `crypto/hmac` と `crypto/sha256` で検証する。
+- Webhook署名比較を `hmac.Equal` で実装する。
+- 署名なし、不正形式、不一致を `401 Unauthorized` と `ERR_WEBHOOK_SIGNATURE_INVALID` で拒否する。
+- GitHub Push payload の `repository.clone_url`、`repository.ssh_url`、`repository.html_url` をデプロイ元に使わない。
+- `deploy.projectId` をWebhookデプロイ先Projectとして扱う。
+- `deploy.projectId` 未設定時は `ERR_WEBHOOK_PROJECT_NOT_CONFIGURED` を返す。
+- `deploy.sourcePath` のローカルcheckoutを唯一のデプロイ元として扱う。
+- Webhook処理時にネットワーク越しのGit clone、fetch、pullを行わない。
+- `deploy.sourcePath` の存在、Git worktree、`after` commit 参照可否を検証する。
+- `deploy.sourcePath` 不正時は `ERR_WEBHOOK_SOURCE_INVALID` を返す。
+- Webhookデプロイ対象から `.git/`、`.github/`、主要仕様・管理ドキュメントを除外する。
+- Webhookデプロイ先を対象Projectの `storage/projects/:projectId/contents/` 配下に限定する。
+- Webhookデプロイを一時ディレクトリ作成、静的ファイルコピー、fsync、atomic rename、`files.json`更新、`webhooks.json`保存の順に実装する。
+- Webhook失敗時は `failed` と `errorCode` を `config/webhooks.json` に保存する。
+- Webhook失敗時の自動リトライスケジューラーを実装しない。
+- Webhook 処理完了後に処理状態を保存する。
 - バックアップ一覧 API `GET /api/backups` を実装する。
 - バックアップ復旧 API `POST /api/backups/restore/:id` を実装する。
 - `config/backups.json` によるバックアップ履歴管理を実装する。
@@ -229,12 +246,10 @@
 - APIキー管理の採用可否と実装範囲を確定する。
 - SDK通信規格と配布方針を確定する。
 - Rate limiting の採用可否と実装範囲を確定する。
-- GitHub Webhook の署名検証、デプロイ元取得方式を確定する。
 - バックアップ保存先を別障害領域へ配置する具体要件を確定する。
-- Webhook失敗時の自動リトライスケジュール仕様を確定する。
 - Brotli 圧縮を採用する場合の外部ライブラリ例外採用可否を確定する。
 - SSL証明書自動更新の実通信とスケジューリング仕様を確定する。
-- Rev.19 の保留機能実装禁止契約に反する実装が入らないことを確認する。
+- Rev.20 の保留機能実装禁止契約に反する実装が入らないことを確認する。
 - マイグレーションの `schemaVersion`、`--dry-run`、`--apply`、事前バックアップ、途中失敗、ロールバック、開発リポジトリ非生成のテストを整備する。
 
 ## 6. 実装済みリスト
