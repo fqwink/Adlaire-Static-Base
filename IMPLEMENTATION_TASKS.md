@@ -6,7 +6,7 @@
 
 本ファイルは、`ASB-spec.md` に基づいて実装タスクを管理する。
 
-参照仕様バージョン: `ASB-spec.md Rev.29`
+参照仕様バージョン: `ASB-spec.md Rev.30`
 
 `ASB-spec.md` で仕様確定済みの事項を実装タスクとしてリスト化する。
 
@@ -36,11 +36,17 @@
 - Service が Repository、Storage、Clock、IDGenerator、LogService interface に依存する構造にする。
 - Entity がファイル入出力、HTTP 入出力、時刻取得、ID生成を行わない構造にする。
 - Entity は保存形式とレスポンス形式の型定義のみを持つ構造にする。
-- ASB互換目標を将来の到達目標として扱い、Rev.29 時点の実装対象として扱わない。
+- ASB互換目標を将来の到達目標として扱い、Rev.30 時点の実装対象として扱わない。
 - ASB互換目標に含まれることを、未確定機能の実装根拠として扱わない。
 - ASB互換目標に含まれる機能を実装対象へ昇格する場合は、事前に `ASB-spec.md` で実装範囲、入出力、保存形式、副作用、生成物、テスト条件を確定する。
 - ASB互換目標を理由に `.gitignore`、外部DB、未承認外部ライブラリ、未承認外部サービス連携、開発リポジトリ内実行時データ、起動時自動生成、ビルド成果物自動生成を追加しない。
 - ASB互換目標を理由に APIキー管理、ユーザー認証、Rate limiting、Brotli圧縮、ACME実通信、CA選定、SDK本体、SDK専用通信を実装しない。
+- 将来計画、保留事項、検討・調査中事項を Rev.30 時点の実装対象として扱わない。
+- 将来計画機能を理由に UI用API、モバイル専用API、クラウド用API、テナント用API、課金用API、契約用API、外部ストレージ用API、ウイルススキャン用API、ログ暗号化用APIを追加しない。
+- 将来計画機能を理由に `ui.*`、`webui.*`、`desktop.*`、`mobile.*`、`cloud.*`、`tenant.*`、`billing.*`、`nfs.*`、`cluster.*`、`distributedStorage.*`、`externalStorage.*`、`virusScan.*`、`logEncryption.*` 設定項目を追加しない。
+- 将来計画機能を理由に UI用JSON、モバイル用JSON、クラウド用JSON、テナント用JSON、課金用JSON、外部ストレージ用JSON、ウイルススキャン用JSON、ログ暗号化用JSONを追加しない。
+- 将来計画機能を理由に UI用ディレクトリ、モバイル用ディレクトリ、クラウド用ディレクトリ、テナント用ディレクトリ、課金用ディレクトリ、外部ストレージ用ディレクトリ、ウイルススキャン用ディレクトリ、ログ暗号化用ディレクトリを追加しない。
+- GUI、Web UI、デスクトップアプリ、モバイルアプリ、クラウドサービス化、SaaS基盤、ユーザー管理、マルチテナント、課金管理、契約管理、複数インスタンス管理、クラスタ管理、分散ロック、NFS専用連携、分散ストレージ専用連携、外部ストレージサービス連携、ウイルススキャン、ログファイル暗号化、HTTP/2実装詳細を実装しない。
 - ASB 独自仕様であるセルフホスト、Go単一バイナリ、JSONファイルベース、外部DB不使用を実装制約として扱う。
 - 起動時に設定済み実行時データ領域の存在確認と権限検証を実装する。
 - 実行時データ領域が存在しない、または権限が不足する場合は起動失敗とする。
@@ -79,10 +85,10 @@
 - 保存失敗時に成功レスポンスを返さないことを実装する。
 - 複数JSON更新では最終JSONの保存完了まで成功レスポンスを返さないことを実装する。
 - 複数JSON更新の途中失敗時に更新済みJSON名、未更新JSON名、操作名、requestId をエラーログへ記録する。
-- Rev.29 時点では複数JSON更新に外部トランザクション機構を導入しない。
-- Rev.29 時点の API エンドポイント固定表に記載されたメソッド、パス、成功ステータス、失敗コードを実装する。
-- Rev.29 API 成功レスポンス固定表に記載された JSON キーと型を実装する。
-- 管理 API は Rev.29 時点では認証なしとして実装する。
+- Rev.30 時点では複数JSON更新に外部トランザクション機構を導入しない。
+- Rev.30 時点の API エンドポイント固定表に記載されたメソッド、パス、成功ステータス、失敗コードを実装する。
+- Rev.30 API 成功レスポンス固定表に記載された JSON キーと型を実装する。
+- 管理 API は Rev.30 時点では認証なしとして実装する。
 - 管理 API で `Authorization` ヘッダーと `X-API-Key` ヘッダーを認証判断に使用しないことを実装する。
 - 管理 API で `Authorization` ヘッダーまたは `X-API-Key` ヘッダーの有無により、成功・失敗・レスポンス内容を変えないことを実装する。
 - APIキー発行、APIキー保存、APIキー照合、APIキー失効、APIキーローテーション、APIキー権限スコープ、APIキー監査履歴を実装しないことを確認する。
@@ -91,7 +97,7 @@
 - `auth.*`、`apiKey.*` 設定項目を定義しないことを実装する。
 - `config/config.json` に認証関連フィールドが存在する場合は、未知フィールドとして起動失敗させる。
 - 管理 API の本番公開時保護は ASB 外部のリバースプロキシ、ファイアウォール、VPN、SSH tunnel、IP制限等の運用境界として扱う。
-- Rate limiting は Rev.29 時点では ASB 本体に実装しないことを確認する。
+- Rate limiting は Rev.30 時点では ASB 本体に実装しないことを確認する。
 - Rate limiting middleware、IP別制限、Host別制限、Domain別制限、Project別制限、API別制限、Webhook別制限、静的配信別制限を実装しないことを確認する。
 - token bucket、leaky bucket、sliding window counter、fixed window counter、同時接続数制限、転送量制限を実装しないことを確認する。
 - `429 Too Many Requests` と `Retry-After` ヘッダーを Rate limiting 用に返さないことを確認する。
@@ -100,7 +106,7 @@
 - `config/config.json` に Rate limiting 関連フィールドが存在する場合は、未知フィールドとして起動失敗させる。
 - 管理 API、静的配信、Webhook 受信が Rate limiting の有無により成功・失敗・レスポンス内容を変えないことを実装する。
 - Rate limiting の本番対応は ASB 外部のリバースプロキシ、WAF、CDN、ファイアウォール、ロードバランサ等の運用境界として扱う。
-- Brotli 圧縮は Rev.29 時点では ASB 本体に実装しないことを確認する。
+- Brotli 圧縮は Rev.30 時点では ASB 本体に実装しないことを確認する。
 - 圧縮機能は Go 標準ライブラリ `compress/gzip` による Gzip を標準対象として実装する。
 - `Accept-Encoding: br` を受信しても Brotli 応答へ切り替えないことを実装する。
 - `Accept-Encoding` に `gzip` と `br` の両方が含まれる場合でも、圧縮応答を返す場合は Gzip のみを使用する。
@@ -110,7 +116,7 @@
 - `*.br`、`storage/brotli/`、`storage/cache/brotli/` を作成しないことを実装する。
 - `brotli.*`、`compression.brotli.*` 設定項目を定義しないことを実装する。
 - `config/config.json` に Brotli 関連フィールドが存在する場合は、未知フィールドとして起動失敗させる。
-- SDK 本体は Rev.29 時点では ASB 本体に実装しないことを確認する。
+- SDK 本体は Rev.30 時点では ASB 本体に実装しないことを確認する。
 - SDK 通信規格は ASB 管理 HTTP JSON API と同一として扱う。
 - SDK 通信で、現行 API の HTTP method、URL path、query parameter、path parameter、request JSON body、multipart upload、success response JSON、error response JSON、HTTP status code、error code、UTC RFC3339 timestamp、pagination、static file upload 規約を使用する。
 - SDK 専用 HTTP API、SDK 専用 URL prefix、SDK 専用 request body、SDK 専用 response body、SDK 専用 error format、SDK 専用 pagination、SDK 専用 upload protocol を実装しないことを確認する。
@@ -120,7 +126,7 @@
 - `sdk.*`、`sdkAuth.*` 設定項目を定義しないことを実装する。
 - `config/config.json` に SDK 通信関連フィールドが存在する場合は、未知フィールドとして起動失敗させる。
 - SDK から ASB 管理 API を呼び出す場合でも、`Authorization` ヘッダー、`X-API-Key` ヘッダー、cookie、セッションIDを認証判断に使用しないことを確認する。
-- ACME 実通信は Rev.29 時点では ASB 本体に実装しないことを確認する。
+- ACME 実通信は Rev.30 時点では ASB 本体に実装しないことを確認する。
 - SSL 管理は証明書ID、証明書メタデータ、証明書ファイル配置先、証明書ファイルパス、証明書ファイル存在確認、証明書有効期限検証、証明書有効期限監視モデルに限定して実装する。
 - 証明書ファイルそのものを ASB 本体で生成、取得、更新、削除、失効しないことを確認する。
 - ACME client、ACME account 登録、ACME account key 生成/保存、ACME directory 取得、ACME nonce 取得、ACME order 作成、ACME authorization 取得、ACME challenge 応答、ACME finalize、ACME certificate download、ACME revoke を実装しないことを確認する。
@@ -174,7 +180,7 @@
 - `Last-Modified` を HTTP-date 形式で返す。
 - `Cache-Control` を既定で `public, max-age=60` とする。
 - `If-None-Match` と `If-Modified-Since` による `304 Not Modified` を実装する。
-- Range request は Rev.29 時点では実装せず、`Range` ヘッダーを無視して `206 Partial Content` を返さない。
+- Range request は Rev.30 時点では実装せず、`Range` ヘッダーを無視して `206 Partial Content` を返さない。
 - `Accept-Encoding: br` では Brotli 応答を返さない。
 - Brotli 用の `.br`、キャッシュ、一時ファイル、メタデータを開発リポジトリ内にも `storage.basePath` 配下にも生成しない。
 - 静的配信でディレクトリ一覧を返さない。
@@ -251,7 +257,7 @@
 - ドメインの小文字正規化、253文字以下、最大3階層制限を実装する。
 - ドメイン重複割り当てを `ERR_DOMAIN_ALREADY_ASSIGNED` として扱う。
 - SSL証明書管理境界を実装する。
-- ACME による証明書取得・更新を ASB互換目標として扱うが、Rev.29 時点では実通信を実装しない。
+- ACME による証明書取得・更新を ASB互換目標として扱うが、Rev.30 時点では実通信を実装しない。
 - 設定済み証明書保存先 `certs/` の検証と管理を実装する。
 - SSL証明書ID、証明書メタデータ、証明書ファイルパス検証、有効期限監視モデル、失敗エラー `ERR_SSL_CERT_GENERATION_FAILED` を実装する。
 - SSL更新状態は手動配置または ASB 外部運用の結果として確認できる管理モデルに限定する。
@@ -305,7 +311,7 @@
 - バックアップ作成用一時tarを `storage.basePath/backups/.tmp/` 配下に限定する。
 - atomic rename 後に履歴保存へ失敗した場合は、作成済みtar.gzを削除する。
 - バックアップ保存先を別障害領域へ複製する作業をASB外の運用責務として扱う。
-- 外部ストレージ連携を Rev.29 時点では実装対象外として扱う。
+- 外部ストレージ連携を Rev.30 時点では実装対象外として扱う。
 - Backup復旧前退避先を `storage.basePath/backups/restore-staging/{restoreId}/previous/` に固定する。
 - Backup復旧用展開先を `storage.basePath/backups/restore-staging/{restoreId}/next/` に固定する。
 - Backup履歴の `status` が `completed` でない場合は復旧を拒否する。
@@ -342,22 +348,25 @@
 ## 4. 低優先度
 
 - 配布成果物生成をリリース作業手順として自動化する。
-- HTTP/2 対応方針を Go 標準ライブラリで実装可能な範囲として整理する。
-- GUI、デスクトップアプリ、Web UI の将来計画を管理する。
-- モバイルアプリ化の将来計画を管理する。
-- クラウドサービス化の将来計画を管理する。
-- 複数インスタンス対応に向けたNFSまたは分散ストレージ調査を管理する。
-- 外部ストレージサービス統合を将来候補として管理する。
-- ログファイル暗号化を将来候補として管理する。
+- HTTP/2 実装詳細を実装対象へ昇格する場合の API、設定項目、テスト条件を仕様改訂で確定する。
+- GUI、デスクトップアプリ、Web UI を実装対象へ昇格する場合のリポジトリ境界、API、設定項目、外部依存、生成物を仕様改訂で確定する。
+- モバイルアプリを実装対象へ昇格する場合の API、認証、配布、設定項目、外部依存を仕様改訂で確定する。
+- クラウドサービス化を実装対象へ昇格する場合のテナント、認証、課金、契約、アカウント管理、保存JSON、外部依存を仕様改訂で確定する。
+- 複数インスタンス対応、NFS連携、分散ストレージ連携を実装対象へ昇格する場合のロック、整合性、障害時挙動、設定項目、外部依存を仕様改訂で確定する。
+- 外部ストレージサービス統合を実装対象へ昇格する場合のAPI、認証、保存JSON、バックアップ整合性、外部SDK採否を仕様改訂で確定する。
+- ログファイル暗号化を実装対象へ昇格する場合の鍵管理、暗号化形式、復号API、外部KMS採否、移行手順を仕様改訂で確定する。
+- ウイルススキャンを実装対象へ昇格する場合のスキャン方式、隔離、削除、外部API採否、保存JSON、テスト条件を仕様改訂で確定する。
 
 ## 5. 仕様未確定タスク
 
 - ACME protocol 対応範囲、CA選定、複数CA、challenge方式、account key 保護、DNS provider連携、retry、rate limit、テスト方法、失敗時挙動を確定する。
 - SDK 本体、SDK 配布方針、SDK 認証仕様を確定する。
 - SSL証明書自動更新の実通信とスケジューリング仕様を確定する。
-- Rev.29 の保留機能実装禁止契約に反する実装が入らないことを確認する。
+- Rev.30 の保留機能実装禁止契約に反する実装が入らないことを確認する。
 - ASB互換目標を理由に未確定 API、設定項目、JSONファイル、ディレクトリが追加されていないことをテストまたはレビューで確認する。
 - ASB互換目標に含まれる未確定機能が個別確定仕様なしに実装対象へ昇格していないことを確認する。
+- 将来計画機能を理由に未確定 API、設定項目、JSONファイル、ディレクトリ、外部依存が追加されていないことをテストまたはレビューで確認する。
+- 将来計画、保留事項、検討・調査中事項が個別確定仕様なしに実装対象へ昇格していないことを確認する。
 - マイグレーションの `schemaVersion`、`--dry-run`、`--apply`、事前バックアップ、途中失敗、ロールバック、開発リポジトリ非生成のテストを整備する。
 
 ## 6. 実装済みリスト
