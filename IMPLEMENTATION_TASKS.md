@@ -6,7 +6,7 @@
 
 本ファイルは、`ASB-spec.md` に基づいて実装タスクを管理する。
 
-参照仕様バージョン: `ASB-spec.md Rev.13`
+参照仕様バージョン: `ASB-spec.md Rev.14`
 
 `ASB-spec.md` で仕様確定済みの事項を実装タスクとしてリスト化する。
 
@@ -26,6 +26,11 @@
 - 各責務を Handler、Service、Entity の層構造で実装できる境界を整備する。
 - ドメイン間の接続を `main.go` で一元管理する。
 - 責務間の循環依存を禁止する構成にする。
+- `config`、`server`、`management`、`delivery`、`data`、`system` の package 境界を整備する。
+- `main.go` は設定読み込み、依存関係生成、HTTPサーバー起動、graceful shutdown のみに限定する。
+- Handler、Service、Entity の責務分離を実装する。
+- Handler が JSON ファイルを直接読み書きしない構造にする。
+- Entity がファイル入出力、HTTP 入出力、時刻取得、ID生成を行わない構造にする。
 - ASB互換目標の静的コンテンツ専用ホスティング機能目標を実装基準として扱う。
 - ASB 独自仕様であるセルフホスト、Go単一バイナリ、JSONファイルベース、外部DB不使用を実装制約として扱う。
 - 起動時に設定済み実行時データ領域の存在確認と権限検証を実装する。
@@ -40,13 +45,21 @@
 - グレースフルシャットダウンと `shutdownTimeout` を実装する。
 - API レスポンスの `application/json; charset=utf-8` 統一を実装する。
 - JSON API の `Content-Type: application/json` 要求を実装する。
+- charset 付き `Content-Type: application/json` を許可する。
+- JSON decode で未知フィールド拒否と後続トークン拒否を実装する。
 - 未定義ルート `404 Not Found` と未対応メソッド `405 Method Not Allowed` を実装する。
+- `405 Method Not Allowed` では `Allow` ヘッダーを返す。
+- API パスを静的ファイル配信より優先して判定する。
+- 外部ルーターライブラリを使わず、Go標準 `net/http` でルーティングする。
 - 共通JSONレスポンスと共通エラーレスポンス形式を実装する。
 - エラーレスポンスに `error`、`code`、`timestamp`、`httpStatus` を含める。
 - エラーレスポンスに内部ファイルパス、スタックトレース、機密値を含めない。
 - JSON の未知フィールド拒否、空 Body 拒否、UTC RFC3339 日時保存を実装する。
 - Project、File、Backup の UUID 形式 ID 生成を `crypto/rand` で実装する。
 - JSON ファイル更新時の読み込み検証、保存前再検証、同一ファイル排他書き込みを実装する。
+- JSON ファイル保存では同一ディレクトリ内の一時ファイル、`fsync`、atomic rename による置換を実装する。
+- 一時ファイルを開発リポジトリ内へ作成しないことを実装する。
+- 保存失敗時に成功レスポンスを返さないことを実装する。
 - プロジェクト作成 API `POST /api/projects` を実装する。
 - プロジェクト一覧 API `GET /api/projects` を実装する。
 - プロジェクト削除 API `DELETE /api/projects/:id` を実装する。
@@ -69,6 +82,8 @@
 - ログ保持期間7日間の方針を実装または運用仕様として整理する。
 - `go test ./...` によるユニットテスト基盤を整備する。
 - Project API、File API、起動時検証、404/405、共通エラーレスポンス、保留機能未実装のテストを整備する。
+- JSON 保存の排他、atomic rename、保存失敗時挙動のテストを整備する。
+- Handler が永続化層へ直接依存しないことをコード構造で確認する。
 
 ## 3. 中優先度
 
@@ -90,6 +105,7 @@
 - 指定ブランチの自動デプロイ処理を実装する。
 - デプロイ状態を確認できる管理モデルを実装する。
 - Webhook処理成功・失敗ログを実装する。
+- Webhook 処理の冪等性方針を仕様に従って実装する。
 - バックアップ一覧 API `GET /api/backups` を実装する。
 - バックアップ復旧 API `POST /api/backups/restore/:id` を実装する。
 - `config/backups.json` によるバックアップ履歴管理を実装する。
@@ -136,6 +152,7 @@
 - Webhook失敗時の自動リトライスケジュール仕様を確定する。
 - Brotli 圧縮を採用する場合の外部ライブラリ例外採用可否を確定する。
 - SSL証明書自動更新の実通信とスケジューリング仕様を確定する。
+- Rev.14 の保留機能実装禁止契約に反する実装が入らないことを確認する。
 
 ## 6. 実装済みリスト
 

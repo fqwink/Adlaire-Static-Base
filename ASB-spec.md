@@ -39,7 +39,7 @@ ASB は仕様駆動システムである。
 | 提供形態 | HTTP サーバー（単一バイナリ） |
 | データ保存 | JSON ファイルベース（外部DB不使用） |
 | ライセンス | クローズドライセンス |
-| 本書バージョン | Rev.13 |
+| 本書バージョン | Rev.14 |
 
 ---
 
@@ -885,7 +885,7 @@ System Domain は、監視・ログ管理の責務を担う。
 
 ASB はヘッドレスアーキテクチャを採用し、UI層に依存しない。
 
-Rev.13 時点の確定対象は、ASB 本体が提供する HTTP JSON API である。
+Rev.14 時点の確定対象は、ASB 本体が提供する HTTP JSON API である。
 
 SDK は実装対象外とし、通信仕様および配布方針が確定した後に実装対象へ昇格する。
 
@@ -959,7 +959,7 @@ E2E テスト
 - SSL/TLS：本番環境では必須（リバースプロキシで対応）
 
 **レート制限**
-- Rev.13 時点では実装対象外とし、保留事項として扱う
+- Rev.14 時点では実装対象外とし、保留事項として扱う
 
 **タイムアウト**
 - リクエスト読み込み：30秒
@@ -1274,7 +1274,7 @@ $ sudo systemctl stop asb
 
 ### 13.1 実装対象の基準
 
-Rev.13 時点の実装対象は、ASB のセルフホスト型静的コンテンツ配信ホスティングに必要なバックエンド機能に限定する。
+Rev.14 時点の実装対象は、ASB のセルフホスト型静的コンテンツ配信ホスティングに必要なバックエンド機能に限定する。
 
 実装は以下の順序で進める：
 
@@ -1432,7 +1432,7 @@ JSON ファイル更新は以下の方針で行う：
 
 ### 13.9 SSL 管理詳細
 
-Rev.13 時点では、SSL 管理は管理境界とデータモデルを実装対象とし、ACME は ASB互換目標に含める。ACME 実通信、CA選定、ワイルドカード証明書対応は詳細仕様確定後に実装対象へ昇格する。
+Rev.14 時点では、SSL 管理は管理境界とデータモデルを実装対象とし、ACME は ASB互換目標に含める。ACME 実通信、CA選定、ワイルドカード証明書対応は詳細仕様確定後に実装対象へ昇格する。
 
 実装対象：
 
@@ -1457,6 +1457,8 @@ GitHub Webhook は Push イベントのみを対象とする。
 - 対象外ブランチのイベントは成功扱いで無視する
 - ペイロード形式が不正な場合は `400 Bad Request` を返す
 - デプロイ処理に失敗した場合は `ERR_WEBHOOK_PROCESSING_FAILED` を返す
+- 同一 GitHub Push イベントを重複受信した場合は、同一 commit hash と対象ブランチの組み合わせを冪等キーとして扱い、二重デプロイを避ける
+- 冪等キーの保存方式は JSON ファイルベースとし、保存先は `storage.basePath` 配下に限定する
 - Webhook 署名検証の必須化は詳細仕様確定後に実装する
 
 ### 13.11 バックアップ・復旧詳細
@@ -1503,6 +1505,167 @@ GitHub Webhook は Push イベントのみを対象とする。
 - 未定義ルート 404、メソッド不一致 405 のテストが成功する
 - 共通エラーレスポンス形式のテストが成功する
 - 仕様上保留の機能が実装されていないことを確認する
+
+### 13.14 実装契約
+
+本節は Rev.14 時点の実装契約である。実装者は本節に反する判断をコード側で独自に行ってはならない。
+
+#### 13.14.1 パッケージ境界
+
+実装は以下の Go package 境界を基本とする。
+
+| パッケージ | 責務 | 外部副作用 |
+|-----------|------|-----------|
+| `config` | 設定読み込み、デフォルト適用、起動時検証 | 設定ファイル読み込み |
+| `server` | `net/http` サーバー、ルーティング、共通レスポンス | HTTP 入出力 |
+| `management` | Project、Domain、SSL 管理 | JSON メタデータ更新 |
+| `delivery` | File、静的配信、Webhook | ファイル入出力、JSON メタデータ更新 |
+| `data` | Backup、Storage | tar.gz 作成、復旧、JSON メタデータ更新 |
+| `system` | Monitoring、Log | ログ読み書き、監視値取得 |
+
+`main.go` は設定読み込み、依存関係生成、HTTP サーバー起動、graceful shutdown のみを行う。
+
+各 package は他 package の具象型に直接依存せず、必要な境界は interface で受け渡す。
+
+#### 13.14.2 HTTP ルーティング契約
+
+HTTP ルーティングは Go 標準 `net/http` で実装する。
+
+外部ルーターライブラリは採用しない。
+
+API パスは `/api/` で始まる。
+
+API パス判定は静的ファイル配信より優先する。
+
+静的ファイル配信は API パスに一致しないリクエストのみを対象とする。
+
+API パスは `strings.TrimPrefix` と `/` 分割により解析し、空セグメント、余分な末尾スラッシュ、想定外セグメントは `404 Not Found` とする。
+
+定義済みパスで HTTP メソッドだけが不一致の場合は `405 Method Not Allowed` とし、`Allow` ヘッダーに許可メソッドを設定する。
+
+#### 13.14.3 HTTP リクエスト契約
+
+JSON API は `Content-Type: application/json` を要求する。
+
+`Content-Type` に charset が付く場合は許可する。
+
+Body を持たない API では Body を読み込まない。
+
+Body を要求する API で空 Body の場合は `400 Bad Request` とする。
+
+JSON decode は `json.Decoder` を使用し、`DisallowUnknownFields` を有効にする。
+
+1リクエストにつき JSON 値は1個のみ許可し、後続トークンが存在する場合は `400 Bad Request` とする。
+
+multipart upload は `POST /api/projects/:id/files/upload` のみ許可し、フィールド名は `file` に固定する。
+
+#### 13.14.4 HTTP レスポンス契約
+
+成功レスポンスとエラーレスポンスは常に `Content-Type: application/json; charset=utf-8` とする。
+
+エラーレスポンスは以下のフィールドを必須とする。
+
+```json
+{
+  "error": "string",
+  "code": "string",
+  "timestamp": "2026-09-08T00:00:00Z",
+  "httpStatus": 400
+}
+```
+
+`timestamp` は UTC の RFC3339 形式とする。
+
+エラーレスポンスに内部ファイルパス、スタックトレース、環境変数、機密値を含めてはならない。
+
+#### 13.14.5 JSON 保存契約
+
+実行時データは `storage.basePath` 配下にのみ保存する。
+
+開発リポジトリ配下を `storage.basePath` に指定してはならない。
+
+ASB は起動時に実行時データ用ディレクトリまたは JSON ファイルを自動生成しない。
+
+JSON ファイル更新は以下の順序で行う。
+
+1. 対象 JSON ファイルを読み込む
+2. JSON 構文と必須フィールドを検証する
+3. メモリ上で変更後データを作成する
+4. 保存前に変更後データを再検証する
+5. 同一 JSON ファイル単位の排他を取得する
+6. 対象ファイルを truncate せず、同一ディレクトリ内の一時ファイルへ書き込む
+7. `fsync` 後に atomic rename で置き換える
+
+一時ファイル名は実行時データ領域内に限り使用できる。開発リポジトリ内へ一時ファイルを作成してはならない。
+
+保存失敗時は成功レスポンスを返してはならない。
+
+#### 13.14.6 起動時検証契約
+
+起動時検証は HTTP サーバー起動前に完了する。
+
+以下のいずれかに該当する場合、ASB は起動失敗とする。
+
+- 設定ファイルが存在しない
+- 設定ファイルが JSON として不正
+- 未知フィールドが存在する
+- `storage.basePath` が存在しない
+- `storage.basePath` が開発リポジトリ配下を指す
+- `config/`、`storage/`、`logs/`、`certs/` のいずれかが存在しない
+- 必須 JSON ファイルが存在しない
+- 必須 JSON ファイルが JSON として不正
+- 読み込みまたは書き込み権限が不足する
+- 設定値が許容範囲外である
+
+起動失敗時は標準エラーへ単一行のエラーを出力し、終了コード `1` で終了する。
+
+#### 13.14.7 Handler / Service / Entity 契約
+
+Handler は HTTP 入出力、パス/クエリ/Body の取り出し、HTTP ステータス決定のみを担当する。
+
+Handler は JSON ファイルを直接読み書きしてはならない。
+
+Service はバリデーション、整合性確認、永続化操作、ドメインルール適用を担当する。
+
+Entity は JSON 保存形式と API レスポンス形式に使う構造体を定義する。
+
+Entity はファイル入出力、HTTP 入出力、時刻取得、ID生成を行ってはならない。
+
+ID 生成、時刻取得、保存処理は Service に注入された依存関係を経由して行う。
+
+#### 13.14.8 機能別副作用契約
+
+| 機能 | 読み込み | 書き込み | 削除 |
+|-----|---------|---------|------|
+| Project 作成 | `config/projects.json` | `config/projects.json` | なし |
+| Project 削除 | projects/domains/files/backups | 関連 JSON | 関連メタデータとファイル |
+| File upload | project/files JSON | contents、files JSON、projects JSON | 上書き時の旧ファイル |
+| Domain 追加 | projects/domains JSON | `config/domains.json` | なし |
+| SSL 管理 | domains/certs | SSL メタデータ | なし |
+| Webhook | config/projects/files | contents、files JSON、deploy log | 置換対象ファイル |
+| Backup 作成 | config/storage | backup tar.gz、backups JSON | なし |
+| Backup 復旧 | backup tar.gz、config/storage | config/storage | 復旧対象の既存データ退避 |
+| Log API | logs | なし | なし |
+
+複数ファイルにまたがる操作では、途中失敗時に成功レスポンスを返してはならない。
+
+途中失敗時はエラーログを記録し、可能な範囲で整合性検証を行う。
+
+#### 13.14.9 保留機能の実装禁止契約
+
+Rev.14 時点では以下を実装してはならない。
+
+- SDK
+- APIキー管理
+- Rate limiting
+- ACME 実通信
+- CA 選定固定
+- Webhook 署名検証の必須化
+- 外部DB
+- 外部ストレージ連携
+- `.gitignore` を必要とする生成物設計
+
+上記を実装する場合は、先に `ASB-spec.md` を改訂し、確定仕様として昇格させる。
 
 ---
 
@@ -1572,7 +1735,7 @@ GitHub Webhook は Push イベントのみを対象とする。
 ### 15.2 テスト対象外
 
 以下はモック・スタブで対応：
-- ACME 実通信および CA 連携（Rev.13 時点では実通信を実装対象外とし、SSL管理境界のみ検証）
+- ACME 実通信および CA 連携（Rev.14 時点では実通信を実装対象外とし、SSL管理境界のみ検証）
 - GitHub Webhook（テスト用ペイロード）
 - 実際のファイルストレージ大容量テスト（テスト時は最大100MB）
 
@@ -1680,6 +1843,7 @@ $ asb-backup-restore backup-v1.tar.gz
 
 | バージョン | 日付 | 内容 |
 |-----------|------|------|
+| Rev.14 | 2026-09-08 | 実装契約を追加し、パッケージ境界、HTTP契約、JSON保存、起動時検証、Handler/Service/Entity責務、副作用、保留機能禁止を具体化 |
 | Rev.13 | 2026-09-08 | SDK/API、APIキー、Rate limiting、SSL/ACME、CA選定の確定範囲と保留範囲を整理し、機能仕様見出しを補完 |
 | Rev.12 | 2026-09-08 | XServer Static 相当仕様を ASB互換目標へ名称変更し、SSL/ACME を ASB互換目標に含める方針へ整理 |
 | Rev.11 | 2026-09-08 | XServer Static 相当の機能目標と ASB 独自仕様を追加し、セルフホスト、JSONファイルベース、実行時データ配置、API中心設計、段階実装方針を整理 |
