@@ -6,7 +6,7 @@
 
 本ファイルは、`ASB-spec.md` に基づいて実装タスクを管理する。
 
-参照仕様バージョン: `ASB-spec.md Rev.1.7`
+参照仕様バージョン: `ASB-spec.md Rev.1.8`
 
 `ASB-spec.md` で仕様確定済みの事項を実装タスクとしてリスト化する。
 
@@ -26,7 +26,8 @@
 - 各責務を Handler、Service、Entity の層構造で実装できる境界を整備する。
 - ドメイン間の接続を `main.go` で一元管理する。
 - 責務間の循環依存を禁止する構成にする。
-- 起動時に `.asb/config/`、`.asb/storage/`、`.asb/logs/`、`.asb/certs/` を自動生成する。
+- 起動時に設定済み実行時データ領域の存在確認と権限検証を実装する。
+- 実行時データ領域が存在しない、または権限が不足する場合は起動失敗とする。
 - `config/config.json` の読み込み、デフォルト値適用、起動時バリデーションを実装する。
 - Go標準 `net/http` によるHTTPサーバーを実装する。
 - グレースフルシャットダウンと `shutdownTimeout` を実装する。
@@ -62,7 +63,7 @@
 - ドメイン重複割り当てを `ERR_DOMAIN_ALREADY_ASSIGNED` として扱う。
 - Let's Encrypt 連携用のSSL管理境界を実装する。
 - ACME クライアント内製実装の詳細設計を確定する。
-- 証明書保存先 `.asb/certs/` の管理を実装する。
+- 設定済み証明書保存先 `certs/` の検証と管理を実装する。
 - SSL証明書自動更新のスケジューリングを実装する。
 - GitHub Webhook API `POST /api/webhook/github` を実装する。
 - GitHub Push イベントの検出を実装する。

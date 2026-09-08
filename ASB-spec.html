@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ASB 仕様書 Rev.1.7</title>
+<title>ASB 仕様書 Rev.1.8</title>
 <style>
 :root { color-scheme: light; --bg: #f4f7f9; --panel: #ffffff; --panel-2: #f8fafc; --panel-3: #edf6f3; --line: #d8e1e7; --line-strong: #b7c6cf; --text: #162126; --muted: #5b6d76; --subtle: #83919a; --brand: #0f766e; --brand-2: #14532d; --ok: #16845f; --code-bg: #111827; --code-text: #e8eef4; --toc-w: 310px; --radius: 8px; }
 @media (prefers-color-scheme: dark) { :root { color-scheme: dark; --bg: #0e1416; --panel: #141d20; --panel-2: #101719; --panel-3: #16312d; --line: #27363b; --line-strong: #3d5057; --text: #e6eef0; --muted: #a7b6bb; --subtle: #7e8e94; --brand: #5eead4; --brand-2: #99f6e4; --ok: #6ee7b7; --code-bg: #080d10; --code-text: #edf7f8; } }
@@ -63,7 +63,7 @@ pre code { background: transparent; border: 0; color: inherit; padding: 0; }
     <div class="sidebar-header">
       <span class="logo">Adlaire-Static-Base</span>
       <h1 class="sidebar-title">ASB Developer Docs</h1>
-      <span class="version-pill">Rev.1.7</span>
+      <span class="version-pill">Rev.1.8</span>
     </div>
     <nav class="toc">
       <a class="toc-l1" href="#セルフホスト型静的コンテンツ配信ホスティングシステム仕様書">セルフホスト型静的コンテンツ配信ホスティングシステム仕様書</a>
@@ -83,7 +83,7 @@ pre code { background: transparent; border: 0; color: inherit; padding: 0; }
 <a class="toc-l3" href="#5.3-ビルド">5.3 ビルド</a>
 <a class="toc-l2" href="#6-ディレクトリ構成">6 ディレクトリ構成</a>
 <a class="toc-l3" href="#責務駆動設計アーキテクチャ">責務駆動設計アーキテクチャ</a>
-<a class="toc-l3" href="#実行時に自動生成">実行時に自動生成</a>
+<a class="toc-l3" href="#実行時データの配置と起動時検証">実行時データの配置と起動時検証</a>
 <a class="toc-l3" href="#7.1-プロジェクト管理">7.1 プロジェクト管理</a>
 <a class="toc-l3" href="#7.2-ドメイン管理">7.2 ドメイン管理</a>
 <a class="toc-l3" href="#7.3-ssl-管理">7.3 SSL 管理</a>
@@ -144,13 +144,13 @@ pre code { background: transparent; border: 0; color: inherit; padding: 0; }
     </nav>
   </aside>
   <main class="portal-main">
-    <div class="topbar"><span class="topbar-title">ASB Specification</span><span class="version-pill">Rev.1.7</span></div>
+    <div class="topbar"><span class="topbar-title">ASB Specification</span><span class="version-pill">Rev.1.8</span></div>
     <div class="content">
       <section class="doc-hero">
         <p class="eyebrow">Adlaire-Static-Base</p>
         <h1>セルフホスト型静的コンテンツ配信ホスティングシステム仕様書</h1>
         <p class="subtitle">ASBの仕様正本 <code>ASB-spec.md</code> に基づくHTML版仕様書。</p>
-        <div class="hero-meta"><span class="meta-chip">Rev.1.7</span><span class="meta-chip">Generated from ASB-spec.md</span></div>
+        <div class="hero-meta"><span class="meta-chip">Rev.1.8</span><span class="meta-chip">Generated from ASB-spec.md</span></div>
       </section>
       <h1 id="セルフホスト型静的コンテンツ配信ホスティングシステム仕様書">セルフホスト型静的コンテンツ配信ホスティングシステム仕様書</h1>
 <h2 id="1-本書の位置づけ">1 本書の位置づけ</h2>
@@ -187,7 +187,7 @@ pre code { background: transparent; border: 0; color: inherit; padding: 0; }
 <tr><td>提供形態</td><td>HTTP サーバー（単一バイナリ）</td></tr>
 <tr><td>データ保存</td><td>JSON ファイルベース（外部DB不使用）</td></tr>
 <tr><td>ライセンス</td><td>クローズドライセンス</td></tr>
-<tr><td>本書バージョン</td><td>Rev.1.7</td></tr>
+<tr><td>本書バージョン</td><td>Rev.1.8</td></tr>
 </tbody></table></div>
 <hr>
 <h2 id="3-asb-の責務範囲">3 ASB の責務範囲</h2>
@@ -351,14 +351,16 @@ CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -o asb-linux-arm64 ./main.go</cod
 <li>Entity（データ構造定義）</li>
 </ul>
 <p>各層は責務の分離と再利用性を確保するよう設計される。ドメイン間の接続は main.go で一元管理。</p>
-<h3 id="実行時に自動生成">実行時に自動生成</h3>
-<p>ASB 起動時に以下の統計ディレクトリが自動生成される：</p>
+<h3 id="実行時データの配置と起動時検証">実行時データの配置と起動時検証</h3>
+<p>ASB は起動時に、実行時データ用のディレクトリまたはファイルを自動生成しない。</p>
+<p>ASB 起動時には、設定された保存先に以下の実行時データ領域が存在すること、および必要な読み書き権限を持つことを検証する。存在しない、または権限が不足する場合は起動失敗とする：</p>
 <ul>
-<li><code>.asb/config/</code> - 設定ファイル（projects.json、backups.json、config.json等）</li>
-<li><code>.asb/storage/</code> - プロジェクトファイルストレージ</li>
-<li><code>.asb/logs/</code> - ログファイル（access.log、error.log等）</li>
-<li><code>.asb/certs/</code> - SSL証明書ストレージ</li>
+<li><code>config/</code> - 設定ファイル（projects.json、backups.json、config.json等）</li>
+<li><code>storage/</code> - プロジェクトファイルストレージ</li>
+<li><code>logs/</code> - ログファイル（access.log、error.log等）</li>
+<li><code>certs/</code> - SSL証明書ストレージ</li>
 </ul>
+<p>実行時データは JSON ファイルベースで管理し、外部DBは使用しない。実行時データの保存先は <code>storage.basePath</code> によって指定する。</p>
 <h3 id="7.1-プロジェクト管理">7.1 プロジェクト管理</h3>
 <p><strong>プロジェクト構造</strong></p>
 <pre><code>{
@@ -1400,6 +1402,7 @@ $ asb-backup-restore backup-v1.tar.gz</code></pre>
 <div class="tbl-wrap"><table><thead>
 <tr><th>バージョン</th><th>日付</th><th>内容</th></tr>
 </thead><tbody>
+<tr><td>Rev.1.8</td><td>2026-09-08</td><td>起動時の実行時データ自動生成を廃止し、設定済み保存先の存在確認・権限検証へ変更</td></tr>
 <tr><td>Rev.1.7</td><td>2025-01-15</td><td>ライセンス・バージョンポリシー詳細化（AEB準拠、ドキュメント/開発版/安定版バージョン管理体系、互換性対応表）</td></tr>
 <tr><td>Rev.1.6</td><td>2025-01-15</td><td>ポリシーセクション拡張（10種類へAEB準拠、4ドメイン別ポリシー・SDK/API・テスト・品質・ライセンス・将来計画管理ポリシー追加）</td></tr>
 <tr><td>Rev.1.5</td><td>2025-01-15</td><td>実装レベル仕様確定（API詳細化、バリデーション、セキュリティ詳細化、パフォーマンス・テスト・マイグレーション戦略追加）</td></tr>
