@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ASB 仕様書 Rev.22</title>
+<title>ASB 仕様書 Rev.23</title>
 <style>
 :root { color-scheme: light; --bg: #f4f7f9; --panel: #ffffff; --panel-2: #f8fafc; --panel-3: #edf6f3; --line: #d8e1e7; --line-strong: #b7c6cf; --text: #162126; --muted: #5b6d76; --subtle: #83919a; --brand: #0f766e; --brand-2: #14532d; --ok: #16845f; --code-bg: #111827; --code-text: #e8eef4; --toc-w: 310px; --radius: 8px; }
 @media (prefers-color-scheme: dark) { :root { color-scheme: dark; --bg: #0e1416; --panel: #141d20; --panel-2: #101719; --panel-3: #16312d; --line: #27363b; --line-strong: #3d5057; --text: #e6eef0; --muted: #a7b6bb; --subtle: #7e8e94; --brand: #5eead4; --brand-2: #99f6e4; --ok: #6ee7b7; --code-bg: #080d10; --code-text: #edf7f8; } }
@@ -71,7 +71,7 @@ pre code { background: transparent; border: 0; color: inherit; padding: 0; }
     <div class="sidebar-header">
       <span class="logo">Adlaire-Static-Base</span>
       <h1 class="sidebar-title">ASB Developer Docs</h1>
-      <span class="version-pill">Rev.22</span>
+      <span class="version-pill">Rev.23</span>
     </div>
     <nav class="toc" id="asb-toc">
       <a class="toc-l1" href="#セルフホスト型静的コンテンツ配信ホスティングシステム仕様書">セルフホスト型静的コンテンツ配信ホスティングシステム仕様書</a>
@@ -180,13 +180,13 @@ pre code { background: transparent; border: 0; color: inherit; padding: 0; }
     </nav>
   </aside>
   <main class="portal-main">
-    <div class="topbar"><div class="topbar-left"><button class="sidebar-toggle" type="button" aria-label="目次を折りたたむ" aria-expanded="true" aria-controls="asb-toc">☰</button><span class="topbar-title">ASB Specification</span></div><span class="version-pill">Rev.22</span></div>
+    <div class="topbar"><div class="topbar-left"><button class="sidebar-toggle" type="button" aria-label="目次を折りたたむ" aria-expanded="true" aria-controls="asb-toc">☰</button><span class="topbar-title">ASB Specification</span></div><span class="version-pill">Rev.23</span></div>
     <div class="content">
       <section class="doc-hero">
         <p class="eyebrow">Adlaire-Static-Base</p>
         <h1>セルフホスト型静的コンテンツ配信ホスティングシステム仕様書</h1>
         <p class="subtitle">ASBの仕様正本 <code>ASB-spec.md</code> に基づくHTML版仕様書。</p>
-        <div class="hero-meta"><span class="meta-chip">Rev.22</span><span class="meta-chip">Generated from ASB-spec.md</span></div>
+        <div class="hero-meta"><span class="meta-chip">Rev.23</span><span class="meta-chip">Generated from ASB-spec.md</span></div>
       </section>
       <h1 id="セルフホスト型静的コンテンツ配信ホスティングシステム仕様書">セルフホスト型静的コンテンツ配信ホスティングシステム仕様書</h1>
 <h2 id="1-本書の位置づけ">1 本書の位置づけ</h2>
@@ -223,7 +223,7 @@ pre code { background: transparent; border: 0; color: inherit; padding: 0; }
 <tr><td>提供形態</td><td>HTTP サーバー（単一バイナリ）</td></tr>
 <tr><td>データ保存</td><td>JSON ファイルベース（外部DB不使用）</td></tr>
 <tr><td>ライセンス</td><td>クローズドライセンス</td></tr>
-<tr><td>本書バージョン</td><td>Rev.22</td></tr>
+<tr><td>本書バージョン</td><td>Rev.23</td></tr>
 </tbody></table></div>
 <hr>
 <h2 id="3-asb-の責務範囲">3 ASB の責務範囲</h2>
@@ -1008,7 +1008,7 @@ CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -o asb-linux-arm64 ./main.go</cod
 <li>エラー時の通知とログ記録</li>
 </ul>
 <p>Webhook 処理失敗は、システムログおよび <code>config/webhooks.json</code> へ記録する。</p>
-<p>Rev.22 時点では、Webhook失敗時の自動リトライスケジュールを実装しない。</p>
+<p>Rev.23 時点では、Webhook失敗時の自動リトライスケジュールを実装しない。</p>
 <h3 id="11.3-data-domain-ポリシー">11.3 Data Domain ポリシー</h3>
 <p>Data Domain は、バックアップ・ストレージの責務を担う。</p>
 <p><strong>責務優先順位</strong></p>
@@ -1022,8 +1022,8 @@ CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -o asb-linux-arm64 ./main.go</cod
 <ul>
 <li>バックアップ取得後はハッシュ検証を実施</li>
 <li>ASB標準バックアップ保存先は <code>storage.basePath/backups/</code> とする</li>
-<li>バックアップ保存先を別障害領域へ複製する作業は Rev.22 時点ではASB外の運用責務とする</li>
-<li>外部ストレージ連携は Rev.22 時点では実装対象外とする</li>
+<li>バックアップ保存先を別障害領域へ複製する作業は Rev.23 時点ではASB外の運用責務とする</li>
+<li>外部ストレージ連携は Rev.23 時点では実装対象外とする</li>
 <li>復旧は対象バックアップの存在、SHA-256、JSON構文、スキーマ検証後に実施</li>
 <li>バックアップ・復旧・検証失敗・復旧操作は監査ログへ記録</li>
 </ul>
@@ -1035,15 +1035,18 @@ CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -o asb-linux-arm64 ./main.go</cod
 <li>ログレベル：DEBUG / INFO / WARN / ERROR</li>
 <li>本番デフォルトレベル：INFO</li>
 <li>標準構成では <code>storage.basePath/logs/</code> 配下へ JSON Lines として保存する</li>
-<li>標準出力（stdout）出力は運用方式として別途検討する</li>
+<li>アクセスログは <code>storage.basePath/logs/access.log</code> に保存する</li>
+<li>エラーログは <code>storage.basePath/logs/error.log</code> に保存する</li>
+<li>標準出力（stdout）への通常ログ出力は Rev.23 時点では実装しない</li>
+<li>起動失敗時のみ標準エラー（stderr）へ単一行の起動エラーを出力する</li>
 </ul>
 <p><strong>必須フィールド</strong></p>
 <ul>
-<li><code>time</code>：RFC 3339（ナノ秒精度）</li>
+<li><code>time</code>：UTC RFC3339 秒精度</li>
 <li><code>level</code>：ログレベル</li>
-<li><code>msg</code>：メッセージ</li>
-<li><code>domain</code>：機能ドメイン（<code>mgmt</code> / <code>delivery</code> / <code>data</code> / <code>system</code>）</li>
-<li><code>timestamp</code>：操作日時</li>
+<li><code>domain</code>：機能ドメイン（<code>management</code> / <code>delivery</code> / <code>data</code> / <code>system</code>）</li>
+<li><code>message</code>：ログメッセージ</li>
+<li><code>requestId</code>：HTTP リクエストに紐づく UUID。リクエスト外ログでは空文字を許可する</li>
 </ul>
 <p><strong>監視項目</strong></p>
 <ul>
@@ -1053,7 +1056,7 @@ CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -o asb-linux-arm64 ./main.go</cod
 </ul>
 <h3 id="11.5-api-sdk-ポリシー">11.5 API/SDK ポリシー</h3>
 <p>ASB はヘッドレスアーキテクチャを採用し、UI層に依存しない。</p>
-<p>Rev.22 時点の確定対象は、ASB 本体が提供する HTTP JSON API である。</p>
+<p>Rev.23 時点の確定対象は、ASB 本体が提供する HTTP JSON API である。</p>
 <p>SDK は実装対象外とし、通信仕様および配布方針が確定した後に実装対象へ昇格する。</p>
 <p><strong>API 設計原則</strong></p>
 <ul>
@@ -1127,7 +1130,7 @@ CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -o asb-linux-arm64 ./main.go</cod
 </ul>
 <p><strong>レート制限</strong></p>
 <ul>
-<li>Rev.22 時点では実装対象外とし、保留事項として扱う</li>
+<li>Rev.23 時点では実装対象外とし、保留事項として扱う</li>
 </ul>
 <p><strong>タイムアウト</strong></p>
 <ul>
@@ -1353,7 +1356,7 @@ $ sudo systemctl is-active --quiet asb</code></pre>
 <tr><td><code>--version</code></td><td>必須</td><td>更新対象の安定版バージョン</td></tr>
 <tr><td><code>--arch</code></td><td>任意</td><td><code>amd64</code> または <code>arm64</code>。未指定時は <code>uname -m</code> から判定</td></tr>
 </tbody></table></div>
-<p><code>latest</code> 指定、自動最新版選択、未指定バージョンでの実行は Rev.22 時点では禁止する。</p>
+<p><code>latest</code> 指定、自動最新版選択、未指定バージョンでの実行は Rev.23 時点では禁止する。</p>
 <p>スクリプトは以下を満たす。</p>
 <ol>
 <li><code>set -eu</code> で実行する</li>
@@ -1451,7 +1454,7 @@ $ sudo systemctl stop asb</code></pre>
 <hr>
 <h2 id="13-実装詳細仕様">13 実装詳細仕様</h2>
 <h3 id="13.1-実装対象の基準">13.1 実装対象の基準</h3>
-<p>Rev.22 時点の実装対象は、ASB のセルフホスト型静的コンテンツ配信ホスティングに必要なバックエンド機能に限定する。</p>
+<p>Rev.23 時点の実装対象は、ASB のセルフホスト型静的コンテンツ配信ホスティングに必要なバックエンド機能に限定する。</p>
 <p>実装は以下の順序で進める：</p>
 <ol>
 <li>起動設定、実行時データ検証、HTTP サーバー、共通レスポンス</li>
@@ -1593,7 +1596,7 @@ $ sudo systemctl stop asb</code></pre>
 <li>プロジェクト削除時は関連ドメインを削除する</li>
 </ul>
 <h3 id="13.9-ssl-管理詳細">13.9 SSL 管理詳細</h3>
-<p>Rev.22 時点では、SSL 管理は管理境界とデータモデルを実装対象とし、ACME は ASB互換目標に含める。ACME 実通信、CA選定、ワイルドカード証明書対応は詳細仕様確定後に実装対象へ昇格する。</p>
+<p>Rev.23 時点では、SSL 管理は管理境界とデータモデルを実装対象とし、ACME は ASB互換目標に含める。ACME 実通信、CA選定、ワイルドカード証明書対応は詳細仕様確定後に実装対象へ昇格する。</p>
 <p>実装対象：</p>
 <ul>
 <li>SSL 証明書IDの管理</li>
@@ -1627,7 +1630,7 @@ $ sudo systemctl stop asb</code></pre>
 <li>デプロイ処理に失敗した場合は <code>ERR_WEBHOOK_PROCESSING_FAILED</code> を返す</li>
 <li>同一 GitHub Push イベントを重複受信した場合は、同一 commit hash と対象ブランチの組み合わせを冪等キーとして扱い、二重デプロイを避ける</li>
 <li>冪等キーの保存方式は JSON ファイルベースとし、保存先は <code>storage.basePath</code> 配下に限定する</li>
-<li>Webhook失敗時の自動リトライは Rev.22 時点では実装しない</li>
+<li>Webhook失敗時の自動リトライは Rev.23 時点では実装しない</li>
 <li>GitHub側からの再送は通常のWebhook受信として扱い、冪等キーで重複判定する</li>
 </ul>
 <h3 id="13.11-バックアップ復旧詳細">13.11 バックアップ・復旧詳細</h3>
@@ -1665,12 +1668,27 @@ $ sudo systemctl stop asb</code></pre>
 </ul>
 <p><strong>ログ</strong></p>
 <ul>
-<li>アクセスログは全 HTTP リクエストを対象とする</li>
+<li>ログ保存先は <code>storage.basePath/logs/</code> とする</li>
+<li>アクセスログは <code>storage.basePath/logs/access.log</code> とする</li>
+<li>エラーログは <code>storage.basePath/logs/error.log</code> とする</li>
+<li>アクセスログは API、静的配信、Webhook を含む全 HTTP リクエストを対象とする</li>
 <li>エラーログは WARN 以上を対象とする</li>
-<li>ログ形式は JSON Lines とする</li>
+<li>ログ形式は UTF-8 JSON Lines とし、1行に1 JSON object のみを出力する</li>
+<li>各ログ行は末尾に LF を付ける</li>
 <li>ログ API は <code>limit</code> と <code>offset</code> を受け付ける</li>
-<li><code>limit</code> のデフォルトは 100、最大は 1000 とする</li>
+<li><code>limit</code> のデフォルトは 100、最小は 1、最大は 1000 とする</li>
+<li><code>offset</code> のデフォルトは 0、最小は 0 とする</li>
+<li>ログ API は新しいログから順に返す</li>
+<li>ログ API は壊れた JSON 行を検出した場合、当該行を読み飛ばさず <code>500 Internal Server Error</code> を返す</li>
+<li><code>requestId</code> はリクエスト受信時に生成し、レスポンスヘッダー <code>X-Request-Id</code>、アクセスログ、エラーログに同一値を使用する</li>
 <li>ログには機密値を含めてはならない</li>
+<li>通常ログを stdout に出力してはならない</li>
+<li>起動失敗時のみ stderr へ単一行を出力する</li>
+<li>ログローテーションは <code>log.maxSize</code> 到達時に実行する</li>
+<li>ローテーション後ファイル名は <code>access.log.{unixTime}</code> または <code>error.log.{unixTime}</code> とする</li>
+<li>ローテーション済みログは7日経過後に削除対象とする</li>
+<li>ログローテーションおよび期限切れ削除の失敗は WARN として <code>error.log</code> へ記録する</li>
+<li>開発リポジトリ内にログファイルを作成してはならない</li>
 </ul>
 <h3 id="13.13-テスト受け入れ条件">13.13 テスト受け入れ条件</h3>
 <p>実装完了判定には以下を必須とする：</p>
@@ -1684,7 +1702,7 @@ $ sudo systemctl stop asb</code></pre>
 <li>仕様上保留の機能が実装されていないことを確認する</li>
 </ul>
 <h3 id="13.14-実装契約">13.14 実装契約</h3>
-<p>本節は Rev.22 時点の実装契約である。実装者は本節に反する判断をコード側で独自に行ってはならない。</p>
+<p>本節は Rev.23 時点の実装契約である。実装者は本節に反する判断をコード側で独自に行ってはならない。</p>
 <h4 id="13.14.1-パッケージ境界">13.14.1 パッケージ境界</h4>
 <div class="tbl-wrap"><table><thead>
 <tr><th>パッケージ</th><th>責務</th><th>外部副作用</th></tr>
@@ -1769,7 +1787,7 @@ $ sudo systemctl stop asb</code></pre>
 </tbody></table></div>
 <p>複数ファイルにまたがる操作では、途中失敗時に成功レスポンスを返してはならない。</p>
 <h4 id="13.14.9-保留機能の実装禁止契約">13.14.9 保留機能の実装禁止契約</h4>
-<p>Rev.22 時点では以下を実装してはならない。</p>
+<p>Rev.23 時点では以下を実装してはならない。</p>
 <ul>
 <li>SDK</li>
 <li>APIキー管理</li>
@@ -1784,7 +1802,7 @@ $ sudo systemctl stop asb</code></pre>
 </ul>
 <p>上記を実装する場合は、先に <code>ASB-spec.md</code> を改訂し、確定仕様として昇格させる。</p>
 <h3 id="13.15-実装詳細固定仕様">13.15 実装詳細固定仕様</h3>
-<p>本節は Rev.22 時点で実装時に固定する詳細仕様である。</p>
+<p>本節は Rev.23 時点で実装時に固定する詳細仕様である。</p>
 <h4 id="13.15.1-api-エンドポイント固定表">13.15.1 API エンドポイント固定表</h4>
 <div class="tbl-wrap"><table><thead>
 <tr><th>機能</th><th>Method</th><th>Path</th><th>Body</th><th>Query</th><th>成功</th><th>主な失敗</th></tr>
@@ -1811,6 +1829,9 @@ $ sudo systemctl stop asb</code></pre>
 <li><code>:name</code> は URL decode 後に検証し、パス区切り文字を含む場合は拒否する</li>
 <li><code>limit</code> はデフォルト100、最小1、最大1000とする</li>
 <li><code>offset</code> はデフォルト0、最小0とする</li>
+<li><code>limit</code> または <code>offset</code> が整数として解釈できない場合は <code>400 Bad Request</code> とする</li>
+<li><code>limit</code> が <code>1</code> 未満または <code>1000</code> を超える場合は <code>400 Bad Request</code> とする</li>
+<li><code>offset</code> が <code>0</code> 未満の場合は <code>400 Bad Request</code> とする</li>
 </ul>
 <h4 id="13.15.2-設定値固定表">13.15.2 設定値固定表</h4>
 <div class="tbl-wrap"><table><thead>
@@ -1892,7 +1913,7 @@ $ sudo systemctl stop asb</code></pre>
 <p><code>If-None-Match</code> が <code>ETag</code> と一致する場合は <code>304 Not Modified</code> を返す。</p>
 <p><code>If-Modified-Since</code> が <code>Last-Modified</code> 以降の場合は <code>304 Not Modified</code> を返す。</p>
 <p><code>304 Not Modified</code> ではレスポンスボディを返してはならない。</p>
-<p>Range request は Rev.22 時点では実装しない。</p>
+<p>Range request は Rev.23 時点では実装しない。</p>
 <p><code>Range</code> ヘッダーを受信した場合も無視し、通常の <code>200 OK</code> または <code>304 Not Modified</code> 判定を行う。</p>
 <p>Gzip 圧縮済みファイルを返す場合は <code>Content-Encoding: gzip</code> を設定する。</p>
 <p>静的配信処理は開発リポジトリ内に配信用一時ファイル、キャッシュファイル、ログ以外の実行時データを作成してはならない。</p>
@@ -1914,7 +1935,7 @@ $ sudo systemctl stop asb</code></pre>
 <li>Webhook処理はネットワーク越しにGit操作を行ってはならない</li>
 <li><code>deploy.sourcePath</code> が存在しない、Git worktreeでない、または <code>after</code> commit を参照できない場合は <code>ERR_WEBHOOK_SOURCE_INVALID</code> を返す</li>
 <li>静的コンテンツ反映元は <code>deploy.sourcePath</code> の <code>after</code> commit 時点のファイルツリーとする</li>
-<li>Rev.22 時点では、Webhookデプロイ時の対象ファイルパスはリポジトリルート配下の全静的ファイルとする</li>
+<li>Rev.23 時点では、Webhookデプロイ時の対象ファイルパスはリポジトリルート配下の全静的ファイルとする</li>
 <li><code>.git/</code>、<code>.github/</code>、<code>AGENTS.md</code>、<code>ASB-spec.md</code>、<code>ASB-spec.html</code>、<code>IMPLEMENTATION_TASKS.md</code>、<code>DOCUMENT_INDEX.md</code>、<code>README.md</code> は配信対象から除外する</li>
 <li>デプロイ先は対象Projectの <code>storage/projects/:projectId/contents/</code> 配下に限定する</li>
 <li>Webhookデプロイは開発リポジトリ内へ実行時データ、一時ファイル、ログファイルを作成してはならない</li>
@@ -1923,7 +1944,7 @@ $ sudo systemctl stop asb</code></pre>
 <li>Webhook 処理完了後に処理状態を <code>config/webhooks.json</code> へ保存する</li>
 <li>成功時の <code>status</code> は <code>deployed</code> とする</li>
 <li>失敗時の <code>status</code> は <code>failed</code> とし、<code>errorCode</code> を保存する</li>
-<li>Webhook失敗時の自動リトライは Rev.22 時点では実装しない</li>
+<li>Webhook失敗時の自動リトライは Rev.23 時点では実装しない</li>
 <li>GitHub側から同一イベントが再送された場合は、<code>config/webhooks.json</code> の既存イベントにより重複判定する</li>
 </ul>
 <p>Webhookデプロイ処理順序は以下に固定する。</p>
@@ -1977,7 +1998,7 @@ $ sudo systemctl stop asb</code></pre>
 </ol>
 <p>各段階は <code>go test ./...</code> が通る単位で完了させる。</p>
 <h3 id="13.16-入出力契約固定仕様">13.16 入出力契約固定仕様</h3>
-<p>本節は Rev.22 時点で API、JSON保存、ログ、起動時検証の入出力を固定する仕様である。</p>
+<p>本節は Rev.23 時点で API、JSON保存、ログ、起動時検証の入出力を固定する仕様である。</p>
 <h4 id="13.16.1-共通成功レスポンス契約">13.16.1 共通成功レスポンス契約</h4>
 <ul>
 <li>成功レスポンスは常に JSON object とする</li>
@@ -2103,7 +2124,12 @@ $ sudo systemctl stop asb</code></pre>
 <pre><code>ASB_STARTUP_ERROR code=ERR_STORAGE_VALIDATION_FAILED message="Storage validation failed"</code></pre>
 <p>エラーコードは、失敗原因が JSON 構文の場合は <code>ERR_INVALID_JSON</code>、保存先検証の場合は <code>ERR_STORAGE_VALIDATION_FAILED</code>、設定未知フィールドの場合は <code>ERR_UNKNOWN_FIELD</code> とする。</p>
 <h4 id="13.16.7-ログjson-lines固定">13.16.7 ログJSON Lines固定</h4>
-<p>アクセスログは1リクエストにつき1行の JSON Lines とし、以下のフィールドを固定する。</p>
+<p>ログファイルは <code>storage.basePath/logs/</code> 配下に保存する。</p>
+<p>アクセスログファイル名は <code>access.log</code> とする。</p>
+<p>エラーログファイル名は <code>error.log</code> とする。</p>
+<p>ログファイルは UTF-8 JSON Lines とする。</p>
+<p>1行に1 JSON object のみを出力し、各行末尾は LF とする。</p>
+<p>アクセスログは1リクエストにつき1行の JSON Lines とし、以下のフィールドと順序を固定する。</p>
 <pre><code>{
   "time": "2026-09-08T00:00:00Z",
   "level": "INFO",
@@ -2115,7 +2141,11 @@ $ sudo systemctl stop asb</code></pre>
   "remoteAddr": "127.0.0.1",
   "requestId": "string(UUID)"
 }</code></pre>
-<p>エラーログは WARN 以上を対象とし、以下のフィールドを固定する。</p>
+<p>アクセスログの <code>level</code> は通常 <code>INFO</code> とする。</p>
+<p>アクセスログの <code>domain</code> は処理対象に応じて <code>management</code>、<code>delivery</code>、<code>data</code>、<code>system</code> のいずれかとする。</p>
+<p>アクセスログの <code>durationMs</code> はリクエスト受信からレスポンス書き込み完了までのミリ秒整数とする。</p>
+<p>アクセスログはレスポンス書き込み完了後に記録する。</p>
+<p>エラーログは WARN 以上を対象とし、以下のフィールドと順序を固定する。</p>
 <pre><code>{
   "time": "2026-09-08T00:00:00Z",
   "level": "ERROR",
@@ -2124,6 +2154,26 @@ $ sudo systemctl stop asb</code></pre>
   "message": "File upload failed",
   "requestId": "string(UUID)"
 }</code></pre>
+<p>エラーログの <code>level</code> は <code>WARN</code> または <code>ERROR</code> とする。</p>
+<p>エラーログの <code>domain</code> は <code>management</code>、<code>delivery</code>、<code>data</code>、<code>system</code> のいずれかとする。</p>
+<p>エラーログの <code>code</code> は定義済みエラーコードまたは空文字とする。定義済みエラーコードがある場合は空文字にしてはならない。</p>
+<p>エラーログの <code>message</code> は利用者向けエラーメッセージではなく、運用者向けの短い固定文言とする。</p>
+<p>HTTP リクエスト処理中に発生したエラーでは、エラーログの <code>requestId</code> をアクセスログおよびレスポンスヘッダーと一致させる。</p>
+<p>リクエスト外のエラーでは <code>requestId</code> は空文字を許可する。</p>
+<p><code>log.level</code> は出力する最小レベルを表す。</p>
+<p><code>DEBUG</code> は <code>debug</code> 設定時のみ出力する。</p>
+<p><code>INFO</code> は <code>debug</code> または <code>info</code> 設定時に出力する。</p>
+<p><code>WARN</code> は <code>debug</code>、<code>info</code>、<code>warn</code> 設定時に出力する。</p>
+<p><code>ERROR</code> はすべての <code>log.level</code> 設定で出力する。</p>
+<p><code>log.format</code> は Rev.23 時点では <code>json</code> のみ許可する。</p>
+<p>通常運用ログを stdout へ出力してはならない。</p>
+<p>起動時検証失敗時のみ、stderr へ以下の形式で単一行を出力する。</p>
+<pre><code>ASB_STARTUP_ERROR code=ERR_STORAGE_VALIDATION_FAILED message="Storage validation failed"</code></pre>
+<p>ログローテーションは現在ログファイルのサイズが <code>log.maxSize</code> 以上になった後、次回書き込み前に実行する。</p>
+<p>ローテーションでは現在ログファイルを <code>access.log.{unixTime}</code> または <code>error.log.{unixTime}</code> へ rename し、新しい <code>access.log</code> または <code>error.log</code> を作成する。</p>
+<p>ローテーション済みログの削除対象は、ファイル名末尾の unixTime が現在時刻から7日より古いものに限定する。</p>
+<p>ログローテーション失敗時は対象ログ書き込みを失敗扱いとし、HTTP レスポンスが未送信の場合は <code>500 Internal Server Error</code> を返す。</p>
+<p>ログ API は <code>access.log</code> または <code>error.log</code> の現行ファイルのみを読む。ローテーション済みログは Rev.23 時点ではログ API の対象外とする。</p>
 <p>ログには内部ファイルパス、スタックトレース、環境変数、シークレットを含めてはならない。</p>
 <h4 id="13.16.8-テスト固定項目">13.16.8 テスト固定項目</h4>
 <ul>
@@ -2136,7 +2186,7 @@ $ sudo systemctl stop asb</code></pre>
 <li>アクセスログとエラーログのJSON Linesフィールド検証</li>
 </ul>
 <h3 id="13.17-実装境界とファイル操作固定仕様">13.17 実装境界とファイル操作固定仕様</h3>
-<p>本節は Rev.22 時点で package 境界、公開 interface、Repository、Storage、複数ファイル更新の実装契約を固定する仕様である。</p>
+<p>本節は Rev.23 時点で package 境界、公開 interface、Repository、Storage、複数ファイル更新の実装契約を固定する仕様である。</p>
 <h4 id="13.17.1-package-公開-interface-固定">13.17.1 package 公開 interface 固定</h4>
 <div class="tbl-wrap"><table><thead>
 <tr><th>package</th><th>公開 interface</th><th>主な責務</th></tr>
@@ -2290,7 +2340,7 @@ $ sudo systemctl stop asb</code></pre>
 <li>複数JSON更新では、最終JSONの保存が完了するまで成功レスポンスを返してはならない</li>
 <li>途中失敗時は、更新済みJSON名、未更新JSON名、操作名、requestId をエラーログへ記録する</li>
 <li>途中失敗時に自動ロールバックを実装する場合も、ロールバック失敗時は成功扱いにしてはならない</li>
-<li>Rev.22 時点では、複数JSON更新に外部トランザクション機構を導入してはならない</li>
+<li>Rev.23 時点では、複数JSON更新に外部トランザクション機構を導入してはならない</li>
 </ul>
 <h4 id="13.17.11-最低テスト分類固定">13.17.11 最低テスト分類固定</h4>
 <div class="tbl-wrap"><table><thead>
@@ -2371,7 +2421,7 @@ $ sudo systemctl stop asb</code></pre>
 <h3 id="15.2-テスト対象外">15.2 テスト対象外</h3>
 <p>以下はモック・スタブで対応：</p>
 <ul>
-<li>ACME 実通信および CA 連携（Rev.22 時点では実通信を実装対象外とし、SSL管理境界のみ検証）</li>
+<li>ACME 実通信および CA 連携（Rev.23 時点では実通信を実装対象外とし、SSL管理境界のみ検証）</li>
 <li>GitHub Webhook（テスト用ペイロード）</li>
 <li>実際のファイルストレージ大容量テスト（テスト時は最大100MB）</li>
 </ul>
@@ -2407,10 +2457,10 @@ $ ./tests/e2e.sh</code></pre>
 <tr><td><code>config/webhooks.json</code></td><td>Webhook 冪等キー履歴スキーマ</td></tr>
 <tr><td><code>storage/projects/:projectId/files.json</code></td><td>File メタデータスキーマ</td></tr>
 </tbody></table></div>
-<p>静的コンテンツ実体、ログファイル、証明書ファイル、ビルド済みバイナリは、Rev.22 時点のマイグレーション対象外とする。</p>
+<p>静的コンテンツ実体、ログファイル、証明書ファイル、ビルド済みバイナリは、Rev.23 時点のマイグレーション対象外とする。</p>
 <h3 id="16.3-schemaversion-固定">16.3 schemaVersion 固定</h3>
 <p>各実行時 JSON ファイルはトップレベルに <code>schemaVersion</code> を持つ。</p>
-<p>Rev.22 時点の <code>schemaVersion</code> は <code>1</code> とする。</p>
+<p>Rev.23 時点の <code>schemaVersion</code> は <code>1</code> とする。</p>
 <pre><code>{
   "schemaVersion": 1,
   "projects": []
@@ -2468,7 +2518,7 @@ asb migrate --storage /var/asb --from-schema 0 --to-schema 1 --apply</code></pre
 <p>ロールバックに失敗した場合は、標準エラー、エラーログ、<code>config/migrations.json</code> に <code>failed</code> として記録する。</p>
 <p>ロールバック失敗時に成功扱いとしてはならない。</p>
 <h3 id="16.8-禁止事項">16.8 禁止事項</h3>
-<p>Rev.22 時点では以下を禁止する。</p>
+<p>Rev.23 時点では以下を禁止する。</p>
 <ul>
 <li>起動時の自動マイグレーション</li>
 <li>開発リポジトリ内でのマイグレーション作業ファイル作成</li>
@@ -2494,6 +2544,7 @@ asb migrate --storage /var/asb --from-schema 0 --to-schema 1 --apply</code></pre
 <div class="tbl-wrap"><table><thead>
 <tr><th>バージョン</th><th>日付</th><th>内容</th></tr>
 </thead><tbody>
+<tr><td>Rev.23</td><td>2026-09-08</td><td>ログ保存先、JSON Lines項目、requestId、ログAPI、stdout/stderr、ローテーション、開発リポジトリ非生成を実装レベルで固定</td></tr>
 <tr><td>Rev.22</td><td>2026-09-08</td><td>静的配信のHost解決、パス正規化、HEAD、キャッシュヘッダー、304、Range非対応、開発リポジトリ非生成を実装レベルで固定</td></tr>
 <tr><td>Rev.21</td><td>2026-09-08</td><td>バックアップ保存先、tar.gz構成、checksum、復旧退避先、失敗時復元、開発リポジトリ非生成を実装レベルで固定</td></tr>
 <tr><td>Rev.20</td><td>2026-09-08</td><td>GitHub Webhook署名検証、ローカルcheckoutデプロイ、失敗時リトライ禁止、Webhook処理順序を実装レベルで固定</td></tr>
