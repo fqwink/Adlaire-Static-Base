@@ -39,7 +39,7 @@ ASB は仕様駆動システムである。
 | 提供形態 | HTTP サーバー（単一バイナリ） |
 | データ保存 | JSON ファイルベース（外部DB不使用） |
 | ライセンス | クローズドライセンス |
-| 本書バージョン | Rev.14 |
+| 本書バージョン | Rev.15 |
 
 ---
 
@@ -596,6 +596,13 @@ ASB 起動時には、設定された保存先に以下の実行時データ領�
 | ERR_BACKUP_RESTORE_FAILED | 500 | Backup restore failed | バックアップ復旧失敗 |
 | ERR_SSL_CERT_GENERATION_FAILED | 500 | SSL certificate generation failed | SSL証明書生成失敗 |
 | ERR_WEBHOOK_PROCESSING_FAILED | 500 | Webhook processing failed | Webhook処理失敗 |
+| ERR_INVALID_JSON | 400 | Invalid JSON | JSON構文不正 |
+| ERR_UNKNOWN_FIELD | 400 | Unknown field | 未知フィールド |
+| ERR_EMPTY_BODY | 400 | Empty request body | 必須Body未指定 |
+| ERR_UNSUPPORTED_CONTENT_TYPE | 400 | Unsupported Content-Type | Content-Type不正 |
+| ERR_STORAGE_VALIDATION_FAILED | 500 | Storage validation failed | 実行時データ検証失敗 |
+| ERR_JSON_SAVE_FAILED | 500 | JSON save failed | JSON保存失敗 |
+| ERR_WEBHOOK_DUPLICATE | 200 | Webhook duplicate ignored | Webhook重複受信 |
 | ERR_INTERNAL_SERVER_ERROR | 500 | Internal server error | サーバー内部エラー |
 
 ### 8.8 データバリデーション仕様
@@ -813,6 +820,27 @@ ASB 起動時には、設定された保存先に以下の実行時データ領�
 }
 ```
 
+### 10.6 config/webhooks.json
+
+```json
+{
+  "events": [
+    {
+      "key": "main:abcdef1234567890",
+      "branch": "main",
+      "after": "abcdef1234567890",
+      "receivedAt": "2026-09-08T00:00:00Z"
+    }
+  ]
+}
+```
+
+**フィールド説明**
+- `key`：Webhook 冪等キー（branch + ":" + after）
+- `branch`：GitHub Push イベントの対象ブランチ
+- `after`：GitHub Push イベントの after commit hash
+- `receivedAt`：Webhook 処理成功日時（ISO 8601形式）
+
 ---
 
 ## 11 ポリシー
@@ -885,7 +913,7 @@ System Domain は、監視・ログ管理の責務を担う。
 
 ASB はヘッドレスアーキテクチャを採用し、UI層に依存しない。
 
-Rev.14 時点の確定対象は、ASB 本体が提供する HTTP JSON API である。
+Rev.15 時点の確定対象は、ASB 本体が提供する HTTP JSON API である。
 
 SDK は実装対象外とし、通信仕様および配布方針が確定した後に実装対象へ昇格する。
 
@@ -959,7 +987,7 @@ E2E テスト
 - SSL/TLS：本番環境では必須（リバースプロキシで対応）
 
 **レート制限**
-- Rev.14 時点では実装対象外とし、保留事項として扱う
+- Rev.15 時点では実装対象外とし、保留事項として扱う
 
 **タイムアウト**
 - リクエスト読み込み：30秒
@@ -1274,7 +1302,7 @@ $ sudo systemctl stop asb
 
 ### 13.1 実装対象の基準
 
-Rev.14 時点の実装対象は、ASB のセルフホスト型静的コンテンツ配信ホスティングに必要なバックエンド機能に限定する。
+Rev.15 時点の実装対象は、ASB のセルフホスト型静的コンテンツ配信ホスティングに必要なバックエンド機能に限定する。
 
 実装は以下の順序で進める：
 
@@ -1346,7 +1374,8 @@ ASB は起動時に実行時データを自動生成しない。起動時には�
 │   ├── config.json
 │   ├── projects.json
 │   ├── domains.json
-│   └── backups.json
+│   ├── backups.json
+│   └── webhooks.json
 ├── storage/
 │   └── projects/
 │       └── {projectId}/
@@ -1432,7 +1461,7 @@ JSON ファイル更新は以下の方針で行う：
 
 ### 13.9 SSL 管理詳細
 
-Rev.14 時点では、SSL 管理は管理境界とデータモデルを実装対象とし、ACME は ASB互換目標に含める。ACME 実通信、CA選定、ワイルドカード証明書対応は詳細仕様確定後に実装対象へ昇格する。
+Rev.15 時点では、SSL 管理は管理境界とデータモデルを実装対象とし、ACME は ASB互換目標に含める。ACME 実通信、CA選定、ワイルドカード証明書対応は詳細仕様確定後に実装対象へ昇格する。
 
 実装対象：
 
@@ -1508,7 +1537,7 @@ GitHub Webhook は Push イベントのみを対象とする。
 
 ### 13.14 実装契約
 
-本節は Rev.14 時点の実装契約である。実装者は本節に反する判断をコード側で独自に行ってはならない。
+本節は Rev.15 時点の実装契約である。実装者は本節に反する判断をコード側で独自に行ってはならない。
 
 #### 13.14.1 パッケージ境界
 
@@ -1653,7 +1682,7 @@ ID 生成、時刻取得、保存処理は Service に注入された依存関�
 
 #### 13.14.9 保留機能の実装禁止契約
 
-Rev.14 時点では以下を実装してはならない。
+Rev.15 時点では以下を実装してはならない。
 
 - SDK
 - APIキー管理
@@ -1666,6 +1695,130 @@ Rev.14 時点では以下を実装してはならない。
 - `.gitignore` を必要とする生成物設計
 
 上記を実装する場合は、先に `ASB-spec.md` を改訂し、確定仕様として昇格させる。
+
+### 13.15 実装詳細固定仕様
+
+本節は Rev.15 時点で実装時に固定する詳細仕様である。
+
+#### 13.15.1 API エンドポイント固定表
+
+| API | Method | Path | Body | Query | 成功 | 主な失敗 |
+|-----|--------|------|------|-------|------|----------|
+| Project 作成 | POST | `/api/projects` | `{"name":string,"quota":number?}` | なし | 201 Project | 400, 409, 500 |
+| Project 一覧 | GET | `/api/projects` | なし | なし | 200 `{projects:[]}` | 500 |
+| Project 削除 | DELETE | `/api/projects/:id` | なし | なし | 200 `{status,projectId,deletedAt}` | 404, 500 |
+| Domain 追加 | POST | `/api/projects/:id/domains` | `{"domain":string}` | なし | 201 Domain | 400, 404, 409, 500 |
+| Domain 一覧 | GET | `/api/projects/:id/domains` | なし | なし | 200 `{domains:[]}` | 404, 500 |
+| Domain 削除 | DELETE | `/api/projects/:id/domains/:domain` | なし | なし | 200 `{status,projectId,domain,deletedAt}` | 404, 500 |
+| File upload | POST | `/api/projects/:id/files/upload` | multipart `file` | なし | 201 File | 400, 404, 413, 500 |
+| File 一覧 | GET | `/api/projects/:id/files` | なし | なし | 200 `{files:[]}` | 404, 500 |
+| File 削除 | DELETE | `/api/projects/:id/files/:name` | なし | なし | 200 `{status,projectId,fileName,deletedAt}` | 404, 500 |
+| Backup 一覧 | GET | `/api/backups` | なし | なし | 200 `{backups:[]}` | 500 |
+| Backup 復旧 | POST | `/api/backups/restore/:id` | なし | なし | 200 `{status,backupId,restoredAt}` | 404, 500 |
+| Monitoring | GET | `/api/monitoring/stats` | なし | なし | 200 Monitoring | 500 |
+| Access log | GET | `/api/logs/access` | なし | `limit`,`offset` | 200 `{logs:[]}` | 400, 500 |
+| Error log | GET | `/api/logs/error` | なし | `limit`,`offset` | 200 `{logs:[]}` | 400, 500 |
+| GitHub Webhook | POST | `/api/webhook/github` | GitHub Push JSON | なし | 200 `{status}` | 400, 500 |
+
+`:id` は UUID 形式の文字列のみ許可する。
+
+`:domain` は URL decode 後に小文字正規化し、ドメイン検証を行う。
+
+`:name` は URL decode 後にファイル名検証を行い、パス区切り文字を含む値は拒否する。
+
+`limit` は未指定時 `100`、最小 `1`、最大 `1000` とする。
+
+`offset` は未指定時 `0`、最小 `0` とする。
+
+#### 13.15.2 設定値固定表
+
+| 設定 | 必須 | デフォルト | 許容範囲 | 起動失敗条件 |
+|------|------|------------|----------|--------------|
+| `server.port` | 任意 | `3000` | `1`-`65535` | 範囲外、数値以外 |
+| `server.host` | 任意 | `localhost` | `localhost`、`127.0.0.1`、`0.0.0.0` | 空文字、許可外 |
+| `server.shutdownTimeout` | 任意 | `30` | `1`-`300` 秒 | 範囲外、数値以外 |
+| `storage.basePath` | 任意 | `/var/asb` | 絶対パス | 相対パス、開発リポジトリ配下 |
+| `storage.maxProjectSize` | 任意 | `1073741824` | `104857600`-`1099511627776` | 範囲外、数値以外 |
+| `ssl.email` | 任意 | `admin@example.com` | email 形式 | 形式不正 |
+| `ssl.renewBefore` | 任意 | `7776000` | `86400`-`15552000` 秒 | 範囲外、数値以外 |
+| `log.level` | 任意 | `info` | `debug`,`info`,`warn`,`error` | 許可外 |
+| `log.format` | 任意 | `json` | `json` | `json` 以外 |
+| `log.maxSize` | 任意 | `104857600` | `1048576`-`1073741824` | 範囲外、数値以外 |
+
+設定ファイルに未知フィールドがある場合は起動失敗とする。
+
+任意項目が未指定の場合はデフォルト値を適用する。
+
+#### 13.15.3 JSON ファイル固定仕様
+
+| ファイル | 空状態 | 必須トップレベル | 更新主体 | 備考 |
+|---------|--------|------------------|----------|------|
+| `config/projects.json` | `{"projects":[]}` | `projects` | Project Service | Project 配列を `createdAt` 昇順で保存 |
+| `config/domains.json` | `{"domains":[]}` | `domains` | Domain Service | `domain` は小文字で保存 |
+| `config/backups.json` | `{"backups":[]}` | `backups` | Backup Service | `createdAt` 降順で保存 |
+| `storage/projects/:projectId/files.json` | `{"files":[]}` | `files` | File Service | `name` 昇順で保存 |
+| `config/webhooks.json` | `{"events":[]}` | `events` | Webhook Service | 冪等キー履歴を保存 |
+
+上記 JSON ファイルは起動時に存在していなければならない。
+
+ASB は上記 JSON ファイルを起動時に作成しない。
+
+`config/webhooks.json` は Webhook 冪等性管理に使用する実行時 JSON ファイルであり、外部DBを使用しない。
+
+#### 13.15.4 静的配信固定仕様
+
+静的配信は API パスに一致しない GET または HEAD のみ対象とする。
+
+対象プロジェクトの決定は Host ヘッダーのドメイン割り当てにより行う。
+
+Host ヘッダーが割り当て済みドメインに一致しない場合は `404 Not Found` とする。
+
+リクエストパスが `/` の場合は `index.html` を探索する。
+
+ファイル探索は `storage/projects/:projectId/contents/` 配下に限定する。
+
+`..`、絶対パス、URL decode 後のパス区切り脱出を含むリクエストは `404 Not Found` とする。
+
+存在しない静的ファイルは `404 Not Found` とする。
+
+Content-Type は Go 標準ライブラリで判定し、判定不能な場合は `application/octet-stream` とする。
+
+Gzip 圧縮済みファイルを返す場合は `Content-Encoding: gzip` を設定する。
+
+#### 13.15.5 Webhook 固定仕様
+
+GitHub Webhook は `push` event のみ処理する。
+
+`X-GitHub-Event` が `push` 以外の場合は `200 OK` とし、`{"status":"ignored"}` を返す。
+
+対象ブランチは設定ファイルで指定する。
+
+対象外ブランチの場合は `200 OK` とし、`{"status":"ignored"}` を返す。
+
+冪等キーは `branch + ":" + after` とする。
+
+同一冪等キーが `config/webhooks.json` に存在する場合は `200 OK` とし、`{"status":"duplicate"}` を返す。
+
+Webhook 処理成功後に冪等キーを `config/webhooks.json` へ保存する。
+
+Webhook 署名検証は Rev.15 時点では必須化しない。
+
+#### 13.15.6 実装順序固定
+
+初期実装は以下の順序で進める。
+
+1. `config` package と起動時検証
+2. JSON 保存基盤
+3. `server` package と共通HTTPレスポンス
+4. Project Service / Handler
+5. File Service / Handler と静的配信
+6. Domain Service / Handler
+7. Log / Monitoring
+8. Backup / Restore
+9. Webhook
+10. SSL 管理境界
+
+各段階は `go test ./...` が成功する状態で次へ進む。
 
 ---
 
@@ -1735,7 +1888,7 @@ Rev.14 時点では以下を実装してはならない。
 ### 15.2 テスト対象外
 
 以下はモック・スタブで対応：
-- ACME 実通信および CA 連携（Rev.14 時点では実通信を実装対象外とし、SSL管理境界のみ検証）
+- ACME 実通信および CA 連携（Rev.15 時点では実通信を実装対象外とし、SSL管理境界のみ検証）
 - GitHub Webhook（テスト用ペイロード）
 - 実際のファイルストレージ大容量テスト（テスト時は最大100MB）
 
@@ -1843,6 +1996,7 @@ $ asb-backup-restore backup-v1.tar.gz
 
 | バージョン | 日付 | 内容 |
 |-----------|------|------|
+| Rev.15 | 2026-09-08 | API、設定値、JSONファイル、静的配信、Webhook、実装順序を実装単位で固定 |
 | Rev.14 | 2026-09-08 | 実装契約を追加し、パッケージ境界、HTTP契約、JSON保存、起動時検証、Handler/Service/Entity責務、副作用、保留機能禁止を具体化 |
 | Rev.13 | 2026-09-08 | SDK/API、APIキー、Rate limiting、SSL/ACME、CA選定の確定範囲と保留範囲を整理し、機能仕様見出しを補完 |
 | Rev.12 | 2026-09-08 | XServer Static 相当仕様を ASB互換目標へ名称変更し、SSL/ACME を ASB互換目標に含める方針へ整理 |
