@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ASB 仕様書 Rev.14</title>
+<title>ASB 仕様書 Rev.16</title>
 <style>
 :root { color-scheme: light; --bg: #f4f7f9; --panel: #ffffff; --panel-2: #f8fafc; --panel-3: #edf6f3; --line: #d8e1e7; --line-strong: #b7c6cf; --text: #162126; --muted: #5b6d76; --subtle: #83919a; --brand: #0f766e; --brand-2: #14532d; --ok: #16845f; --code-bg: #111827; --code-text: #e8eef4; --toc-w: 310px; --radius: 8px; }
 @media (prefers-color-scheme: dark) { :root { color-scheme: dark; --bg: #0e1416; --panel: #141d20; --panel-2: #101719; --panel-3: #16312d; --line: #27363b; --line-strong: #3d5057; --text: #e6eef0; --muted: #a7b6bb; --subtle: #7e8e94; --brand: #5eead4; --brand-2: #99f6e4; --ok: #6ee7b7; --code-bg: #080d10; --code-text: #edf7f8; } }
@@ -71,7 +71,7 @@ pre code { background: transparent; border: 0; color: inherit; padding: 0; }
     <div class="sidebar-header">
       <span class="logo">Adlaire-Static-Base</span>
       <h1 class="sidebar-title">ASB Developer Docs</h1>
-      <span class="version-pill">Rev.14</span>
+      <span class="version-pill">Rev.16</span>
     </div>
     <nav class="toc" id="asb-toc">
       <a class="toc-l1" href="#セルフホスト型静的コンテンツ配信ホスティングシステム仕様書">セルフホスト型静的コンテンツ配信ホスティングシステム仕様書</a>
@@ -121,6 +121,7 @@ pre code { background: transparent; border: 0; color: inherit; padding: 0; }
 <a class="toc-l3" href="#10.3-configconfig.json">10.3 config/config.json</a>
 <a class="toc-l3" href="#10.4-configdomains.json">10.4 config/domains.json</a>
 <a class="toc-l3" href="#10.5-storageprojectsprojectidfiles.json">10.5 storage/projects/:projectId/files.json</a>
+<a class="toc-l3" href="#10.6-configwebhooks.json">10.6 config/webhooks.json</a>
 <a class="toc-l2" href="#11-ポリシー">11 ポリシー</a>
 <a class="toc-l3" href="#11.1-management-domain-ポリシー">11.1 Management Domain ポリシー</a>
 <a class="toc-l3" href="#11.2-delivery-domain-ポリシー">11.2 Delivery Domain ポリシー</a>
@@ -153,6 +154,8 @@ pre code { background: transparent; border: 0; color: inherit; padding: 0; }
 <a class="toc-l3" href="#13.12-監視ログ詳細">13.12 監視・ログ詳細</a>
 <a class="toc-l3" href="#13.13-テスト受け入れ条件">13.13 テスト受け入れ条件</a>
 <a class="toc-l3" href="#13.14-実装契約">13.14 実装契約</a>
+<a class="toc-l3" href="#13.15-実装詳細固定仕様">13.15 実装詳細固定仕様</a>
+<a class="toc-l3" href="#13.16-入出力契約固定仕様">13.16 入出力契約固定仕様</a>
 <a class="toc-l2" href="#14-パフォーマンス要件">14 パフォーマンス要件</a>
 <a class="toc-l3" href="#14.1-推奨リソース">14.1 推奨リソース</a>
 <a class="toc-l3" href="#14.2-スケーリング基準">14.2 スケーリング基準</a>
@@ -169,13 +172,13 @@ pre code { background: transparent; border: 0; color: inherit; padding: 0; }
     </nav>
   </aside>
   <main class="portal-main">
-    <div class="topbar"><div class="topbar-left"><button class="sidebar-toggle" type="button" aria-label="目次を折りたたむ" aria-expanded="true" aria-controls="asb-toc">☰</button><span class="topbar-title">ASB Specification</span></div><span class="version-pill">Rev.14</span></div>
+    <div class="topbar"><div class="topbar-left"><button class="sidebar-toggle" type="button" aria-label="目次を折りたたむ" aria-expanded="true" aria-controls="asb-toc">☰</button><span class="topbar-title">ASB Specification</span></div><span class="version-pill">Rev.16</span></div>
     <div class="content">
       <section class="doc-hero">
         <p class="eyebrow">Adlaire-Static-Base</p>
         <h1>セルフホスト型静的コンテンツ配信ホスティングシステム仕様書</h1>
         <p class="subtitle">ASBの仕様正本 <code>ASB-spec.md</code> に基づくHTML版仕様書。</p>
-        <div class="hero-meta"><span class="meta-chip">Rev.14</span><span class="meta-chip">Generated from ASB-spec.md</span></div>
+        <div class="hero-meta"><span class="meta-chip">Rev.16</span><span class="meta-chip">Generated from ASB-spec.md</span></div>
       </section>
       <h1 id="セルフホスト型静的コンテンツ配信ホスティングシステム仕様書">セルフホスト型静的コンテンツ配信ホスティングシステム仕様書</h1>
 <h2 id="1-本書の位置づけ">1 本書の位置づけ</h2>
@@ -212,7 +215,7 @@ pre code { background: transparent; border: 0; color: inherit; padding: 0; }
 <tr><td>提供形態</td><td>HTTP サーバー（単一バイナリ）</td></tr>
 <tr><td>データ保存</td><td>JSON ファイルベース（外部DB不使用）</td></tr>
 <tr><td>ライセンス</td><td>クローズドライセンス</td></tr>
-<tr><td>本書バージョン</td><td>Rev.14</td></tr>
+<tr><td>本書バージョン</td><td>Rev.16</td></tr>
 </tbody></table></div>
 <hr>
 <h2 id="3-asb-の責務範囲">3 ASB の責務範囲</h2>
@@ -720,6 +723,13 @@ CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -o asb-linux-arm64 ./main.go</cod
 <tr><td>ERR_BACKUP_RESTORE_FAILED</td><td>500</td><td>Backup restore failed</td><td>バックアップ復旧失敗</td></tr>
 <tr><td>ERR_SSL_CERT_GENERATION_FAILED</td><td>500</td><td>SSL certificate generation failed</td><td>SSL証明書生成失敗</td></tr>
 <tr><td>ERR_WEBHOOK_PROCESSING_FAILED</td><td>500</td><td>Webhook processing failed</td><td>Webhook処理失敗</td></tr>
+<tr><td>ERR_INVALID_JSON</td><td>400</td><td>Invalid JSON</td><td>JSON構文不正</td></tr>
+<tr><td>ERR_UNKNOWN_FIELD</td><td>400</td><td>Unknown field</td><td>未知フィールド</td></tr>
+<tr><td>ERR_EMPTY_BODY</td><td>400</td><td>Empty request body</td><td>必須Body未指定</td></tr>
+<tr><td>ERR_UNSUPPORTED_CONTENT_TYPE</td><td>400</td><td>Unsupported Content-Type</td><td>Content-Type不正</td></tr>
+<tr><td>ERR_STORAGE_VALIDATION_FAILED</td><td>500</td><td>Storage validation failed</td><td>実行時データ検証失敗</td></tr>
+<tr><td>ERR_JSON_SAVE_FAILED</td><td>500</td><td>JSON save failed</td><td>JSON保存失敗</td></tr>
+<tr><td>ERR_WEBHOOK_DUPLICATE</td><td>200</td><td>Webhook duplicate ignored</td><td>Webhook重複受信</td></tr>
 <tr><td>ERR_INTERNAL_SERVER_ERROR</td><td>500</td><td>Internal server error</td><td>サーバー内部エラー</td></tr>
 </tbody></table></div>
 <h3 id="8.8-データバリデーション仕様">8.8 データバリデーション仕様</h3>
@@ -901,6 +911,24 @@ CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -o asb-linux-arm64 ./main.go</cod
     }
   ]
 }</code></pre>
+<h3 id="10.6-configwebhooks.json">10.6 config/webhooks.json</h3>
+<pre><code>{
+  &quot;events&quot;: [
+    {
+      &quot;key&quot;: &quot;main:abcdef1234567890&quot;,
+      &quot;branch&quot;: &quot;main&quot;,
+      &quot;after&quot;: &quot;abcdef1234567890&quot;,
+      &quot;receivedAt&quot;: &quot;2026-09-08T00:00:00Z&quot;
+    }
+  ]
+}</code></pre>
+<p><strong>フィールド説明</strong></p>
+<ul>
+<li><code>key</code>：Webhook 冪等キー（branch + &quot;:&quot; + after）</li>
+<li><code>branch</code>：GitHub Push イベントの対象ブランチ</li>
+<li><code>after</code>：GitHub Push イベントの after commit hash</li>
+<li><code>receivedAt</code>：Webhook 処理成功日時（ISO 8601形式）</li>
+</ul>
 <hr>
 <h2 id="11-ポリシー">11 ポリシー</h2>
 <p>ASB の主要ポリシーは、以下の 10 種類で構成される。各ポリシーはドメイン別、機能別、運用別に管理され、仕様正本として機能する。</p>
@@ -964,7 +992,7 @@ CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -o asb-linux-arm64 ./main.go</cod
 </ul>
 <h3 id="11.5-api-sdk-ポリシー">11.5 API/SDK ポリシー</h3>
 <p>ASB はヘッドレスアーキテクチャを採用し、UI層に依存しない。</p>
-<p>Rev.14 時点の確定対象は、ASB 本体が提供する HTTP JSON API である。</p>
+<p>Rev.16 時点の確定対象は、ASB 本体が提供する HTTP JSON API である。</p>
 <p>SDK は実装対象外とし、通信仕様および配布方針が確定した後に実装対象へ昇格する。</p>
 <p><strong>API 設計原則</strong></p>
 <ul>
@@ -1313,7 +1341,7 @@ $ sudo systemctl stop asb</code></pre>
 <hr>
 <h2 id="13-実装詳細仕様">13 実装詳細仕様</h2>
 <h3 id="13.1-実装対象の基準">13.1 実装対象の基準</h3>
-<p>Rev.14 時点の実装対象は、ASB のセルフホスト型静的コンテンツ配信ホスティングに必要なバックエンド機能に限定する。</p>
+<p>Rev.16 時点の実装対象は、ASB のセルフホスト型静的コンテンツ配信ホスティングに必要なバックエンド機能に限定する。</p>
 <p>実装は以下の順序で進める：</p>
 <ol>
 <li>起動設定、実行時データ検証、HTTP サーバー、共通レスポンス</li>
@@ -1375,7 +1403,8 @@ $ sudo systemctl stop asb</code></pre>
 │   ├── config.json
 │   ├── projects.json
 │   ├── domains.json
-│   └── backups.json
+│   ├── backups.json
+│   └── webhooks.json
 ├── storage/
 │   └── projects/
 │       └── {projectId}/
@@ -1454,7 +1483,7 @@ $ sudo systemctl stop asb</code></pre>
 <li>プロジェクト削除時は関連ドメインを削除する</li>
 </ul>
 <h3 id="13.9-ssl-管理詳細">13.9 SSL 管理詳細</h3>
-<p>Rev.14 時点では、SSL 管理は管理境界とデータモデルを実装対象とし、ACME は ASB互換目標に含める。ACME 実通信、CA選定、ワイルドカード証明書対応は詳細仕様確定後に実装対象へ昇格する。</p>
+<p>Rev.16 時点では、SSL 管理は管理境界とデータモデルを実装対象とし、ACME は ASB互換目標に含める。ACME 実通信、CA選定、ワイルドカード証明書対応は詳細仕様確定後に実装対象へ昇格する。</p>
 <p>実装対象：</p>
 <ul>
 <li>SSL 証明書IDの管理</li>
@@ -1524,7 +1553,7 @@ $ sudo systemctl stop asb</code></pre>
 <li>仕様上保留の機能が実装されていないことを確認する</li>
 </ul>
 <h3 id="13.14-実装契約">13.14 実装契約</h3>
-<p>本節は Rev.14 時点の実装契約である。実装者は本節に反する判断をコード側で独自に行ってはならない。</p>
+<p>本節は Rev.16 時点の実装契約である。実装者は本節に反する判断をコード側で独自に行ってはならない。</p>
 <h4 id="13.14.1-パッケージ境界">13.14.1 パッケージ境界</h4>
 <div class="tbl-wrap"><table><thead>
 <tr><th>パッケージ</th><th>責務</th><th>外部副作用</th></tr>
@@ -1609,6 +1638,7 @@ $ sudo systemctl stop asb</code></pre>
 </tbody></table></div>
 <p>複数ファイルにまたがる操作では、途中失敗時に成功レスポンスを返してはならない。</p>
 <h4 id="13.14.9-保留機能の実装禁止契約">13.14.9 保留機能の実装禁止契約</h4>
+<p>Rev.16 時点では以下を実装してはならない。</p>
 <ul>
 <li>SDK</li>
 <li>APIキー管理</li>
@@ -1621,6 +1651,254 @@ $ sudo systemctl stop asb</code></pre>
 <li><code>.gitignore</code> を必要とする生成物設計</li>
 </ul>
 <p>上記を実装する場合は、先に <code>ASB-spec.md</code> を改訂し、確定仕様として昇格させる。</p>
+<h3 id="13.15-実装詳細固定仕様">13.15 実装詳細固定仕様</h3>
+<p>本節は Rev.16 時点で実装時に固定する詳細仕様である。</p>
+<h4 id="13.15.1-api-エンドポイント固定表">13.15.1 API エンドポイント固定表</h4>
+<div class="tbl-wrap"><table><thead>
+<tr><th>機能</th><th>Method</th><th>Path</th><th>Body</th><th>Query</th><th>成功</th><th>主な失敗</th></tr>
+</thead><tbody>
+<tr><td>Project 作成</td><td>POST</td><td><code>/api/projects</code></td><td><code>{"name":string,"quota":number?}</code></td><td>なし</td><td>201</td><td>400, 409, 500</td></tr>
+<tr><td>Project 一覧</td><td>GET</td><td><code>/api/projects</code></td><td>なし</td><td>なし</td><td>200</td><td>500</td></tr>
+<tr><td>Project 削除</td><td>DELETE</td><td><code>/api/projects/:id</code></td><td>なし</td><td>なし</td><td>200</td><td>400, 404, 500</td></tr>
+<tr><td>Domain 追加</td><td>POST</td><td><code>/api/projects/:id/domains</code></td><td><code>{"domain":string}</code></td><td>なし</td><td>201</td><td>400, 404, 409, 500</td></tr>
+<tr><td>Domain 一覧</td><td>GET</td><td><code>/api/projects/:id/domains</code></td><td>なし</td><td>なし</td><td>200</td><td>400, 404, 500</td></tr>
+<tr><td>Domain 削除</td><td>DELETE</td><td><code>/api/projects/:id/domains/:domain</code></td><td>なし</td><td>なし</td><td>200</td><td>400, 404, 500</td></tr>
+<tr><td>File upload</td><td>POST</td><td><code>/api/projects/:id/files/upload</code></td><td><code>multipart/form-data</code></td><td>なし</td><td>201</td><td>400, 404, 413, 500</td></tr>
+<tr><td>File 一覧</td><td>GET</td><td><code>/api/projects/:id/files</code></td><td>なし</td><td>なし</td><td>200</td><td>400, 404, 500</td></tr>
+<tr><td>File 削除</td><td>DELETE</td><td><code>/api/projects/:id/files/:name</code></td><td>なし</td><td>なし</td><td>200</td><td>400, 404, 500</td></tr>
+<tr><td>Backup 一覧</td><td>GET</td><td><code>/api/backups</code></td><td>なし</td><td>なし</td><td>200</td><td>500</td></tr>
+<tr><td>Backup 復旧</td><td>POST</td><td><code>/api/backups/restore/:id</code></td><td>なし</td><td>なし</td><td>200</td><td>400, 404, 500</td></tr>
+<tr><td>Monitoring</td><td>GET</td><td><code>/api/monitoring/stats</code></td><td>なし</td><td>なし</td><td>200</td><td>500</td></tr>
+<tr><td>Access Log</td><td>GET</td><td><code>/api/logs/access</code></td><td>なし</td><td><code>limit</code>, <code>offset</code></td><td>200</td><td>400, 500</td></tr>
+<tr><td>Error Log</td><td>GET</td><td><code>/api/logs/error</code></td><td>なし</td><td><code>limit</code>, <code>offset</code></td><td>200</td><td>400, 500</td></tr>
+<tr><td>GitHub Webhook</td><td>POST</td><td><code>/api/webhook/github</code></td><td>GitHub Push payload</td><td>なし</td><td>200</td><td>400, 500</td></tr>
+</tbody></table></div>
+<ul>
+<li><code>:id</code> は UUID 形式のみ許可する</li>
+<li><code>:domain</code> は URL decode 後に小文字正規化し、ドメイン仕様で検証する</li>
+<li><code>:name</code> は URL decode 後に検証し、パス区切り文字を含む場合は拒否する</li>
+<li><code>limit</code> はデフォルト100、最小1、最大1000とする</li>
+<li><code>offset</code> はデフォルト0、最小0とする</li>
+</ul>
+<h4 id="13.15.2-設定値固定表">13.15.2 設定値固定表</h4>
+<div class="tbl-wrap"><table><thead>
+<tr><th>項目</th><th>型</th><th>デフォルト</th><th>許容範囲</th><th>必須</th></tr>
+</thead><tbody>
+<tr><td><code>server.port</code></td><td>int</td><td>3000</td><td>1-65535</td><td>No</td></tr>
+<tr><td><code>server.host</code></td><td>string</td><td>localhost</td><td>空文字禁止</td><td>No</td></tr>
+<tr><td><code>server.shutdownTimeout</code></td><td>int</td><td>30</td><td>1-300秒</td><td>No</td></tr>
+<tr><td><code>storage.basePath</code></td><td>string</td><td>/var/asb</td><td>絶対パス、開発リポジトリ配下禁止</td><td>No</td></tr>
+<tr><td><code>storage.maxProjectSize</code></td><td>number</td><td>1073741824</td><td>104857600-1099511627776</td><td>No</td></tr>
+<tr><td><code>ssl.email</code></td><td>string</td><td>admin@example.com</td><td>空文字禁止</td><td>No</td></tr>
+<tr><td><code>ssl.renewBefore</code></td><td>int</td><td>7776000</td><td>86400-15552000秒</td><td>No</td></tr>
+<tr><td><code>log.level</code></td><td>string</td><td>info</td><td>debug/info/warn/error</td><td>No</td></tr>
+<tr><td><code>log.format</code></td><td>string</td><td>json</td><td>json 固定</td><td>No</td></tr>
+<tr><td><code>log.maxSize</code></td><td>number</td><td>104857600</td><td>1048576-1073741824</td><td>No</td></tr>
+</tbody></table></div>
+<p>未知フィールドが存在する場合は起動失敗とする。省略可能項目はデフォルト値を適用してから検証する。</p>
+<h4 id="13.15.3-json-ファイル固定仕様">13.15.3 JSON ファイル固定仕様</h4>
+<div class="tbl-wrap"><table><thead>
+<tr><th>ファイル</th><th>空状態</th><th>必須フィールド</th><th>所有責務</th><th>用途</th></tr>
+</thead><tbody>
+<tr><td><code>config/projects.json</code></td><td><code>{"projects":[]}</code></td><td><code>projects</code></td><td>Project Service</td><td>プロジェクト一覧</td></tr>
+<tr><td><code>config/domains.json</code></td><td><code>{"domains":[]}</code></td><td><code>domains</code></td><td>Domain Service</td><td>ドメイン割当</td></tr>
+<tr><td><code>config/backups.json</code></td><td><code>{"backups":[]}</code></td><td><code>backups</code></td><td>Backup Service</td><td>バックアップ履歴</td></tr>
+<tr><td><code>storage/projects/:projectId/files.json</code></td><td><code>{"files":[]}</code></td><td><code>files</code></td><td>File Service</td><td>ファイルメタデータ</td></tr>
+<tr><td><code>config/webhooks.json</code></td><td><code>{"events":[]}</code></td><td><code>events</code></td><td>Webhook Service</td><td>冪等キー履歴</td></tr>
+</tbody></table></div>
+<p>上記ファイルは起動時に存在していなければならない。ASB は起動時に自動生成しない。実行時データはすべて JSON ファイルベースとし、外部DBを使用しない。</p>
+<h4 id="13.15.4-静的配信固定仕様">13.15.4 静的配信固定仕様</h4>
+<ul>
+<li>静的配信は <code>GET</code> と <code>HEAD</code> のみ許可する</li>
+<li>Host ヘッダーを <code>config/domains.json</code> の <code>domain</code> に照合し、対応する <code>projectId</code> を配信対象とする</li>
+<li>一致するドメインがない場合は <code>404 Not Found</code> とする</li>
+<li>パス <code>/</code> は <code>index.html</code> として解決する</li>
+<li>配信ルートは <code>storage/projects/:projectId/contents/</code> に限定する</li>
+<li><code>..</code>、絶対パス、URL decode 後に配信ルート外へ出るパスは拒否する</li>
+<li>ファイルが存在しない場合は <code>404 Not Found</code> とする</li>
+<li><code>Content-Type</code> は Go 標準ライブラリで判定し、不明時は <code>application/octet-stream</code> とする</li>
+<li>Gzip 圧縮を適用した場合は <code>Content-Encoding: gzip</code> を設定する</li>
+</ul>
+<h4 id="13.15.5-webhook-固定仕様">13.15.5 Webhook 固定仕様</h4>
+<ul>
+<li>GitHub Webhook は Push イベントのみ処理する</li>
+<li><code>X-GitHub-Event</code> が <code>push</code> 以外の場合は <code>200 OK</code> とし、<code>{"status":"ignored"}</code> を返す</li>
+<li>対象ブランチは設定ファイルで指定する</li>
+<li>対象外ブランチの場合は <code>200 OK</code> とし、<code>{"status":"ignored"}</code> を返す</li>
+<li>冪等キーは <code>branch + ":" + after</code> とする</li>
+<li>同一冪等キーが <code>config/webhooks.json</code> に存在する場合は <code>200 OK</code> とし、<code>{"status":"duplicate"}</code> を返す</li>
+<li>Webhook 処理成功後に冪等キーを <code>config/webhooks.json</code> へ保存する</li>
+<li>Webhook 署名検証は Rev.16 時点では必須化しない</li>
+</ul>
+<h4 id="13.15.6-実装順序固定">13.15.6 実装順序固定</h4>
+<ol>
+<li>設定読み込み、デフォルト適用、起動時検証</li>
+<li>JSON ファイル読み込み、検証、排他、atomic save</li>
+<li>HTTP サーバー、ルーティング、共通レスポンス</li>
+<li>Project API</li>
+<li>File API と静的配信</li>
+<li>Domain API</li>
+<li>Log API と Monitoring API</li>
+<li>Backup API と Restore</li>
+<li>GitHub Webhook</li>
+<li>SSL 管理境界</li>
+</ol>
+<p>各段階は <code>go test ./...</code> が通る単位で完了させる。</p>
+<h3 id="13.16-入出力契約固定仕様">13.16 入出力契約固定仕様</h3>
+<p>本節は Rev.16 時点で API、JSON保存、ログ、起動時検証の入出力を固定する仕様である。</p>
+<h4 id="13.16.1-共通成功レスポンス契約">13.16.1 共通成功レスポンス契約</h4>
+<ul>
+<li>成功レスポンスは常に JSON object とする</li>
+<li>成功レスポンスの <code>Content-Type</code> は <code>application/json; charset=utf-8</code> とする</li>
+<li>成功レスポンス内の日時は UTC RFC3339 秒精度とする</li>
+<li>成功レスポンス内のIDは UUID 文字列とする</li>
+<li>配列レスポンスは対象キーを必ず含め、対象データが空の場合は空配列を返す</li>
+</ul>
+<h4 id="13.16.2-api-成功レスポンス固定表">13.16.2 API 成功レスポンス固定表</h4>
+<div class="tbl-wrap"><table><thead>
+<tr><th>API</th><th>HTTP</th><th>固定レスポンス</th></tr>
+</thead><tbody>
+<tr><td>Project 作成</td><td>201</td><td><code>{"id":string,"name":string,"quota":number,"used":number,"domains":[],"createdAt":string}</code></td></tr>
+<tr><td>Project 一覧</td><td>200</td><td><code>{"projects":[Project...]}</code></td></tr>
+<tr><td>Project 削除</td><td>200</td><td><code>{"status":"deleted","projectId":string,"deletedAt":string}</code></td></tr>
+<tr><td>Domain 追加</td><td>201</td><td><code>{"domain":string,"projectId":string,"isCustom":true,"sslCert":string,"createdAt":string}</code></td></tr>
+<tr><td>Domain 一覧</td><td>200</td><td><code>{"domains":[Domain...]}</code></td></tr>
+<tr><td>Domain 削除</td><td>200</td><td><code>{"status":"deleted","projectId":string,"domain":string,"deletedAt":string}</code></td></tr>
+<tr><td>File upload</td><td>201</td><td><code>{"id":string,"projectId":string,"name":string,"size":number,"path":string,"uploadedAt":string}</code></td></tr>
+<tr><td>File 一覧</td><td>200</td><td><code>{"files":[File...]}</code></td></tr>
+<tr><td>File 削除</td><td>200</td><td><code>{"status":"deleted","projectId":string,"fileName":string,"deletedAt":string}</code></td></tr>
+<tr><td>Backup 一覧</td><td>200</td><td><code>{"backups":[Backup...]}</code></td></tr>
+<tr><td>Backup 復旧</td><td>200</td><td><code>{"status":"restored","backupId":string,"restoredAt":string}</code></td></tr>
+<tr><td>Monitoring</td><td>200</td><td><code>{"cpu":number|null,"memory":number|null,"disk":number|null,"connections":number|null,"requests":number|null,"checkedAt":string}</code></td></tr>
+<tr><td>Access log</td><td>200</td><td><code>{"logs":[AccessLog...],"limit":number,"offset":number}</code></td></tr>
+<tr><td>Error log</td><td>200</td><td><code>{"logs":[ErrorLog...],"limit":number,"offset":number}</code></td></tr>
+<tr><td>GitHub Webhook 処理</td><td>200</td><td><code>{"status":"received","branch":string,"after":string,"processedAt":string}</code></td></tr>
+<tr><td>GitHub Webhook 無視</td><td>200</td><td><code>{"status":"ignored","reason":string}</code></td></tr>
+<tr><td>GitHub Webhook 重複</td><td>200</td><td><code>{"status":"duplicate","key":string}</code></td></tr>
+</tbody></table></div>
+<h4 id="13.16.3-共通エラーレスポンス契約">13.16.3 共通エラーレスポンス契約</h4>
+<p>エラーレスポンスは常に以下の JSON object とする。</p>
+<pre><code>{
+  "error": "string",
+  "code": "string",
+  "timestamp": "2026-09-08T00:00:00Z",
+  "httpStatus": 400
+}</code></pre>
+<ul>
+<li><code>error</code> は利用者向けの短い英語メッセージとする</li>
+<li><code>code</code> は <code>8.7 エラーハンドリング</code> のエラーコード定義に存在する値のみ許可する</li>
+<li><code>timestamp</code> は UTC RFC3339 秒精度とする</li>
+<li><code>httpStatus</code> は実際の HTTP ステータスコードと一致させる</li>
+<li>内部ファイルパス、スタックトレース、環境変数、シークレット、OSユーザー名を含めてはならない</li>
+</ul>
+<h4 id="13.16.4-保存json配列要素スキーマ固定">13.16.4 保存JSON配列要素スキーマ固定</h4>
+<p><code>config/projects.json</code> の <code>projects[]</code> は以下の形式とする。</p>
+<pre><code>{
+  "id": "string(UUID)",
+  "name": "string",
+  "quota": 1073741824,
+  "used": 0,
+  "domains": [],
+  "createdAt": "2026-09-08T00:00:00Z"
+}</code></pre>
+<p><code>config/domains.json</code> の <code>domains[]</code> は以下の形式とする。</p>
+<pre><code>{
+  "domain": "example.com",
+  "projectId": "string(UUID)",
+  "isCustom": true,
+  "sslCert": "string",
+  "createdAt": "2026-09-08T00:00:00Z"
+}</code></pre>
+<p><code>storage/projects/:projectId/files.json</code> の <code>files[]</code> は以下の形式とする。</p>
+<pre><code>{
+  "id": "string(UUID)",
+  "projectId": "string(UUID)",
+  "name": "index.html",
+  "size": 2048,
+  "path": "contents/index.html",
+  "uploadedAt": "2026-09-08T00:00:00Z"
+}</code></pre>
+<p><code>config/backups.json</code> の <code>backups[]</code> は以下の形式とする。</p>
+<pre><code>{
+  "id": "string(UUID)",
+  "projectId": "string(UUID)",
+  "createdAt": "2026-09-08T00:00:00Z",
+  "size": 536870912,
+  "path": "backups/backup-id.tar.gz",
+  "sha256": "string"
+}</code></pre>
+<p><code>config/webhooks.json</code> の <code>events[]</code> は以下の形式とする。</p>
+<pre><code>{
+  "key": "main:abcdef1234567890",
+  "branch": "main",
+  "after": "abcdef1234567890",
+  "receivedAt": "2026-09-08T00:00:00Z"
+}</code></pre>
+<ul>
+<li>保存JSON内のパスは <code>storage.basePath</code> からの相対パスとし、絶対パスを保存してはならない</li>
+<li>保存JSON内の日時は UTC RFC3339 秒精度とする</li>
+<li>保存JSON内の未知フィールドは読み込み時にエラーとする</li>
+</ul>
+<h4 id="13.16.5-保存順序固定">13.16.5 保存順序固定</h4>
+<div class="tbl-wrap"><table><thead>
+<tr><th>ファイル</th><th>ソート順</th></tr>
+</thead><tbody>
+<tr><td><code>config/projects.json</code></td><td><code>createdAt</code> 昇順、同一時刻の場合は <code>id</code> 昇順</td></tr>
+<tr><td><code>config/domains.json</code></td><td><code>domain</code> 昇順</td></tr>
+<tr><td><code>config/backups.json</code></td><td><code>createdAt</code> 降順、同一時刻の場合は <code>id</code> 昇順</td></tr>
+<tr><td><code>storage/projects/:projectId/files.json</code></td><td><code>name</code> 昇順</td></tr>
+<tr><td><code>config/webhooks.json</code></td><td><code>receivedAt</code> 降順、同一時刻の場合は <code>key</code> 昇順</td></tr>
+</tbody></table></div>
+<h4 id="13.16.6-起動時検証出力固定">13.16.6 起動時検証出力固定</h4>
+<ol>
+<li><code>config/config.json</code> の存在確認</li>
+<li><code>config/config.json</code> の JSON 構文検証</li>
+<li>設定未知フィールド検証</li>
+<li>設定値の範囲検証</li>
+<li><code>storage.basePath</code> の存在確認</li>
+<li><code>storage.basePath</code> が開発リポジトリ配下でないことの検証</li>
+<li>必須ディレクトリ存在確認</li>
+<li>必須 JSON ファイル存在確認</li>
+<li>必須 JSON ファイルの構文とスキーマ検証</li>
+<li>読み込み権限と書き込み権限の検証</li>
+</ol>
+<p>起動時検証失敗時は HTTP サーバーを起動せず、終了コード <code>1</code> で終了する。</p>
+<p>標準エラーには以下の1行のみを出力する。</p>
+<pre><code>ASB_STARTUP_ERROR code=ERR_STORAGE_VALIDATION_FAILED message="Storage validation failed"</code></pre>
+<p>エラーコードは、失敗原因が JSON 構文の場合は <code>ERR_INVALID_JSON</code>、保存先検証の場合は <code>ERR_STORAGE_VALIDATION_FAILED</code>、設定未知フィールドの場合は <code>ERR_UNKNOWN_FIELD</code> とする。</p>
+<h4 id="13.16.7-ログjson-lines固定">13.16.7 ログJSON Lines固定</h4>
+<p>アクセスログは1リクエストにつき1行の JSON Lines とし、以下のフィールドを固定する。</p>
+<pre><code>{
+  "time": "2026-09-08T00:00:00Z",
+  "level": "INFO",
+  "domain": "system",
+  "method": "GET",
+  "path": "/api/projects",
+  "status": 200,
+  "durationMs": 12,
+  "remoteAddr": "127.0.0.1",
+  "requestId": "string(UUID)"
+}</code></pre>
+<p>エラーログは WARN 以上を対象とし、以下のフィールドを固定する。</p>
+<pre><code>{
+  "time": "2026-09-08T00:00:00Z",
+  "level": "ERROR",
+  "domain": "delivery",
+  "code": "ERR_FILE_UPLOAD_FAILED",
+  "message": "File upload failed",
+  "requestId": "string(UUID)"
+}</code></pre>
+<p>ログには内部ファイルパス、スタックトレース、環境変数、シークレットを含めてはならない。</p>
+<h4 id="13.16.8-テスト固定項目">13.16.8 テスト固定項目</h4>
+<ul>
+<li>全API成功レスポンスの固定JSONキー検証</li>
+<li>全APIエラーレスポンスの固定JSONキー検証</li>
+<li>保存JSONの未知フィールド拒否</li>
+<li>保存JSONの相対パス保存検証</li>
+<li>保存JSONのソート順検証</li>
+<li>起動時検証の順序、終了コード、標準エラー形式検証</li>
+<li>アクセスログとエラーログのJSON Linesフィールド検証</li>
+</ul>
 <hr>
 <h2 id="14-パフォーマンス要件">14 パフォーマンス要件</h2>
 <h3 id="14.1-推奨リソース">14.1 推奨リソース</h3>
@@ -1689,7 +1967,7 @@ $ sudo systemctl stop asb</code></pre>
 <h3 id="15.2-テスト対象外">15.2 テスト対象外</h3>
 <p>以下はモック・スタブで対応：</p>
 <ul>
-<li>ACME 実通信および CA 連携（Rev.14 時点では実通信を実装対象外とし、SSL管理境界のみ検証）</li>
+<li>ACME 実通信および CA 連携（Rev.16 時点では実通信を実装対象外とし、SSL管理境界のみ検証）</li>
 <li>GitHub Webhook（テスト用ペイロード）</li>
 <li>実際のファイルストレージ大容量テスト（テスト時は最大100MB）</li>
 </ul>
@@ -1774,6 +2052,9 @@ $ asb-backup-restore backup-v1.tar.gz</code></pre>
 <div class="tbl-wrap"><table><thead>
 <tr><th>バージョン</th><th>日付</th><th>内容</th></tr>
 </thead><tbody>
+<tr><td>Rev.16</td><td>2026-09-08</td><td>API成功/エラーレスポンス、保存JSONスキーマ、起動時検証出力、ログJSON Linesを固定</td></tr>
+<tr><td>Rev.15</td><td>2026-09-08</td><td>API、設定値、JSONファイル、静的配信、Webhook、実装順序を実装単位で固定</td></tr>
+<tr><td>Rev.14</td><td>2026-09-08</td><td>実装契約を追加し、パッケージ境界、HTTP契約、JSON保存、起動時検証、Handler/Service/Entity責務、副作用、保留機能禁止を具体化</td></tr>
 <tr><td>Rev.13</td><td>2026-09-08</td><td>SDK/API、APIキー、Rate limiting、SSL/ACME、CA選定の確定範囲と保留範囲を整理し、機能仕様見出しを補完</td></tr>
 <tr><td>Rev.12</td><td>2026-09-08</td><td>XServer Static 相当仕様を ASB互換目標へ名称変更し、SSL/ACME を ASB互換目標に含める方針へ整理</td></tr>
 <tr><td>Rev.11</td><td>2026-09-08</td><td>XServer Static 相当の機能目標と ASB 独自仕様を追加し、セルフホスト、JSONファイルベース、実行時データ配置、API中心設計、段階実装方針を整理</td></tr>
