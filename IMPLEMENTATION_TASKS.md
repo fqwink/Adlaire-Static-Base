@@ -6,7 +6,7 @@
 
 本ファイルは、`ASB-spec.md` に基づいて実装タスクを管理する。
 
-参照仕様バージョン: `ASB-spec.md Rev.15`
+参照仕様バージョン: `ASB-spec.md Rev.16`
 
 `ASB-spec.md` で仕様確定済みの事項を実装タスクとしてリスト化する。
 
@@ -55,6 +55,8 @@
 - 外部ルーターライブラリを使わず、Go標準 `net/http` でルーティングする。
 - 共通JSONレスポンスと共通エラーレスポンス形式を実装する。
 - エラーレスポンスに `error`、`code`、`timestamp`、`httpStatus` を含める。
+- エラーレスポンスの `httpStatus` と実際の HTTP ステータスを一致させる。
+- エラーレスポンスの `timestamp` を UTC RFC3339 秒精度に固定する。
 - エラーレスポンスに内部ファイルパス、スタックトレース、機密値を含めない。
 - JSON の未知フィールド拒否、空 Body 拒否、UTC RFC3339 日時保存を実装する。
 - Project、File、Backup の UUID 形式 ID 生成を `crypto/rand` で実装する。
@@ -62,7 +64,9 @@
 - JSON ファイル保存では同一ディレクトリ内の一時ファイル、`fsync`、atomic rename による置換を実装する。
 - 一時ファイルを開発リポジトリ内へ作成しないことを実装する。
 - 保存失敗時に成功レスポンスを返さないことを実装する。
-- Rev.15 API エンドポイント固定表に記載されたメソッド、パス、成功ステータス、失敗コードを実装する。
+- Rev.16 時点の API エンドポイント固定表に記載されたメソッド、パス、成功ステータス、失敗コードを実装する。
+- Rev.16 API 成功レスポンス固定表に記載された JSON キーと型を実装する。
+- 配列レスポンスは対象データが空でも空配列を返す。
 - URL パラメータ `:id`、`:domain`、`:name` の URL decode、正規化、バリデーションを実装する。
 - `:id` は UUID 形式のみ許可する。
 - `:domain` は小文字正規化後にドメイン仕様で検証する。
@@ -72,12 +76,14 @@
 - プロジェクト削除 API `DELETE /api/projects/:id` を実装する。
 - プロジェクト名、quota、ID、作成日時のバリデーションを実装する。
 - `config/projects.json` によるプロジェクト情報の永続化を実装する。
+- `config/projects.json` の `projects[]` スキーマ、`createdAt` 昇順、同一時刻時 `id` 昇順を実装する。
 - プロジェクト名重複を `ERR_PROJECT_ALREADY_EXISTS` として扱う。
 - 存在しないプロジェクト参照を `ERR_PROJECT_NOT_FOUND` として扱う。
 - ファイルアップロード API `POST /api/projects/:id/files/upload` を実装する。
 - ファイル一覧 API `GET /api/projects/:id/files` を実装する。
 - ファイル削除 API `DELETE /api/projects/:id/files/:name` を実装する。
 - `storage/projects/:projectId/files.json` によるファイルメタデータ管理を実装する。
+- `storage/projects/:projectId/files.json` の `files[]` スキーマ、`name` 昇順、相対パス保存を実装する。
 - フォルダ階層を保持した静的ファイル管理を実装する。
 - プロジェクト quota に基づく容量制限を実装する。
 - ファイル名、サイズ、パス区切り文字禁止のバリデーションを実装する。
@@ -91,6 +97,8 @@
 - `..`、絶対パス、URL decode 後に配信ルート外へ出るパスを拒否する。
 - 静的配信の `Content-Type` は Go 標準ライブラリで判定し、不明時は `application/octet-stream` とする。
 - アクセスログとエラーログのJSON出力を実装する。
+- アクセスログの JSON Lines 固定フィールドを実装する。
+- エラーログの JSON Lines 固定フィールドを実装する。
 - ログレベル DEBUG、INFO、WARN、ERROR を実装する。
 - ログ保持期間7日間の方針を実装または運用仕様として整理する。
 - `go test ./...` によるユニットテスト基盤を整備する。
@@ -98,6 +106,11 @@
 - JSON 保存の排他、atomic rename、保存失敗時挙動のテストを整備する。
 - 静的配信の Host 解決、`index.html` 解決、path traversal 拒否、Content-Type、Gzip のテストを整備する。
 - API 固定表の全エンドポイント、URL パラメータ検証、ログ `limit` / `offset` 境界値のテストを整備する。
+- 全API成功レスポンスの固定JSONキー検証テストを整備する。
+- 全APIエラーレスポンスの固定JSONキー検証テストを整備する。
+- 保存JSONの未知フィールド拒否、相対パス保存、ソート順検証テストを整備する。
+- 起動時検証の順序、終了コード、標準エラー形式検証テストを整備する。
+- アクセスログとエラーログのJSON Linesフィールド検証テストを整備する。
 - Handler が永続化層へ直接依存しないことをコード構造で確認する。
 
 ## 3. 中優先度
@@ -106,6 +119,7 @@
 - ドメイン一覧 API `GET /api/projects/:id/domains` を実装する。
 - ドメイン削除 API `DELETE /api/projects/:id/domains/:domain` を実装する。
 - `config/domains.json` によるドメイン情報の永続化を実装する。
+- `config/domains.json` の `domains[]` スキーマと `domain` 昇順を実装する。
 - RFC 1035 準拠のドメインバリデーションを実装する。
 - ドメインの小文字正規化、253文字以下、最大3階層制限を実装する。
 - ドメイン重複割り当てを `ERR_DOMAIN_ALREADY_ASSIGNED` として扱う。
@@ -122,6 +136,7 @@
 - Webhook処理成功・失敗ログを実装する。
 - Webhook 処理の冪等性方針を仕様に従って実装する。
 - `config/webhooks.json` による Webhook 冪等キー履歴保存を実装する。
+- `config/webhooks.json` の `events[]` スキーマ、`receivedAt` 降順、同一時刻時 `key` 昇順を実装する。
 - `X-GitHub-Event` が `push` 以外の場合は `200 OK` と `{"status":"ignored"}` を返す。
 - 対象外ブランチの場合は `200 OK` と `{"status":"ignored"}` を返す。
 - 同一冪等キー受信時は `200 OK` と `{"status":"duplicate"}` を返す。
@@ -129,6 +144,7 @@
 - バックアップ一覧 API `GET /api/backups` を実装する。
 - バックアップ復旧 API `POST /api/backups/restore/:id` を実装する。
 - `config/backups.json` によるバックアップ履歴管理を実装する。
+- `config/backups.json` の `backups[]` スキーマ、`createdAt` 降順、同一時刻時 `id` 昇順を実装する。
 - tar.gz 形式のバックアップ作成を実装する。
 - SHA-256 ハッシュによるバックアップ整合性検証を実装する。
 - 復旧前の既存データ退避を実装する。
@@ -173,7 +189,7 @@
 - Webhook失敗時の自動リトライスケジュール仕様を確定する。
 - Brotli 圧縮を採用する場合の外部ライブラリ例外採用可否を確定する。
 - SSL証明書自動更新の実通信とスケジューリング仕様を確定する。
-- Rev.15 の保留機能実装禁止契約に反する実装が入らないことを確認する。
+- Rev.16 の保留機能実装禁止契約に反する実装が入らないことを確認する。
 
 ## 6. 実装済みリスト
 

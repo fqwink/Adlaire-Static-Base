@@ -39,7 +39,7 @@ ASB は仕様駆動システムである。
 | 提供形態 | HTTP サーバー（単一バイナリ） |
 | データ保存 | JSON ファイルベース（外部DB不使用） |
 | ライセンス | クローズドライセンス |
-| 本書バージョン | Rev.15 |
+| 本書バージョン | Rev.16 |
 
 ---
 
@@ -913,7 +913,7 @@ System Domain は、監視・ログ管理の責務を担う。
 
 ASB はヘッドレスアーキテクチャを採用し、UI層に依存しない。
 
-Rev.15 時点の確定対象は、ASB 本体が提供する HTTP JSON API である。
+Rev.16 時点の確定対象は、ASB 本体が提供する HTTP JSON API である。
 
 SDK は実装対象外とし、通信仕様および配布方針が確定した後に実装対象へ昇格する。
 
@@ -987,7 +987,7 @@ E2E テスト
 - SSL/TLS：本番環境では必須（リバースプロキシで対応）
 
 **レート制限**
-- Rev.15 時点では実装対象外とし、保留事項として扱う
+- Rev.16 時点では実装対象外とし、保留事項として扱う
 
 **タイムアウト**
 - リクエスト読み込み：30秒
@@ -1302,7 +1302,7 @@ $ sudo systemctl stop asb
 
 ### 13.1 実装対象の基準
 
-Rev.15 時点の実装対象は、ASB のセルフホスト型静的コンテンツ配信ホスティングに必要なバックエンド機能に限定する。
+Rev.16 時点の実装対象は、ASB のセルフホスト型静的コンテンツ配信ホスティングに必要なバックエンド機能に限定する。
 
 実装は以下の順序で進める：
 
@@ -1461,7 +1461,7 @@ JSON ファイル更新は以下の方針で行う：
 
 ### 13.9 SSL 管理詳細
 
-Rev.15 時点では、SSL 管理は管理境界とデータモデルを実装対象とし、ACME は ASB互換目標に含める。ACME 実通信、CA選定、ワイルドカード証明書対応は詳細仕様確定後に実装対象へ昇格する。
+Rev.16 時点では、SSL 管理は管理境界とデータモデルを実装対象とし、ACME は ASB互換目標に含める。ACME 実通信、CA選定、ワイルドカード証明書対応は詳細仕様確定後に実装対象へ昇格する。
 
 実装対象：
 
@@ -1537,7 +1537,7 @@ GitHub Webhook は Push イベントのみを対象とする。
 
 ### 13.14 実装契約
 
-本節は Rev.15 時点の実装契約である。実装者は本節に反する判断をコード側で独自に行ってはならない。
+本節は Rev.16 時点の実装契約である。実装者は本節に反する判断をコード側で独自に行ってはならない。
 
 #### 13.14.1 パッケージ境界
 
@@ -1682,7 +1682,7 @@ ID 生成、時刻取得、保存処理は Service に注入された依存関�
 
 #### 13.14.9 保留機能の実装禁止契約
 
-Rev.15 時点では以下を実装してはならない。
+Rev.16 時点では以下を実装してはならない。
 
 - SDK
 - APIキー管理
@@ -1698,7 +1698,7 @@ Rev.15 時点では以下を実装してはならない。
 
 ### 13.15 実装詳細固定仕様
 
-本節は Rev.15 時点で実装時に固定する詳細仕様である。
+本節は Rev.16 時点で実装時に固定する詳細仕様である。
 
 #### 13.15.1 API エンドポイント固定表
 
@@ -1801,7 +1801,7 @@ GitHub Webhook は `push` event のみ処理する。
 
 Webhook 処理成功後に冪等キーを `config/webhooks.json` へ保存する。
 
-Webhook 署名検証は Rev.15 時点では必須化しない。
+Webhook 署名検証は Rev.16 時点では必須化しない。
 
 #### 13.15.6 実装順序固定
 
@@ -1819,6 +1819,219 @@ Webhook 署名検証は Rev.15 時点では必須化しない。
 10. SSL 管理境界
 
 各段階は `go test ./...` が成功する状態で次へ進む。
+
+### 13.16 入出力契約固定仕様
+
+本節は Rev.16 時点で API、JSON保存、ログ、起動時検証の入出力を固定する仕様である。
+
+#### 13.16.1 共通成功レスポンス契約
+
+成功レスポンスは常に JSON object とする。
+
+成功レスポンスの `Content-Type` は `application/json; charset=utf-8` とする。
+
+成功レスポンス内の日時は UTC RFC3339 秒精度とする。
+
+成功レスポンス内のIDは UUID 文字列とする。
+
+配列レスポンスは対象キーを必ず含め、対象データが空の場合は空配列を返す。
+
+#### 13.16.2 API 成功レスポンス固定表
+
+| API | HTTP | 固定レスポンス |
+|-----|------|----------------|
+| Project 作成 | 201 | `{"id":string,"name":string,"quota":number,"used":number,"domains":[],"createdAt":string}` |
+| Project 一覧 | 200 | `{"projects":[Project...]}` |
+| Project 削除 | 200 | `{"status":"deleted","projectId":string,"deletedAt":string}` |
+| Domain 追加 | 201 | `{"domain":string,"projectId":string,"isCustom":true,"sslCert":string,"createdAt":string}` |
+| Domain 一覧 | 200 | `{"domains":[Domain...]}` |
+| Domain 削除 | 200 | `{"status":"deleted","projectId":string,"domain":string,"deletedAt":string}` |
+| File upload | 201 | `{"id":string,"projectId":string,"name":string,"size":number,"path":string,"uploadedAt":string}` |
+| File 一覧 | 200 | `{"files":[File...]}` |
+| File 削除 | 200 | `{"status":"deleted","projectId":string,"fileName":string,"deletedAt":string}` |
+| Backup 一覧 | 200 | `{"backups":[Backup...]}` |
+| Backup 復旧 | 200 | `{"status":"restored","backupId":string,"restoredAt":string}` |
+| Monitoring | 200 | `{"cpu":number|null,"memory":number|null,"disk":number|null,"connections":number|null,"requests":number|null,"checkedAt":string}` |
+| Access log | 200 | `{"logs":[AccessLog...],"limit":number,"offset":number}` |
+| Error log | 200 | `{"logs":[ErrorLog...],"limit":number,"offset":number}` |
+| GitHub Webhook 処理 | 200 | `{"status":"received","branch":string,"after":string,"processedAt":string}` |
+| GitHub Webhook 無視 | 200 | `{"status":"ignored","reason":string}` |
+| GitHub Webhook 重複 | 200 | `{"status":"duplicate","key":string}` |
+
+#### 13.16.3 共通エラーレスポンス契約
+
+エラーレスポンスは常に以下の JSON object とする。
+
+```json
+{
+  "error": "string",
+  "code": "string",
+  "timestamp": "2026-09-08T00:00:00Z",
+  "httpStatus": 400
+}
+```
+
+`error` は利用者向けの短い英語メッセージとする。
+
+`code` は `8.7 エラーハンドリング` のエラーコード定義に存在する値のみ許可する。
+
+`timestamp` は UTC RFC3339 秒精度とする。
+
+`httpStatus` は実際の HTTP ステータスコードと一致させる。
+
+エラーレスポンスに内部ファイルパス、スタックトレース、環境変数、シークレット、OSユーザー名を含めてはならない。
+
+#### 13.16.4 保存JSON配列要素スキーマ固定
+
+`config/projects.json` の `projects[]` は以下の形式とする。
+
+```json
+{
+  "id": "string(UUID)",
+  "name": "string",
+  "quota": 1073741824,
+  "used": 0,
+  "domains": [],
+  "createdAt": "2026-09-08T00:00:00Z"
+}
+```
+
+`config/domains.json` の `domains[]` は以下の形式とする。
+
+```json
+{
+  "domain": "example.com",
+  "projectId": "string(UUID)",
+  "isCustom": true,
+  "sslCert": "string",
+  "createdAt": "2026-09-08T00:00:00Z"
+}
+```
+
+`storage/projects/:projectId/files.json` の `files[]` は以下の形式とする。
+
+```json
+{
+  "id": "string(UUID)",
+  "projectId": "string(UUID)",
+  "name": "index.html",
+  "size": 2048,
+  "path": "contents/index.html",
+  "uploadedAt": "2026-09-08T00:00:00Z"
+}
+```
+
+`config/backups.json` の `backups[]` は以下の形式とする。
+
+```json
+{
+  "id": "string(UUID)",
+  "projectId": "string(UUID)",
+  "createdAt": "2026-09-08T00:00:00Z",
+  "size": 536870912,
+  "path": "backups/backup-id.tar.gz",
+  "sha256": "string"
+}
+```
+
+`config/webhooks.json` の `events[]` は以下の形式とする。
+
+```json
+{
+  "key": "main:abcdef1234567890",
+  "branch": "main",
+  "after": "abcdef1234567890",
+  "receivedAt": "2026-09-08T00:00:00Z"
+}
+```
+
+保存JSON内のパスは `storage.basePath` からの相対パスとし、絶対パスを保存してはならない。
+
+保存JSON内の日時は UTC RFC3339 秒精度とする。
+
+保存JSON内の未知フィールドは読み込み時にエラーとする。
+
+#### 13.16.5 保存順序固定
+
+JSON 保存時の配列順序は以下で固定する。
+
+| ファイル | ソート順 |
+|---------|----------|
+| `config/projects.json` | `createdAt` 昇順、同一時刻の場合は `id` 昇順 |
+| `config/domains.json` | `domain` 昇順 |
+| `config/backups.json` | `createdAt` 降順、同一時刻の場合は `id` 昇順 |
+| `storage/projects/:projectId/files.json` | `name` 昇順 |
+| `config/webhooks.json` | `receivedAt` 降順、同一時刻の場合は `key` 昇順 |
+
+#### 13.16.6 起動時検証出力固定
+
+起動時検証は以下の順序で実行する。
+
+1. `config/config.json` の存在確認
+2. `config/config.json` の JSON 構文検証
+3. 設定未知フィールド検証
+4. 設定値の範囲検証
+5. `storage.basePath` の存在確認
+6. `storage.basePath` が開発リポジトリ配下でないことの検証
+7. 必須ディレクトリ存在確認
+8. 必須 JSON ファイル存在確認
+9. 必須 JSON ファイルの構文とスキーマ検証
+10. 読み込み権限と書き込み権限の検証
+
+起動時検証失敗時は HTTP サーバーを起動せず、終了コード `1` で終了する。
+
+標準エラーには以下の1行のみを出力する。
+
+```text
+ASB_STARTUP_ERROR code=ERR_STORAGE_VALIDATION_FAILED message="Storage validation failed"
+```
+
+エラーコードは、失敗原因が JSON 構文の場合は `ERR_INVALID_JSON`、保存先検証の場合は `ERR_STORAGE_VALIDATION_FAILED`、設定未知フィールドの場合は `ERR_UNKNOWN_FIELD` とする。
+
+#### 13.16.7 ログJSON Lines固定
+
+アクセスログは1リクエストにつき1行の JSON Lines とし、以下のフィールドを固定する。
+
+```json
+{
+  "time": "2026-09-08T00:00:00Z",
+  "level": "INFO",
+  "domain": "system",
+  "method": "GET",
+  "path": "/api/projects",
+  "status": 200,
+  "durationMs": 12,
+  "remoteAddr": "127.0.0.1",
+  "requestId": "string(UUID)"
+}
+```
+
+エラーログは WARN 以上を対象とし、以下のフィールドを固定する。
+
+```json
+{
+  "time": "2026-09-08T00:00:00Z",
+  "level": "ERROR",
+  "domain": "delivery",
+  "code": "ERR_FILE_UPLOAD_FAILED",
+  "message": "File upload failed",
+  "requestId": "string(UUID)"
+}
+```
+
+ログには内部ファイルパス、スタックトレース、環境変数、シークレットを含めてはならない。
+
+#### 13.16.8 テスト固定項目
+
+Rev.16 の実装では、以下のテストを必須とする。
+
+- 全API成功レスポンスの固定JSONキー検証
+- 全APIエラーレスポンスの固定JSONキー検証
+- 保存JSONの未知フィールド拒否
+- 保存JSONの相対パス保存検証
+- 保存JSONのソート順検証
+- 起動時検証の順序、終了コード、標準エラー形式検証
+- アクセスログとエラーログのJSON Linesフィールド検証
 
 ---
 
@@ -1888,7 +2101,7 @@ Webhook 署名検証は Rev.15 時点では必須化しない。
 ### 15.2 テスト対象外
 
 以下はモック・スタブで対応：
-- ACME 実通信および CA 連携（Rev.15 時点では実通信を実装対象外とし、SSL管理境界のみ検証）
+- ACME 実通信および CA 連携（Rev.16 時点では実通信を実装対象外とし、SSL管理境界のみ検証）
 - GitHub Webhook（テスト用ペイロード）
 - 実際のファイルストレージ大容量テスト（テスト時は最大100MB）
 
@@ -1996,6 +2209,7 @@ $ asb-backup-restore backup-v1.tar.gz
 
 | バージョン | 日付 | 内容 |
 |-----------|------|------|
+| Rev.16 | 2026-09-08 | API成功/エラーレスポンス、保存JSONスキーマ、起動時検証出力、ログJSON Linesを固定 |
 | Rev.15 | 2026-09-08 | API、設定値、JSONファイル、静的配信、Webhook、実装順序を実装単位で固定 |
 | Rev.14 | 2026-09-08 | 実装契約を追加し、パッケージ境界、HTTP契約、JSON保存、起動時検証、Handler/Service/Entity責務、副作用、保留機能禁止を具体化 |
 | Rev.13 | 2026-09-08 | SDK/API、APIキー、Rate limiting、SSL/ACME、CA選定の確定範囲と保留範囲を整理し、機能仕様見出しを補完 |
