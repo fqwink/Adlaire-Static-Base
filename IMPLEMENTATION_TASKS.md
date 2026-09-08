@@ -6,7 +6,7 @@
 
 本ファイルは、`ASB-spec.md` に基づいて実装タスクを管理する。
 
-参照仕様バージョン: `ASB-spec.md Rev.36`
+参照仕様バージョン: `ASB-spec.md Rev.37`
 
 `ASB-spec.md` で仕様確定済みの事項のみを実装タスクとして扱う。
 
@@ -102,16 +102,20 @@
 - `internal/server/router.go`、`internal/server/response.go`、`internal/server/middleware.go` を実装する。
 - `internal/data/json_repository.go` を実装する。
 - `server.port`、`server.host`、`server.shutdownTimeout`、`storage.basePath`、`storage.maxProjectSize`、`ssl.email`、`ssl.renewBefore`、`log.level`、`log.format`、`log.maxSize` の起動時バリデーションを実装する。
+- 任意設定項目の未指定時、親 object 未指定時、空文字、型不一致、数値の小数・指数表記・負数・`null` 拒否を仕様通り実装する。
+- `storage.basePath` と `deploy.sourcePath` の絶対パス正規化、開発リポジトリ配下判定、Git worktree 判定を実装する。
 - 設定未知フィールド検出時の起動失敗を実装する。
 - 起動時に設定済み実行時データ領域の存在確認と権限検証を実装する。
 - 起動時に実行時データ用のディレクトリまたはファイルを自動生成しない。
 - 開発リポジトリを実行時データ保存先として扱わない。
-- `storage.basePath` 配下の `config/`、`storage/`、`logs/`、`certs/` の存在検証を実装する。
-- `config/projects.json`、`config/domains.json`、`config/backups.json`、`config/webhooks.json`、`storage/projects/:projectId/files.json` の起動時存在検証を実装する。
+- `storage.basePath` 配下の `config/`、`storage/`、`storage/projects/`、`logs/`、`certs/` の順序付き存在検証を実装する。
+- `config/projects.json`、`config/domains.json`、`config/backups.json`、`config/webhooks.json`、各 Project の `storage/projects/:projectId/files.json` の順序付き起動時存在検証を実装する。
 - 必須 JSON ファイルの構文検証、必須フィールド検証、未知フィールド拒否を実装する。
 - Go標準 `net/http` によるHTTPサーバーを実装する。
 - グレースフルシャットダウンと `shutdownTimeout` を実装する。
 - API パスを静的ファイル配信より優先して判定する。
+- API パス解析では URL path のみを使用し、query string と fragment をルーティング判定に使わない。
+- API パスの URL decode 失敗、`//`、`.`、`..`、NUL、`\`、`/api`、`/api/` の拒否を実装する。
 - API レスポンスの `application/json; charset=utf-8` 統一を実装する。
 - JSON API の `Content-Type: application/json` 要求を実装する。
 - charset 付き `Content-Type: application/json` を許可する。
@@ -138,9 +142,11 @@
 - 保存失敗時に成功レスポンスを返さない。
 - 複数JSON更新では最終JSONの保存完了まで成功レスポンスを返さない。
 - 複数JSON更新の途中失敗時に更新済みJSON名、未更新JSON名、操作名、requestId をエラーログへ記録する。
-- Rev.36 時点では複数JSON更新に外部トランザクション機構を導入しない。
-- Rev.36 時点の API エンドポイント固定表に記載されたメソッド、パス、成功ステータス、失敗コードを実装する。
-- Rev.36 API 成功レスポンス固定表に記載された JSON キーと型を実装する。
+- 複数ファイル更新の途中失敗時に、更新予定JSON、更新済みJSON、`files.json` path、実ファイル、`projects.used` の整合性検証を実装する。
+- 整合性検証失敗時は `ERR_STORAGE_VALIDATION_FAILED` を error log へ記録する。
+- Rev.37 時点では複数JSON更新に外部トランザクション機構を導入しない。
+- Rev.37 時点の API エンドポイント固定表に記載されたメソッド、パス、成功ステータス、失敗コードを実装する。
+- Rev.37 API 成功レスポンス固定表に記載された JSON キーと型を実装する。
 - プロジェクト作成 API `POST /api/projects` を実装する。
 - プロジェクト一覧 API `GET /api/projects` を実装する。
 - プロジェクト削除 API `DELETE /api/projects/:id` を実装する。
@@ -215,7 +221,7 @@
 - `Last-Modified` を HTTP-date 形式で返す。
 - `Cache-Control` を既定で `public, max-age=60` とする。
 - `If-None-Match` と `If-Modified-Since` による `304 Not Modified` を実装する。
-- Range request は Rev.36 時点では実装せず、`Range` ヘッダーを無視して `206 Partial Content` を返さない。
+- Range request は Rev.37 時点では実装せず、`Range` ヘッダーを無視して `206 Partial Content` を返さない。
 - `Accept-Encoding: br` では Brotli 応答を返さない。
 - Brotli 用の `.br`、キャッシュ、一時ファイル、メタデータを開発リポジトリ内にも `storage.basePath` 配下にも生成しない。
 - 静的配信でディレクトリ一覧を返さない。
@@ -259,7 +265,7 @@
 - 設定済み証明書保存先 `certs/` の検証と管理を実装する。
 - SSL証明書ID、証明書メタデータ、証明書ファイルパス検証、有効期限監視モデル、失敗エラー `ERR_SSL_CERT_GENERATION_FAILED` を実装する。
 - SSL更新状態は手動配置または ASB 外部運用の結果として確認できる管理モデルに限定する。
-- ACME による証明書取得・更新を ASB互換目標として扱うが、Rev.36 時点では実通信を実装しない。
+- ACME による証明書取得・更新を ASB互換目標として扱うが、Rev.37 時点では実通信を実装しない。
 - 証明書ファイルそのものを ASB 本体で生成、取得、更新、削除、失効しない。
 - ACME client、ACME account 登録、ACME account key 生成/保存、ACME directory 取得、ACME nonce 取得、ACME order 作成、ACME authorization 取得、ACME challenge 応答、ACME finalize、ACME certificate download、ACME revoke を実装しない。
 - DNS-01 challenge、HTTP-01 challenge、TLS-ALPN-01 challenge、wildcard 証明書自動取得、複数 CA 連携、CA 選定、証明書自動更新、証明書更新スケジューラー、challenge 状態管理、ACME retry、ACME rate limit 回避を実装しない。
@@ -373,7 +379,7 @@
 - バックアップ作成用一時tarを `storage.basePath/backups/.tmp/` 配下に限定する。
 - atomic rename 後に履歴保存へ失敗した場合は、作成済みtar.gzを削除する。
 - バックアップ保存先を別障害領域へ複製する作業をASB外の運用責務として扱う。
-- 外部ストレージ連携を Rev.36 時点では実装対象外として扱う。
+- 外部ストレージ連携を Rev.37 時点では実装対象外として扱う。
 - Backup復旧前退避先を `storage.basePath/backups/restore-staging/{restoreId}/previous/` に固定する。
 - Backup復旧用展開先を `storage.basePath/backups/restore-staging/{restoreId}/next/` に固定する。
 - Backup履歴の `status` が `completed` でない場合は復旧を拒否する。
@@ -428,6 +434,10 @@
 - `limit` はデフォルト100、最小1、最大1000を実装する。
 - `offset` はデフォルト0、最小0を実装する。
 - 壊れた JSON 行を検出した場合、ログ API は `500 Internal Server Error` を返す。
+- ログ API は全行の decode とスキーマ検証が成功した後に `limit` / `offset` を適用する。
+- ログ API で空行または壊れた JSON 行を検出した場合は部分成功を返さず、`ERR_LOG_READ_FAILED` を返す。
+- `offset` がログ件数以上の場合は `200 OK` と `logs: []` を返す。
+- ログ API ではログファイルを作成、更新、ローテーション、削除しない。
 - システムステータス API `GET /api/monitoring/stats` を実装する。
 - CPU、メモリ、ディスク、接続数、リクエスト数の監視値取得を実装する。
 - OS 依存で取得できない監視値は `null` として成功レスポンスに含める。
@@ -514,7 +524,12 @@
 - `scripts/install_test.sh`、`scripts/update_test.sh` を作成する。
 - `latest` 指定、自動最新版選択、未指定バージョンでの install/update 実行を拒否する。
 - install/update でダウンロード失敗、checksum不一致、`--version` 不一致、systemd操作失敗を成功扱いしない。
+- `install.sh` は既存 `/usr/local/bin/asb` が存在する場合に上書きせず失敗する。
+- `install.sh` は checksum 検証、`--version` 出力確認、配置、`asb.service` 配置、`daemon-reload`、`enable`、`start` の順に実装する。
+- `update.sh` は checksum 検証と `--version` 出力確認が完了するまで、既存サービス停止、既存バイナリ退避、バイナリ置換を実行しない。
+- `update.sh` は `/usr/local/bin/asb` 不在、または `/usr/local/bin/asb.previous` 既存の場合に失敗する。
 - `update.sh` の起動失敗時に `/usr/local/bin/asb.previous` から復旧を試行する。
+- `update.sh` は復旧に成功した場合でも終了コード `1` で失敗する。
 - `asb.service` を `/etc/systemd/system/asb.service` 向けの固定仕様で提供する。
 - `asb.service` の `ExecStart=/usr/local/bin/asb --config /etc/asb/config.json`、`Restart=on-failure`、`NoNewPrivileges=true` を実装する。
 
@@ -537,16 +552,16 @@
 
 優先度: 低
 
-目的: Rev.36 時点で実装対象外の機能が混入していないことを確認する。
+目的: Rev.37 時点で実装対象外の機能が混入していないことを確認する。
 
 ### 実装タスク
 
-- ASB互換目標を将来の到達目標として扱い、Rev.36 時点の実装対象として扱わない。
+- ASB互換目標を将来の到達目標として扱い、Rev.37 時点の実装対象として扱わない。
 - `internal/asb_forbidden_test.go` を作成する。
 - ASB互換目標に含まれることを、未確定機能の実装根拠として扱わない。
 - ASB互換目標を理由に `.gitignore`、外部DB、未承認外部ライブラリ、未承認外部サービス連携、開発リポジトリ内実行時データ、起動時自動生成、ビルド成果物自動生成を追加しない。
 - ASB互換目標を理由に APIキー管理、ユーザー認証、Rate limiting、Brotli圧縮、ACME実通信、CA選定、SDK本体、SDK専用通信を実装しない。
-- 将来計画、保留事項、検討・調査中事項を Rev.36 時点の実装対象として扱わない。
+- 将来計画、保留事項、検討・調査中事項を Rev.37 時点の実装対象として扱わない。
 - GUI、Web UI、デスクトップアプリ、モバイルアプリ、クラウドサービス化、SaaS基盤、ユーザー管理、マルチテナント、課金管理、契約管理、複数インスタンス管理、クラスタ管理、分散ロック、NFS専用連携、分散ストレージ専用連携、外部ストレージサービス連携、ウイルススキャン、ログファイル暗号化、HTTP/2実装詳細を実装しない。
 - 将来計画機能を理由に UI用API、モバイル専用API、クラウド用API、テナント用API、課金用API、契約用API、外部ストレージ用API、ウイルススキャン用API、ログ暗号化用APIを追加しない。
 - 将来計画機能を理由に `ui.*`、`webui.*`、`desktop.*`、`mobile.*`、`cloud.*`、`tenant.*`、`billing.*`、`nfs.*`、`cluster.*`、`distributedStorage.*`、`externalStorage.*`、`virusScan.*`、`logEncryption.*` 設定項目を追加しない。
@@ -584,7 +599,7 @@
 
 ## 14. 実装フェーズ外の仕様未確定タスク
 
-以下は Rev.36 時点では実装フェーズに含めない。
+以下は Rev.37 時点では実装フェーズに含めない。
 
 - ACME protocol 対応範囲、CA選定、複数CA、challenge方式、account key 保護、DNS provider連携、retry、rate limit、テスト方法、失敗時挙動を確定する。
 - SDK 本体、SDK 配布方針、SDK 認証仕様を確定する。
