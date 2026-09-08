@@ -12,7 +12,11 @@ html { scroll-behavior: smooth; }
 body { margin: 0; min-height: 100vh; background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans JP", sans-serif; font-size: 14px; line-height: 1.72; }
 a { color: inherit; }
 .portal-shell { display: grid; grid-template-columns: var(--toc-w) minmax(0, 1fr); min-height: 100vh; }
+.portal-shell.sidebar-collapsed { grid-template-columns: 0 minmax(0, 1fr); }
 .portal-sidebar { position: sticky; top: 0; height: 100vh; overflow-y: auto; background: var(--panel); border-right: 1px solid var(--line); }
+.portal-shell.sidebar-collapsed .portal-sidebar { border-right: 0; overflow: hidden; }
+.portal-shell.sidebar-collapsed .sidebar-header,
+.portal-shell.sidebar-collapsed .toc { display: none; }
 .sidebar-header { padding: 20px 20px 16px; border-bottom: 1px solid var(--line); }
 .logo { display: block; font-size: 11px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--brand); }
 .sidebar-title { margin: 6px 0 8px; font-size: 18px; line-height: 1.25; }
@@ -26,7 +30,11 @@ a { color: inherit; }
 .toc-l3 { padding: 4px 20px 4px 48px; font-size: 11px; color: var(--subtle); }
 .portal-main { min-width: 0; }
 .topbar { position: sticky; top: 0; z-index: 10; display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 12px 28px; background: color-mix(in srgb, var(--panel) 92%, transparent); border-bottom: 1px solid var(--line); backdrop-filter: blur(12px); }
+.topbar-left { display: flex; align-items: center; gap: 12px; min-width: 0; }
 .topbar-title { font-size: 13px; color: var(--muted); font-weight: 650; }
+.sidebar-toggle { appearance: none; display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px; flex: 0 0 34px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--panel-2); color: var(--text); font-size: 18px; line-height: 1; cursor: pointer; }
+.sidebar-toggle:hover { border-color: var(--line-strong); color: var(--brand); background: var(--panel-3); }
+.sidebar-toggle:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
 .content { max-width: 1120px; margin: 0 auto; padding: 34px 32px 72px; }
 .doc-hero { border: 1px solid var(--line); background: var(--panel); border-radius: var(--radius); padding: 30px; margin-bottom: 26px; }
 .eyebrow { margin: 0 0 8px; font-size: 11px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; color: var(--brand); }
@@ -53,7 +61,7 @@ tr:nth-child(even) td { background: color-mix(in srgb, var(--panel-2) 55%, trans
 code { font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace; font-size: .92em; background: var(--panel-2); border: 1px solid var(--line); color: var(--brand-2); border-radius: 5px; padding: 1px 5px; }
 pre { margin: 16px 0 20px; overflow-x: auto; border-radius: var(--radius); background: var(--code-bg); color: var(--code-text); border: 1px solid var(--line-strong); padding: 16px 18px; font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace; font-size: 12.5px; line-height: 1.65; }
 pre code { background: transparent; border: 0; color: inherit; padding: 0; }
-@media (max-width: 900px) { .portal-shell { grid-template-columns: 1fr; } .portal-sidebar { position: relative; height: auto; max-height: 46vh; border-right: 0; border-bottom: 1px solid var(--line); } .topbar { position: static; padding: 10px 18px; } .content { padding: 22px 16px 48px; } .doc-hero { padding: 22px; } }
+@media (max-width: 900px) { .portal-shell, .portal-shell.sidebar-collapsed { grid-template-columns: 1fr; } .portal-sidebar { position: relative; height: auto; max-height: 46vh; border-right: 0; border-bottom: 1px solid var(--line); } .portal-shell.sidebar-collapsed .portal-sidebar { display: none; } .topbar { position: sticky; padding: 10px 18px; } .content { padding: 22px 16px 48px; } .doc-hero { padding: 22px; } }
 @media print { body { background: #fff; color: #000; } .portal-shell { display: block; } .portal-sidebar, .topbar { display: none !important; } .content { max-width: none; padding: 0; } .doc-hero { border: 0; border-radius: 0; margin: 0 0 18px; padding: 0; } table, pre { break-inside: avoid; } }
 </style>
 </head>
@@ -65,7 +73,7 @@ pre code { background: transparent; border: 0; color: inherit; padding: 0; }
       <h1 class="sidebar-title">ASB Developer Docs</h1>
       <span class="version-pill">Rev.14</span>
     </div>
-    <nav class="toc">
+    <nav class="toc" id="asb-toc">
       <a class="toc-l1" href="#セルフホスト型静的コンテンツ配信ホスティングシステム仕様書">セルフホスト型静的コンテンツ配信ホスティングシステム仕様書</a>
 <a class="toc-l2" href="#1-本書の位置づけ">1 本書の位置づけ</a>
 <a class="toc-l3" href="#1.1-機能一覧">1.1 機能一覧</a>
@@ -161,7 +169,7 @@ pre code { background: transparent; border: 0; color: inherit; padding: 0; }
     </nav>
   </aside>
   <main class="portal-main">
-    <div class="topbar"><span class="topbar-title">ASB Specification</span><span class="version-pill">Rev.14</span></div>
+    <div class="topbar"><div class="topbar-left"><button class="sidebar-toggle" type="button" aria-label="目次を折りたたむ" aria-expanded="true" aria-controls="asb-toc">☰</button><span class="topbar-title">ASB Specification</span></div><span class="version-pill">Rev.14</span></div>
     <div class="content">
       <section class="doc-hero">
         <p class="eyebrow">Adlaire-Static-Base</p>
@@ -1783,5 +1791,45 @@ $ asb-backup-restore backup-v1.tar.gz</code></pre>
     </div>
   </main>
 </div>
+<script>
+(function () {
+  var shell = document.querySelector(".portal-shell");
+  var toggle = document.querySelector(".sidebar-toggle");
+  if (!shell || !toggle) {
+    return;
+  }
+
+  function setCollapsed(collapsed) {
+    shell.classList.toggle("sidebar-collapsed", collapsed);
+    toggle.setAttribute("aria-expanded", String(!collapsed));
+    toggle.setAttribute("aria-label", collapsed ? "目次を表示する" : "目次を折りたたむ");
+  }
+
+  function getSavedState() {
+    try {
+      return window.localStorage.getItem("asb-sidebar-collapsed");
+    } catch (error) {
+      return null;
+    }
+  }
+
+  function saveState(collapsed) {
+    try {
+      window.localStorage.setItem("asb-sidebar-collapsed", String(collapsed));
+    } catch (error) {
+      return;
+    }
+  }
+
+  var saved = getSavedState();
+  setCollapsed(saved === "true");
+
+  toggle.addEventListener("click", function () {
+    var collapsed = !shell.classList.contains("sidebar-collapsed");
+    setCollapsed(collapsed);
+    saveState(collapsed);
+  });
+})();
+</script>
 </body>
 </html>
