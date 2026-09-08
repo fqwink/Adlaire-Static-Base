@@ -6,7 +6,7 @@
 
 本ファイルは、`ASB-spec.md` に基づいて実装タスクを管理する。
 
-参照仕様バージョン: `ASB-spec.md Rev.24`
+参照仕様バージョン: `ASB-spec.md Rev.25`
 
 `ASB-spec.md` で仕様確定済みの事項を実装タスクとしてリスト化する。
 
@@ -75,10 +75,10 @@
 - 保存失敗時に成功レスポンスを返さないことを実装する。
 - 複数JSON更新では最終JSONの保存完了まで成功レスポンスを返さないことを実装する。
 - 複数JSON更新の途中失敗時に更新済みJSON名、未更新JSON名、操作名、requestId をエラーログへ記録する。
-- Rev.24 時点では複数JSON更新に外部トランザクション機構を導入しない。
-- Rev.24 時点の API エンドポイント固定表に記載されたメソッド、パス、成功ステータス、失敗コードを実装する。
-- Rev.24 API 成功レスポンス固定表に記載された JSON キーと型を実装する。
-- 管理 API は Rev.24 時点では認証なしとして実装する。
+- Rev.25 時点では複数JSON更新に外部トランザクション機構を導入しない。
+- Rev.25 時点の API エンドポイント固定表に記載されたメソッド、パス、成功ステータス、失敗コードを実装する。
+- Rev.25 API 成功レスポンス固定表に記載された JSON キーと型を実装する。
+- 管理 API は Rev.25 時点では認証なしとして実装する。
 - 管理 API で `Authorization` ヘッダーと `X-API-Key` ヘッダーを認証判断に使用しないことを実装する。
 - 管理 API で `Authorization` ヘッダーまたは `X-API-Key` ヘッダーの有無により、成功・失敗・レスポンス内容を変えないことを実装する。
 - APIキー発行、APIキー保存、APIキー照合、APIキー失効、APIキーローテーション、APIキー権限スコープ、APIキー監査履歴を実装しないことを確認する。
@@ -87,6 +87,15 @@
 - `auth.*`、`apiKey.*` 設定項目を定義しないことを実装する。
 - `config/config.json` に認証関連フィールドが存在する場合は、未知フィールドとして起動失敗させる。
 - 管理 API の本番公開時保護は ASB 外部のリバースプロキシ、ファイアウォール、VPN、SSH tunnel、IP制限等の運用境界として扱う。
+- Rate limiting は Rev.25 時点では ASB 本体に実装しないことを確認する。
+- Rate limiting middleware、IP別制限、Host別制限、Domain別制限、Project別制限、API別制限、Webhook別制限、静的配信別制限を実装しないことを確認する。
+- token bucket、leaky bucket、sliding window counter、fixed window counter、同時接続数制限、転送量制限を実装しないことを確認する。
+- `429 Too Many Requests` と `Retry-After` ヘッダーを Rate limiting 用に返さないことを確認する。
+- `config/rate_limits.json`、`config/limits.json`、`storage/rate_limits/`、`storage/counters/` を作成しないことを実装する。
+- `rateLimit.*`、`limits.*` 設定項目を定義しないことを実装する。
+- `config/config.json` に Rate limiting 関連フィールドが存在する場合は、未知フィールドとして起動失敗させる。
+- 管理 API、静的配信、Webhook 受信が Rate limiting の有無により成功・失敗・レスポンス内容を変えないことを実装する。
+- Rate limiting の本番対応は ASB 外部のリバースプロキシ、WAF、CDN、ファイアウォール、ロードバランサ等の運用境界として扱う。
 - 配列レスポンスは対象データが空でも空配列を返す。
 - URL パラメータ `:id`、`:domain`、`:name` の URL decode、正規化、バリデーションを実装する。
 - `:id` は UUID 形式のみ許可する。
@@ -132,7 +141,7 @@
 - `Last-Modified` を HTTP-date 形式で返す。
 - `Cache-Control` を既定で `public, max-age=60` とする。
 - `If-None-Match` と `If-Modified-Since` による `304 Not Modified` を実装する。
-- Range request は Rev.24 時点では実装せず、`Range` ヘッダーを無視して `206 Partial Content` を返さない。
+- Range request は Rev.25 時点では実装せず、`Range` ヘッダーを無視して `206 Partial Content` を返さない。
 - 静的配信でディレクトリ一覧を返さない。
 - 静的配信で開発リポジトリ内に配信用一時ファイル、キャッシュファイル、実行時データを作成しない。
 - ログ保存先を `storage.basePath/logs/` に固定する。
@@ -261,7 +270,7 @@
 - バックアップ作成用一時tarを `storage.basePath/backups/.tmp/` 配下に限定する。
 - atomic rename 後に履歴保存へ失敗した場合は、作成済みtar.gzを削除する。
 - バックアップ保存先を別障害領域へ複製する作業をASB外の運用責務として扱う。
-- 外部ストレージ連携を Rev.24 時点では実装対象外として扱う。
+- 外部ストレージ連携を Rev.25 時点では実装対象外として扱う。
 - Backup復旧前退避先を `storage.basePath/backups/restore-staging/{restoreId}/previous/` に固定する。
 - Backup復旧用展開先を `storage.basePath/backups/restore-staging/{restoreId}/next/` に固定する。
 - Backup履歴の `status` が `completed` でない場合は復旧を拒否する。
@@ -280,6 +289,9 @@
 - 管理 API が `Authorization` ヘッダーまたは `X-API-Key` ヘッダーの有無でレスポンスを変えないことをテストする。
 - APIキー、ユーザー、セッション、認証状態を表す JSON ファイルまたはディレクトリを生成しないことをテストする。
 - `config/config.json` に認証関連フィールドが存在する場合に未知フィールドとして起動失敗することをテストする。
+- Rate limiting 用 middleware、制限アルゴリズム、永続カウンタ、設定項目、JSON ファイルまたはディレクトリを生成しないことをテストする。
+- 管理 API、静的配信、Webhook 受信が Rate limiting 関連条件でレスポンスを変えないことをテストする。
+- `config/config.json` に Rate limiting 関連フィールドが存在する場合に未知フィールドとして起動失敗することをテストする。
 - 統合テストで全APIエンドポイントのリクエスト・レスポンス仕様を検証する。
 - E2E テスト `tests/e2e.sh` を整備する。
 
@@ -298,10 +310,9 @@
 
 - ACME クライアント内製実装、CA選定、テスト方法、失敗時挙動を確定する。
 - SDK通信規格と配布方針を確定する。
-- Rate limiting の採用可否と実装範囲を確定する。
 - Brotli 圧縮を採用する場合の外部ライブラリ例外採用可否を確定する。
 - SSL証明書自動更新の実通信とスケジューリング仕様を確定する。
-- Rev.24 の保留機能実装禁止契約に反する実装が入らないことを確認する。
+- Rev.25 の保留機能実装禁止契約に反する実装が入らないことを確認する。
 - マイグレーションの `schemaVersion`、`--dry-run`、`--apply`、事前バックアップ、途中失敗、ロールバック、開発リポジトリ非生成のテストを整備する。
 
 ## 6. 実装済みリスト
