@@ -39,7 +39,7 @@ ASB は仕様駆動システムである。
 | 提供形態 | HTTP サーバー（単一バイナリ） |
 | データ保存 | JSON ファイルベース（外部DB不使用） |
 | ライセンス | クローズドライセンス |
-| 本書バージョン | Rev.27 |
+| 本書バージョン | Rev.28 |
 
 ---
 
@@ -105,7 +105,7 @@ ASB は、静的コンテンツ専用ホスティングとして XServer Static 
 - `.gitignore` を作成・使用しない
 - ASB API を外部操作面とするヘッドレス構成を採用する
 - Go標準ライブラリで実装可能な部分は Go標準ライブラリで実装する
-- SDK 本体、SDK 配布、SDK 認証、CA、ACME 実通信など詳細未確定の機能は、仕様確定後に実装対象へ昇格する
+- SDK 本体、SDK 配布、SDK 認証、CA、ACME 実通信、証明書自動更新など詳細未確定の機能は、仕様確定後に実装対象へ昇格する
 
 ---
 
@@ -152,7 +152,7 @@ ASB は責務駆動設計（Responsibility-Driven Design）を採用する。
 | ファイル操作 | Go 標準 `os`, `io` |
 | 圧縮 | Go 標準 `archive/tar`, `compress/gzip` |
 | 暗号化 | Go 標準 `crypto` |
-| SSL 証明書 | SSL証明書管理境界（ACME 実通信・CA選定は詳細仕様確定後） |
+| SSL 証明書 | SSL証明書管理境界（ACME 実通信・CA選定・証明書自動更新は Rev.28 時点では実装しない） |
 | 対応 OS | Linux |
 | 対応アーキテクチャ | amd64（x86_64）、arm64（aarch64） |
 
@@ -312,8 +312,9 @@ ASB 起動時には、設定された保存先に以下の実行時データ領�
 **SSL 管理境界**
 - 証明書IDと有効期限の管理
 - 証明書保存先 `certs/` の検証
-- 証明書生成・更新失敗時のログ記録
-- ACME 実通信は詳細仕様確定後に実装
+- 証明書ファイルの存在、パス、有効期限の検証
+- 証明書生成・更新は ASB 外部の手動配置または外部運用で扱う
+- ACME 実通信は Rev.28 時点では ASB 本体に実装しない
 
 ### 7.4 ファイル管理
 
@@ -321,7 +322,7 @@ ASB 起動時には、設定された保存先に以下の実行時データ領�
 - 最大容量：1GB/プロジェクト（設定可能）
 - 形式：制限なし（HTML, CSS, JavaScript, 画像等）
 - 圧縮：Gzip による自動圧縮
-- Brotli は Rev.27 時点では ASB 本体に実装しない
+- Brotli は Rev.28 時点では ASB 本体に実装しない
 
 **ファイル削除**
 - 個別削除、一括削除に対応
@@ -922,7 +923,7 @@ Delivery Domain は、ファイル管理・GitHub Webhook の責務を担う。
 
 Webhook 処理失敗は、システムログおよび `config/webhooks.json` へ記録する。
 
-Rev.27 時点では、Webhook失敗時の自動リトライスケジュールを実装しない。
+Rev.28 時点では、Webhook失敗時の自動リトライスケジュールを実装しない。
 
 ### 11.3 Data Domain ポリシー
 
@@ -938,8 +939,8 @@ Data Domain は、バックアップ・ストレージの責務を担う。
 **バックアップ・復旧方針**
 - バックアップ取得後はハッシュ検証を実施
 - ASB標準バックアップ保存先は `storage.basePath/backups/` とする
-- バックアップ保存先を別障害領域へ複製する作業は Rev.27 時点ではASB外の運用責務とする
-- 外部ストレージ連携は Rev.27 時点では実装対象外とする
+- バックアップ保存先を別障害領域へ複製する作業は Rev.28 時点ではASB外の運用責務とする
+- 外部ストレージ連携は Rev.28 時点では実装対象外とする
 - 復旧は対象バックアップの存在、SHA-256、JSON構文、スキーマ検証後に実施
 - バックアップ・復旧・検証失敗・復旧操作は監査ログへ記録
 
@@ -954,7 +955,7 @@ System Domain は、監視・ログ管理の責務を担う。
 - 標準構成では `storage.basePath/logs/` 配下へ JSON Lines として保存する
 - アクセスログは `storage.basePath/logs/access.log` に保存する
 - エラーログは `storage.basePath/logs/error.log` に保存する
-- 標準出力（stdout）への通常ログ出力は Rev.27 時点では実装しない
+- 標準出力（stdout）への通常ログ出力は Rev.28 時点では実装しない
 - 起動失敗時のみ標準エラー（stderr）へ単一行の起動エラーを出力する
 
 **必須フィールド**
@@ -973,9 +974,9 @@ System Domain は、監視・ログ管理の責務を担う。
 
 ASB はヘッドレスアーキテクチャを採用し、UI層に依存しない。
 
-Rev.27 時点の確定対象は、ASB 本体が提供する HTTP JSON API、および将来 SDK が使用する通信規格である。
+Rev.28 時点の確定対象は、ASB 本体が提供する HTTP JSON API、および将来 SDK が使用する通信規格である。
 
-SDK 本体、SDK 配布方針、SDK 認証仕様は Rev.27 時点では実装対象外とする。
+SDK 本体、SDK 配布方針、SDK 認証仕様は Rev.28 時点では実装対象外とする。
 
 SDK 通信規格は、ASB 本体が提供する HTTP JSON API と同一とする。
 
@@ -983,7 +984,7 @@ SDK 通信規格は、ASB 本体が提供する HTTP JSON API と同一とする
 - HTTP + JSON を使用する
 - HTTP/2 対応は ASB互換目標として扱い、実装詳細は別途確定する
 - デフォルト接続境界は `localhost:3000` とする
-- 管理 API は Rev.27 時点では認証なしとする
+- 管理 API は Rev.28 時点では認証なしとする
 - SDK 通信は ASB 管理 API と同じ request / response / error / timestamp / pagination / upload 規約に従う
 - SDK 専用プロトコル、SDK 専用エンドポイント、SDK 専用セッションを追加しない
 - APIキー管理、ユーザー認証、SDK認証仕様は保留事項として扱う
@@ -1054,7 +1055,7 @@ E2E テスト
 - SSL/TLS：本番環境では必須（リバースプロキシで対応）
 
 **レート制限**
-- Rev.27 時点では ASB 本体に実装しない
+- Rev.28 時点では ASB 本体に実装しない
 - Rate limiting は、本番公開時に ASB 外部のリバースプロキシ、WAF、CDN、ファイアウォール等で扱う
 
 **タイムアウト**
@@ -1337,7 +1338,7 @@ ASB の初回インストールとアップデートを自動化するため、`
 | `--version` | 必須 | 更新対象の安定版バージョン |
 | `--arch` | 任意 | `amd64` または `arm64`。未指定時は `uname -m` から判定 |
 
-`latest` 指定、自動最新版選択、未指定バージョンでの実行は Rev.27 時点では禁止する。
+`latest` 指定、自動最新版選択、未指定バージョンでの実行は Rev.28 時点では禁止する。
 
 スクリプトは以下を満たす。
 
@@ -1429,17 +1430,17 @@ $ sudo systemctl stop asb
 
 ### 12.2 保留事項
 
-- ユーザー認証（Rev.27 時点では実装しない）
+- ユーザー認証（Rev.28 時点では実装しない）
 - マルチテナント対応
-- API キー管理（Rev.27 時点では実装しない）
+- API キー管理（Rev.28 時点では実装しない）
 - SDK 本体・SDK 配布方針・SDK 認証仕様
-- Rate limiting（Rev.27 時点では実装しない）
+- Rate limiting（Rev.28 時点では実装しない）
 - 外部ストレージサービス統合（AWS S3 等）
 
 ### 12.3 検討・調査中事項
 
 - 複数インスタンス時の NFS/分散ストレージ選定
-- ACME 実通信、CA選定、ワイルドカード証明書対応
+- ACME 実通信、CA選定、ワイルドカード証明書対応、証明書自動更新
 - バックアップのクラウドストレージ連携（オプション）
 
 ---
@@ -1448,7 +1449,7 @@ $ sudo systemctl stop asb
 
 ### 13.1 実装対象の基準
 
-Rev.27 時点の実装対象は、ASB のセルフホスト型静的コンテンツ配信ホスティングに必要なバックエンド機能に限定する。
+Rev.28 時点の実装対象は、ASB のセルフホスト型静的コンテンツ配信ホスティングに必要なバックエンド機能に限定する。
 
 実装は以下の順序で進める：
 
@@ -1594,7 +1595,7 @@ JSON ファイル更新は以下の方針で行う：
 **圧縮**
 
 - Gzip 圧縮を実装対象とする
-- Brotli 圧縮は Rev.27 時点では ASB 本体に実装しない
+- Brotli 圧縮は Rev.28 時点では ASB 本体に実装しない
 - `Accept-Encoding: br` を受信しても Brotli 応答へ切り替えない
 
 ### 13.8 ドメイン管理詳細
@@ -1608,21 +1609,31 @@ JSON ファイル更新は以下の方針で行う：
 
 ### 13.9 SSL 管理詳細
 
-Rev.27 時点では、SSL 管理は管理境界とデータモデルを実装対象とし、ACME は ASB互換目標に含める。ACME 実通信、CA選定、ワイルドカード証明書対応は詳細仕様確定後に実装対象へ昇格する。
+Rev.28 時点では、SSL 管理は証明書メタデータ、証明書配置、証明書検証に限定する。
+
+ACME は ASB互換目標に含めるが、ACME 実通信、CA選定、ワイルドカード証明書対応、証明書自動更新は Rev.28 時点では ASB 本体に実装しない。
 
 実装対象：
 
 - SSL 証明書IDの管理
 - 証明書保存先 `certs/` の存在確認
+- 証明書ファイルパスの検証
 - 証明書有効期限の監視モデル
+- 証明書メタデータの JSON 保存
 - SSL 証明書生成失敗時の `ERR_SSL_CERT_GENERATION_FAILED`
 
 実装保留：
 
+- ACME client
 - ACME アカウント登録
 - HTTP-01 / DNS-01 challenge
+- TLS-ALPN-01 challenge
+- CA 連携
 - 証明書発行リクエスト
 - 証明書自動更新の実通信
+- challenge 状態管理
+- ACME account key 管理
+- ACME order / authorization / nonce 管理
 
 ### 13.10 Webhook 詳細
 
@@ -1644,7 +1655,7 @@ GitHub Webhook は Push イベントのみを対象とする。
 - デプロイ処理に失敗した場合は `ERR_WEBHOOK_PROCESSING_FAILED` を返す
 - 同一 GitHub Push イベントを重複受信した場合は、同一 commit hash と対象ブランチの組み合わせを冪等キーとして扱い、二重デプロイを避ける
 - 冪等キーの保存方式は JSON ファイルベースとし、保存先は `storage.basePath` 配下に限定する
-- Webhook失敗時の自動リトライは Rev.27 時点では実装しない
+- Webhook失敗時の自動リトライは Rev.28 時点では実装しない
 - GitHub側からの再送は通常のWebhook受信として扱い、冪等キーで重複判定する
 
 ### 13.11 バックアップ・復旧詳細
@@ -1720,7 +1731,7 @@ GitHub Webhook は Push イベントのみを対象とする。
 
 ### 13.14 実装契約
 
-本節は Rev.27 時点の実装契約である。実装者は本節に反する判断をコード側で独自に行ってはならない。
+本節は Rev.28 時点の実装契約である。実装者は本節に反する判断をコード側で独自に行ってはならない。
 
 #### 13.14.1 パッケージ境界
 
@@ -1865,7 +1876,7 @@ ID 生成、時刻取得、保存処理は Service に注入された依存関�
 
 #### 13.14.9 保留機能の実装禁止契約
 
-Rev.27 時点では以下を実装してはならない。
+Rev.28 時点では以下を実装してはならない。
 
 - SDK
 - SDK 専用プロトコル
@@ -1893,6 +1904,16 @@ Rev.27 時点では以下を実装してはならない。
 - `.br` ファイル自動生成
 - Brotli 用キャッシュ生成
 - ACME 実通信
+- ACME client
+- ACME アカウント登録
+- DNS-01 challenge
+- HTTP-01 challenge
+- TLS-ALPN-01 challenge
+- CA 連携
+- 証明書自動更新
+- challenge 状態管理
+- ACME account key 管理
+- ACME order / authorization / nonce 管理
 - CA 選定固定
 - `webhook.githubSecret` 未設定時のWebhook署名検証必須化
 - Webhook失敗時の自動リトライスケジューラー
@@ -1904,7 +1925,7 @@ Rev.27 時点では以下を実装してはならない。
 
 ### 13.15 実装詳細固定仕様
 
-本節は Rev.27 時点で実装時に固定する詳細仕様である。
+本節は Rev.28 時点で実装時に固定する詳細仕様である。
 
 #### 13.15.1 API エンドポイント固定表
 
@@ -2049,7 +2070,7 @@ Domain が存在しても対象 Project が存在しない場合は整合性エ�
 
 `304 Not Modified` ではレスポンスボディを返してはならない。
 
-Range request は Rev.27 時点では実装しない。
+Range request は Rev.28 時点では実装しない。
 
 `Range` ヘッダーを受信した場合も無視し、通常の `200 OK` または `304 Not Modified` 判定を行う。
 
@@ -2091,7 +2112,7 @@ Webhook処理はネットワーク越しにGit操作を行ってはならない�
 
 静的コンテンツ反映元は `deploy.sourcePath` の `after` commit 時点のファイルツリーとする。
 
-Rev.27 時点では、Webhookデプロイ時の対象ファイルパスはリポジトリルート配下の全静的ファイルとする。
+Rev.28 時点では、Webhookデプロイ時の対象ファイルパスはリポジトリルート配下の全静的ファイルとする。
 
 `.git/`、`.github/`、`AGENTS.md`、`ASB-spec.md`、`ASB-spec.html`、`IMPLEMENTATION_TASKS.md`、`DOCUMENT_INDEX.md`、`README.md` は配信対象から除外する。
 
@@ -2109,7 +2130,7 @@ Webhook 処理完了後に処理状態を `config/webhooks.json` へ保存する
 
 失敗時の `status` は `failed` とし、`errorCode` を保存する。
 
-Webhook失敗時の自動リトライは Rev.27 時点では実装しない。
+Webhook失敗時の自動リトライは Rev.28 時点では実装しない。
 
 GitHub側から同一イベントが再送された場合は、`config/webhooks.json` の既存イベントにより重複判定する。
 
@@ -2169,7 +2190,7 @@ Webhook固定仕様のテスト項目は以下とする。
 
 ### 13.16 入出力契約固定仕様
 
-本節は Rev.27 時点で API、JSON保存、ログ、起動時検証の入出力を固定する仕様である。
+本節は Rev.28 時点で API、JSON保存、ログ、起動時検証の入出力を固定する仕様である。
 
 #### 13.16.1 共通成功レスポンス契約
 
@@ -2410,7 +2431,7 @@ HTTP リクエスト処理中に発生したエラーでは、エラーログの
 
 `ERROR` はすべての `log.level` 設定で出力する。
 
-`log.format` は Rev.27 時点では `json` のみ許可する。
+`log.format` は Rev.28 時点では `json` のみ許可する。
 
 通常運用ログを stdout へ出力してはならない。
 
@@ -2428,13 +2449,13 @@ ASB_STARTUP_ERROR code=ERR_STORAGE_VALIDATION_FAILED message="Storage validation
 
 ログローテーション失敗時は対象ログ書き込みを失敗扱いとし、HTTP レスポンスが未送信の場合は `500 Internal Server Error` を返す。
 
-ログ API は `access.log` または `error.log` の現行ファイルのみを読む。ローテーション済みログは Rev.27 時点ではログ API の対象外とする。
+ログ API は `access.log` または `error.log` の現行ファイルのみを読む。ローテーション済みログは Rev.28 時点ではログ API の対象外とする。
 
 ログには内部ファイルパス、スタックトレース、環境変数、シークレットを含めてはならない。
 
 #### 13.16.8 テスト固定項目
 
-Rev.27 の実装では、以下のテストを必須とする。
+Rev.28 の実装では、以下のテストを必須とする。
 
 - 全API成功レスポンスの固定JSONキー検証
 - 全APIエラーレスポンスの固定JSONキー検証
@@ -2446,7 +2467,7 @@ Rev.27 の実装では、以下のテストを必須とする。
 
 ### 13.17 実装境界とファイル操作固定仕様
 
-本節は Rev.27 時点で package 境界、公開 interface、Repository、Storage、複数ファイル更新の実装契約を固定する仕様である。
+本節は Rev.28 時点で package 境界、公開 interface、Repository、Storage、複数ファイル更新の実装契約を固定する仕様である。
 
 #### 13.17.1 package 公開 interface 固定
 
@@ -2651,7 +2672,7 @@ Backup restore は以下の順序で実行する。
 
 途中失敗時に自動ロールバックを実装する場合も、ロールバック失敗時は成功扱いにしてはならない。
 
-Rev.27 時点では、複数JSON更新に外部トランザクション機構を導入してはならない。
+Rev.28 時点では、複数JSON更新に外部トランザクション機構を導入してはならない。
 
 #### 13.17.11 最低テスト分類固定
 
@@ -2670,7 +2691,7 @@ Rev.27 時点では、複数JSON更新に外部トランザクション機構を
 
 ### 13.18 APIキー管理・認証固定仕様
 
-Rev.27 時点では、ASB 本体の管理 API に認証機能を実装しない。
+Rev.28 時点では、ASB 本体の管理 API に認証機能を実装しない。
 
 管理 API とは `/api/` で始まる全 HTTP JSON API を指す。
 
@@ -2678,7 +2699,7 @@ Rev.27 時点では、ASB 本体の管理 API に認証機能を実装しない�
 
 本番環境で管理 API を外部ネットワークから利用可能にする場合は、ASB 外部のリバースプロキシ、ファイアウォール、VPN、SSH tunnel、IP制限等で保護する。
 
-ASB 本体は Rev.27 時点では以下を実装してはならない。
+ASB 本体は Rev.28 時点では以下を実装してはならない。
 
 - APIキー発行
 - APIキー保存
@@ -2697,7 +2718,7 @@ ASB 本体は Rev.27 時点では以下を実装してはならない。
 
 `Authorization` ヘッダーまたは `X-API-Key` ヘッダーを受信しても、ASB は認証判断に使用してはならない。
 
-Rev.27 時点では、`Authorization` ヘッダーまたは `X-API-Key` ヘッダーの有無により、成功・失敗・レスポンス内容を変えてはならない。
+Rev.28 時点では、`Authorization` ヘッダーまたは `X-API-Key` ヘッダーの有無により、成功・失敗・レスポンス内容を変えてはならない。
 
 ASB は APIキー管理のために以下の JSON ファイル、ディレクトリ、設定項目を作成してはならない。
 
@@ -2724,17 +2745,17 @@ APIキー管理を将来実装する場合は、実装前に `ASB-spec.md` を�
 - 監査ログ
 - 既存の認証なし管理 API からの移行手順
 
-SDK 認証仕様は Rev.27 の対象外とし、SDK通信規格固定後に別途仕様化する。
+SDK 認証仕様は Rev.28 の対象外とし、SDK通信規格固定後に別途仕様化する。
 
 ---
 
 ### 13.19 Rate limiting 固定仕様
 
-Rev.27 時点では、ASB 本体に Rate limiting を実装しない。
+Rev.28 時点では、ASB 本体に Rate limiting を実装しない。
 
 Rate limiting とは、送信元IP、Host、Domain、Project、APIキー、ユーザー、HTTPメソッド、URL path、リクエスト数、転送量、同時接続数、時間窓等に基づき、HTTP リクエストの受理、拒否、遅延、または優先度を制御する機能を指す。
 
-ASB 本体は Rev.27 時点では以下を実装してはならない。
+ASB 本体は Rev.28 時点では以下を実装してはならない。
 
 - Rate limiting middleware
 - IP別リクエスト制限
@@ -2793,13 +2814,13 @@ Rate limiting を将来実装する場合は、実装前に `ASB-spec.md` を改
 
 ### 13.20 Brotli 圧縮固定仕様
 
-Rev.27 時点では、ASB 本体に Brotli 圧縮を実装しない。
+Rev.28 時点では、ASB 本体に Brotli 圧縮を実装しない。
 
 ASB の標準圧縮機能は、Go 標準ライブラリ `compress/gzip` で実装できる Gzip に限定する。
 
-Brotli 圧縮は Go 標準ライブラリに含まれないため、Rev.27 時点では外部ライブラリ例外採用を行わない。
+Brotli 圧縮は Go 標準ライブラリに含まれないため、Rev.28 時点では外部ライブラリ例外採用を行わない。
 
-ASB 本体は Rev.27 時点では以下を実装してはならない。
+ASB 本体は Rev.28 時点では以下を実装してはならない。
 
 - Brotli 圧縮
 - Brotli 展開
@@ -2854,11 +2875,11 @@ Brotli を将来実装する場合は、実装前に `ASB-spec.md` を改訂し�
 
 ### 13.21 SDK 通信規格固定仕様
 
-Rev.27 時点では、SDK 本体を実装しない。
+Rev.28 時点では、SDK 本体を実装しない。
 
-Rev.27 時点では、SDK 配布方針を確定しない。
+Rev.28 時点では、SDK 配布方針を確定しない。
 
-Rev.27 時点では、SDK 認証仕様を確定しない。
+Rev.28 時点では、SDK 認証仕様を確定しない。
 
 ただし、将来 SDK が ASB と通信する場合の通信規格は、ASB 本体が提供する HTTP JSON API と同一に固定する。
 
@@ -2878,7 +2899,7 @@ SDK 通信は、以下の ASB 管理 API 規約に従う。
 - pagination
 - static file upload 規約
 
-SDK 通信のために、ASB 本体は Rev.27 時点では以下を実装してはならない。
+SDK 通信のために、ASB 本体は Rev.28 時点では以下を実装してはならない。
 
 - SDK 専用 HTTP API
 - SDK 専用 URL prefix
@@ -2894,7 +2915,7 @@ SDK 通信のために、ASB 本体は Rev.27 時点では以下を実装して�
 - SDK 専用 protocol negotiation
 - SDK 専用 version negotiation
 
-ASB 本体は Rev.27 時点では以下の通信方式を SDK 通信として実装してはならない。
+ASB 本体は Rev.28 時点では以下の通信方式を SDK 通信として実装してはならない。
 
 - WebSocket
 - gRPC
@@ -2920,7 +2941,7 @@ SDK 通信のために以下の JSON ファイル、ディレクトリ、設定�
 
 `config/config.json` に SDK 通信関連フィールドが存在する場合は、未知フィールドとして起動失敗とする。
 
-SDK から ASB 管理 API を呼び出す場合でも、Rev.27 時点では `Authorization` ヘッダー、`X-API-Key` ヘッダー、cookie、セッションIDを認証判断に使用してはならない。
+SDK から ASB 管理 API を呼び出す場合でも、Rev.28 時点では `Authorization` ヘッダー、`X-API-Key` ヘッダー、cookie、セッションIDを認証判断に使用してはならない。
 
 SDK 認証仕様を将来実装する場合は、実装前に `ASB-spec.md` を改訂し、APIキー管理、ユーザー認証、SDK配布方針との関係を最低限確定する。
 
@@ -2938,6 +2959,99 @@ SDK 本体を将来実装する場合は、実装前に `ASB-spec.md` を改訂�
 - 認証仕様
 - generated client の採用可否
 - テスト方法
+
+---
+
+### 13.22 ACME 実通信固定仕様
+
+Rev.28 時点では、ASB 本体に ACME 実通信を実装しない。
+
+ACME 実通信とは、ACME protocol を用いて CA と通信し、account 登録、order 作成、authorization 取得、challenge 応答、証明書発行、証明書更新、失効、nonce 管理を行う機能を指す。
+
+Rev.28 時点では、SSL 管理は以下に限定する。
+
+- 証明書IDの管理
+- 証明書メタデータの管理
+- 証明書ファイル配置先の管理
+- 証明書ファイルパスの検証
+- 証明書ファイル存在確認
+- 証明書有効期限の検証
+- 証明書有効期限の監視モデル
+- 証明書検証失敗時のエラー記録
+
+証明書ファイルそのものは、手動配置または ASB 外部の運用で配置する。
+
+ASB 本体は Rev.28 時点では証明書ファイルを生成、取得、更新、削除、失効してはならない。
+
+ASB 本体は Rev.28 時点では以下を実装してはならない。
+
+- ACME client
+- ACME account 登録
+- ACME account key 生成
+- ACME account key 保存
+- ACME directory 取得
+- ACME nonce 取得
+- ACME order 作成
+- ACME authorization 取得
+- ACME challenge 応答
+- ACME finalize
+- ACME certificate download
+- ACME revoke
+- DNS-01 challenge
+- HTTP-01 challenge
+- TLS-ALPN-01 challenge
+- wildcard 証明書自動取得
+- 複数 CA 連携
+- CA 選定
+- 証明書自動更新
+- 証明書更新スケジューラー
+- challenge 状態管理
+- ACME retry
+- ACME rate limit 回避
+
+ASB は ACME のために以下の JSON ファイル、ディレクトリ、設定項目を作成してはならない。
+
+- `config/acme.json`
+- `config/ca.json`
+- `config/acme_accounts.json`
+- `config/acme_orders.json`
+- `config/acme_authorizations.json`
+- `config/acme_challenges.json`
+- `storage/acme/`
+- `storage/acme/accounts/`
+- `storage/acme/orders/`
+- `storage/acme/challenges/`
+- `storage/certs/acme/`
+- `acme.*`
+- `ca.*`
+- `ssl.acme.*`
+
+開発リポジトリ内にも、`storage.basePath` 配下にも、ACME account、account key、order、authorization、challenge、nonce、retry、renewal、CA選定状態を表す実行時データを生成してはならない。
+
+`config/config.json` に ACME 関連フィールドまたは CA 選定関連フィールドが存在する場合は、未知フィールドとして起動失敗とする。
+
+ACME 実通信を将来実装する場合は、実装前に `ASB-spec.md` を改訂し、以下を最低限確定する。
+
+- ACME protocol 対応範囲
+- 採用 CA
+- 複数 CA 方針
+- account key 保存形式
+- account key 保護方式
+- DNS-01 対応可否
+- HTTP-01 対応可否
+- TLS-ALPN-01 対応可否
+- wildcard 証明書対応可否
+- DNS provider 連携方式
+- order / authorization / challenge 保存形式
+- nonce 管理
+- retry 方針
+- rate limit 方針
+- 証明書保存先
+- 証明書更新スケジュール
+- 更新失敗時挙動
+- 監査ログ
+- テスト CA / staging CA の扱い
+- 既存の手動証明書配置からの移行手順
 
 ---
 
@@ -3007,7 +3121,7 @@ SDK 本体を将来実装する場合は、実装前に `ASB-spec.md` を改訂�
 ### 15.2 テスト対象外
 
 以下はモック・スタブで対応：
-- ACME 実通信および CA 連携（Rev.27 時点では実通信を実装対象外とし、SSL管理境界のみ検証）
+- ACME 実通信および CA 連携（Rev.28 時点では実通信を実装対象外とし、SSL管理境界のみ検証）
 - GitHub Webhook（テスト用ペイロード）
 - 実際のファイルストレージ大容量テスト（テスト時は最大100MB）
 
@@ -3057,13 +3171,13 @@ ASB の開発版バージョンは累積連番 `v0.N` とし、メジャー/マ�
 | `config/webhooks.json` | Webhook 冪等キー履歴スキーマ |
 | `storage/projects/:projectId/files.json` | File メタデータスキーマ |
 
-静的コンテンツ実体、ログファイル、証明書ファイル、ビルド済みバイナリは、Rev.27 時点のマイグレーション対象外とする。
+静的コンテンツ実体、ログファイル、証明書ファイル、ビルド済みバイナリは、Rev.28 時点のマイグレーション対象外とする。
 
 ### 16.3 schemaVersion 固定
 
 各実行時 JSON ファイルはトップレベルに `schemaVersion` を持つ。
 
-Rev.27 時点の `schemaVersion` は `1` とする。
+Rev.28 時点の `schemaVersion` は `1` とする。
 
 例：
 
@@ -3160,7 +3274,7 @@ asb migrate --storage /var/asb --from-schema 0 --to-schema 1 --apply
 
 ### 16.8 禁止事項
 
-Rev.27 時点では以下を禁止する。
+Rev.28 時点では以下を禁止する。
 
 - 起動時の自動マイグレーション
 - 開発リポジトリ内でのマイグレーション作業ファイル作成
@@ -3189,6 +3303,7 @@ Rev.27 時点では以下を禁止する。
 
 | バージョン | 日付 | 内容 |
 |-----------|------|------|
+| Rev.28 | 2026-09-08 | ACME 実通信を ASB 本体に実装しない方針、SSL管理を証明書メタデータ・配置・検証に限定し、ACME/CA/challenge/自動更新関連データ非生成を実装レベルで固定 |
 | Rev.27 | 2026-09-08 | SDK 本体は実装対象外のまま、将来 SDK 通信を ASB 管理 HTTP JSON API と同一規格に固定し、SDK 専用プロトコル・エンドポイント・実行時データ非生成を実装レベルで固定 |
 | Rev.26 | 2026-09-08 | Brotli 圧縮を ASB 本体に実装しない方針、Gzip 標準限定、Accept-Encoding br 非対応、Brotli 関連ファイル・設定・キャッシュ非生成を実装レベルで固定 |
 | Rev.25 | 2026-09-08 | Rate limiting を ASB 本体に実装しない方針、Rate limiting 関連 middleware・設定・JSON・実行時カウンタ非生成、外部運用境界を実装レベルで固定 |
