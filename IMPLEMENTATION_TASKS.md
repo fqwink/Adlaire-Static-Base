@@ -6,7 +6,7 @@
 
 本ファイルは、`ASB-spec.md` に基づいて実装タスクを管理する。
 
-参照仕様バージョン: `ASB-spec.md Rev.39`
+参照仕様バージョン: `ASB-spec.md Rev.40`
 
 `ASB-spec.md` で仕様確定済みの事項のみを実装タスクとして扱う。
 
@@ -139,7 +139,7 @@
 - `204 No Content` を使用しない。
 - 配列レスポンスは対象データが空でも空配列を返す。
 - URL パラメータ `:id`、`:domain`、`:name` の URL decode、正規化、バリデーションを実装する。
-- `:id` は Rev.39 の UUID 正規表現に一致する値のみ許可する。
+- `:id` は Rev.40 の UUID 正規表現に一致する値のみ許可する。
 - `:domain` は小文字正規化後、label数、全体長、label正規表現、末尾 `.` 除去を仕様通り検証する。
 - `:name` は長さ、NUL、パス区切り、`.`、`..`、先頭 `.`、空白のみを仕様通り拒否する。
 - JSON ファイル更新時の読み込み検証、保存前再検証、同一ファイル排他書き込みを実装する。
@@ -155,9 +155,9 @@
 - 複数JSON更新の途中失敗時に更新済みJSON名、未更新JSON名、操作名、requestId をエラーログへ記録する。
 - 複数ファイル更新の途中失敗時に、更新予定JSON、更新済みJSON、`files.json` path、実ファイル、`projects.used` の整合性検証を実装する。
 - 整合性検証失敗時は `ERR_STORAGE_VALIDATION_FAILED` を error log へ記録する。
-- Rev.39 時点では複数JSON更新に外部トランザクション機構を導入しない。
-- Rev.39 時点の API エンドポイント固定表に記載されたメソッド、パス、成功ステータス、失敗コードを実装する。
-- Rev.39 API 成功レスポンス固定表に記載された JSON キーと型を実装する。
+- Rev.40 時点では複数JSON更新に外部トランザクション機構を導入しない。
+- Rev.40 時点の API エンドポイント固定表に記載されたメソッド、パス、成功ステータス、失敗コードを実装する。
+- Rev.40 API 成功レスポンス固定表に記載された JSON キーと型を実装する。
 - プロジェクト作成 API `POST /api/projects` を実装する。
 - プロジェクト一覧 API `GET /api/projects` を実装する。
 - プロジェクト削除 API `DELETE /api/projects/:id` を実装する。
@@ -236,7 +236,7 @@
 - `Last-Modified` を HTTP-date 形式で返す。
 - `Cache-Control` を既定で `public, max-age=60` とする。
 - `If-None-Match` と `If-Modified-Since` による `304 Not Modified` を実装する。
-- Range request は Rev.39 時点では実装せず、`Range` ヘッダーを無視して `206 Partial Content` を返さない。
+- Range request は Rev.40 時点では実装せず、`Range` ヘッダーを無視して `206 Partial Content` を返さない。
 - `Accept-Encoding: br` では Brotli 応答を返さない。
 - Brotli 用の `.br`、キャッシュ、一時ファイル、メタデータを開発リポジトリ内にも `storage.basePath` 配下にも生成しない。
 - 静的配信でディレクトリ一覧を返さない。
@@ -257,7 +257,6 @@
 - Brotli 圧縮
 - Range request
 - 外部CDN連携
-- ウイルススキャン
 
 ## 6. P3 / v0.4 / ドメイン・SSL管理境界
 
@@ -280,7 +279,7 @@
 - 設定済み証明書保存先 `certs/` の検証と管理を実装する。
 - SSL証明書ID、証明書メタデータ、証明書ファイルパス検証、有効期限監視モデル、失敗エラー `ERR_SSL_CERT_GENERATION_FAILED` を実装する。
 - SSL更新状態は手動配置または ASB 外部運用の結果として確認できる管理モデルに限定する。
-- ACME による証明書取得・更新を ASB互換目標として扱うが、Rev.39 時点では実通信を実装しない。
+- ACME による証明書取得・更新を ASB互換目標として扱うが、Rev.40 時点では実通信を実装しない。
 - 証明書ファイルそのものを ASB 本体で生成、取得、更新、削除、失効しない。
 - ACME client、ACME account 登録、ACME account key 生成/保存、ACME directory 取得、ACME nonce 取得、ACME order 作成、ACME authorization 取得、ACME challenge 応答、ACME finalize、ACME certificate download、ACME revoke を実装しない。
 - DNS-01 challenge、HTTP-01 challenge、TLS-ALPN-01 challenge、wildcard 証明書自動取得、複数 CA 連携、CA 選定、証明書自動更新、証明書更新スケジューラー、challenge 状態管理、ACME retry、ACME rate limit 回避を実装しない。
@@ -402,7 +401,7 @@
 - バックアップ作成用一時tarを `storage.basePath/backups/.tmp/` 配下に限定する。
 - atomic rename 後に履歴保存へ失敗した場合は、作成済みtar.gzを削除する。
 - バックアップ保存先を別障害領域へ複製する作業をASB外の運用責務として扱う。
-- 外部ストレージ連携を Rev.39 時点では実装対象外として扱う。
+- 外部ストレージ連携を Rev.40 時点では実装対象外として扱う。
 - Backup復旧前退避先を `storage.basePath/backups/restore-staging/{restoreId}/previous/` に固定する。
 - Backup復旧用展開先を `storage.basePath/backups/restore-staging/{restoreId}/next/` に固定する。
 - Backup履歴の `status` が `completed` でない場合は復旧を拒否する。
@@ -577,21 +576,21 @@
 
 優先度: 低
 
-目的: Rev.39 時点で実装対象外の機能が混入していないことを確認する。
+目的: Rev.40 時点で実装対象外の機能が混入していないことを確認する。
 
 ### 実装タスク
 
-- ASB互換目標を将来の到達目標として扱い、Rev.39 時点の実装対象として扱わない。
+- ASB互換目標を将来の到達目標として扱い、Rev.40 時点の実装対象として扱わない。
 - `internal/asb_forbidden_test.go` を作成する。
 - ASB互換目標に含まれることを、未確定機能の実装根拠として扱わない。
 - ASB互換目標を理由に `.gitignore`、外部DB、未承認外部ライブラリ、未承認外部サービス連携、開発リポジトリ内実行時データ、起動時自動生成、ビルド成果物自動生成を追加しない。
 - ASB互換目標を理由に APIキー管理、ユーザー認証、Rate limiting、Brotli圧縮、ACME実通信、CA選定、SDK本体、SDK専用通信を実装しない。
-- 将来計画、保留事項、検討・調査中事項を Rev.39 時点の実装対象として扱わない。
-- GUI、Web UI、デスクトップアプリ、モバイルアプリ、クラウドサービス化、SaaS基盤、ユーザー管理、マルチテナント、課金管理、契約管理、複数インスタンス管理、クラスタ管理、分散ロック、NFS専用連携、分散ストレージ専用連携、外部ストレージサービス連携、ウイルススキャン、ログファイル暗号化、HTTP/2実装詳細を実装しない。
-- 将来計画機能を理由に UI用API、モバイル専用API、クラウド用API、テナント用API、課金用API、契約用API、外部ストレージ用API、ウイルススキャン用API、ログ暗号化用APIを追加しない。
-- 将来計画機能を理由に `ui.*`、`webui.*`、`desktop.*`、`mobile.*`、`cloud.*`、`tenant.*`、`billing.*`、`nfs.*`、`cluster.*`、`distributedStorage.*`、`externalStorage.*`、`virusScan.*`、`logEncryption.*` 設定項目を追加しない。
-- 将来計画機能を理由に UI用JSON、モバイル用JSON、クラウド用JSON、テナント用JSON、課金用JSON、外部ストレージ用JSON、ウイルススキャン用JSON、ログ暗号化用JSONを追加しない。
-- 将来計画機能を理由に UI用ディレクトリ、モバイル用ディレクトリ、クラウド用ディレクトリ、テナント用ディレクトリ、課金用ディレクトリ、外部ストレージ用ディレクトリ、ウイルススキャン用ディレクトリ、ログ暗号化用ディレクトリを追加しない。
+- 将来計画、保留事項、検討・調査中事項を Rev.40 時点の実装対象として扱わない。
+- GUI、Web UI、デスクトップアプリ、モバイルアプリ、ユーザー管理、マルチテナント、課金管理、契約管理、複数インスタンス管理、クラスタ管理、分散ロック、NFS専用連携、分散ストレージ専用連携、外部ストレージサービス連携、ログファイル暗号化、HTTP/2実装詳細を実装しない。
+- 将来計画機能を理由に UI用API、モバイル専用API、テナント用API、課金用API、契約用API、外部ストレージ用API、ログ暗号化用APIを追加しない。
+- 将来計画機能を理由に `ui.*`、`webui.*`、`desktop.*`、`mobile.*`、`tenant.*`、`billing.*`、`nfs.*`、`cluster.*`、`distributedStorage.*`、`externalStorage.*`、`logEncryption.*` 設定項目を追加しない。
+- 将来計画機能を理由に UI用JSON、モバイル用JSON、テナント用JSON、課金用JSON、外部ストレージ用JSON、ログ暗号化用JSONを追加しない。
+- 将来計画機能を理由に UI用ディレクトリ、モバイル用ディレクトリ、テナント用ディレクトリ、課金用ディレクトリ、外部ストレージ用ディレクトリ、ログ暗号化用ディレクトリを追加しない。
 - 管理 API が `Authorization` ヘッダーまたは `X-API-Key` ヘッダーの有無でレスポンスを変えないことをテストする。
 - APIキー、ユーザー、セッション、認証状態を表す JSON ファイルまたはディレクトリを生成しないことをテストする。
 - `config/config.json` に認証関連フィールドが存在する場合に未知フィールドとして起動失敗することをテストする。
@@ -624,7 +623,7 @@
 
 ## 14. 実装フェーズ外の仕様未確定タスク
 
-以下は Rev.39 時点では実装フェーズに含めない。
+以下は Rev.40 時点では実装フェーズに含めない。
 
 - ACME protocol 対応範囲、CA選定、複数CA、challenge方式、account key 保護、DNS provider連携、retry、rate limit、テスト方法、失敗時挙動を確定する。
 - SDK 本体、SDK 配布方針、SDK 認証仕様を確定する。
@@ -632,8 +631,6 @@
 - HTTP/2 実装詳細を実装対象へ昇格する場合の API、設定項目、テスト条件を仕様改訂で確定する。
 - GUI、デスクトップアプリ、Web UI を実装対象へ昇格する場合のリポジトリ境界、API、設定項目、外部依存、生成物を仕様改訂で確定する。
 - モバイルアプリを実装対象へ昇格する場合の API、認証、配布、設定項目、外部依存を仕様改訂で確定する。
-- クラウドサービス化を実装対象へ昇格する場合のテナント、認証、課金、契約、アカウント管理、保存JSON、外部依存を仕様改訂で確定する。
 - 複数インスタンス対応、NFS連携、分散ストレージ連携を実装対象へ昇格する場合のロック、整合性、障害時挙動、設定項目、外部依存を仕様改訂で確定する。
 - 外部ストレージサービス統合を実装対象へ昇格する場合のAPI、認証、保存JSON、バックアップ整合性、外部SDK採否を仕様改訂で確定する。
 - ログファイル暗号化を実装対象へ昇格する場合の鍵管理、暗号化形式、復号API、外部KMS採否、移行手順を仕様改訂で確定する。
-- ウイルススキャンを実装対象へ昇格する場合のスキャン方式、隔離、削除、外部API採否、保存JSON、テスト条件を仕様改訂で確定する。
