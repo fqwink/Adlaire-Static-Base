@@ -39,7 +39,7 @@ ASB は仕様駆動システムである。
 | 提供形態 | HTTP サーバー（単一バイナリ） |
 | データ保存 | JSON ファイルベース（外部DB不使用） |
 | ライセンス | クローズドライセンス |
-| 本書バージョン | Rev.17 |
+| 本書バージョン | Rev.18 |
 
 ---
 
@@ -841,6 +841,31 @@ ASB 起動時には、設定された保存先に以下の実行時データ領�
 - `after`：GitHub Push イベントの after commit hash
 - `receivedAt`：Webhook 処理成功日時（ISO 8601形式）
 
+### 10.7 config/migrations.json
+
+```json
+{
+  "schemaVersion": 1,
+  "migrations": [
+    {
+      "id": "string(UUID)",
+      "fromSchema": 0,
+      "toSchema": 1,
+      "startedAt": "2026-09-08T00:00:00Z",
+      "finishedAt": "2026-09-08T00:00:00Z",
+      "status": "applied",
+      "backupPath": "backups/migrations/migration-id.tar.gz"
+    }
+  ]
+}
+```
+
+**フィールド説明**
+- `schemaVersion`：マイグレーション履歴ファイルのスキーマバージョン
+- `migrations`：実行済みまたは失敗したマイグレーション履歴
+- `status`：`applied` または `failed`
+- `backupPath`：`storage.basePath` からの相対バックアップパス
+
 ---
 
 ## 11 ポリシー
@@ -913,7 +938,7 @@ System Domain は、監視・ログ管理の責務を担う。
 
 ASB はヘッドレスアーキテクチャを採用し、UI層に依存しない。
 
-Rev.17 時点の確定対象は、ASB 本体が提供する HTTP JSON API である。
+Rev.18 時点の確定対象は、ASB 本体が提供する HTTP JSON API である。
 
 SDK は実装対象外とし、通信仕様および配布方針が確定した後に実装対象へ昇格する。
 
@@ -933,9 +958,10 @@ SDK は実装対象外とし、通信仕様および配布方針が確定した�
 }
 ```
 
-**API 互換性**
-- マイナーバージョン：完全互換
-- メジャーバージョン：後方互換性なし、マイグレーション仕様を提供
+**API / スキーマ互換性**
+- API互換性は仕様書RevとASB本体バージョンの組み合わせで判断する
+- 実行時JSON互換性は `schemaVersion` で判断する
+- `schemaVersion` 変更時は §16 マイグレーション戦略に従う
 
 ### 11.6 技術・依存ポリシー
 
@@ -987,7 +1013,7 @@ E2E テスト
 - SSL/TLS：本番環境では必須（リバースプロキシで対応）
 
 **レート制限**
-- Rev.17 時点では実装対象外とし、保留事項として扱う
+- Rev.18 時点では実装対象外とし、保留事項として扱う
 
 **タイムアウト**
 - リクエスト読み込み：30秒
@@ -1142,7 +1168,7 @@ $ sudo systemctl start asb
 
 ```bash
 # 1. 新しいバイナリをダウンロード
-$ wget https://releases.example.com/asb-linux-amd64-v1.1
+$ wget https://releases.example.com/asb-linux-amd64-v0.1
 
 # 2. 既存バイナリを停止
 $ pkill asb
@@ -1150,7 +1176,7 @@ $ pkill asb
 $ sudo systemctl stop asb
 
 # 3. バイナリを置き換え
-$ mv asb-linux-amd64-v1.1 asb-linux-amd64
+$ mv asb-linux-amd64-v0.1 asb-linux-amd64
 $ chmod +x asb-linux-amd64
 
 # 4. 起動
@@ -1162,7 +1188,7 @@ $ sudo systemctl start asb
 #### 11.11.5 ダウンロード・リリース管理
 
 - リリース形式：`asb-linux-{architecture}-v{version}`
-  - 例：`asb-linux-amd64-v1.0`, `asb-linux-arm64-v1.0`
+  - 例：`asb-linux-amd64-v0.1`, `asb-linux-arm64-v0.1`
 - リリースページ：GitHub Releases 等で公開予定
 - チェックサム検証：SHA-256 ハッシュを提供（整合性確認用）
 
@@ -1302,7 +1328,7 @@ $ sudo systemctl stop asb
 
 ### 13.1 実装対象の基準
 
-Rev.17 時点の実装対象は、ASB のセルフホスト型静的コンテンツ配信ホスティングに必要なバックエンド機能に限定する。
+Rev.18 時点の実装対象は、ASB のセルフホスト型静的コンテンツ配信ホスティングに必要なバックエンド機能に限定する。
 
 実装は以下の順序で進める：
 
@@ -1461,7 +1487,7 @@ JSON ファイル更新は以下の方針で行う：
 
 ### 13.9 SSL 管理詳細
 
-Rev.17 時点では、SSL 管理は管理境界とデータモデルを実装対象とし、ACME は ASB互換目標に含める。ACME 実通信、CA選定、ワイルドカード証明書対応は詳細仕様確定後に実装対象へ昇格する。
+Rev.18 時点では、SSL 管理は管理境界とデータモデルを実装対象とし、ACME は ASB互換目標に含める。ACME 実通信、CA選定、ワイルドカード証明書対応は詳細仕様確定後に実装対象へ昇格する。
 
 実装対象：
 
@@ -1537,7 +1563,7 @@ GitHub Webhook は Push イベントのみを対象とする。
 
 ### 13.14 実装契約
 
-本節は Rev.17 時点の実装契約である。実装者は本節に反する判断をコード側で独自に行ってはならない。
+本節は Rev.18 時点の実装契約である。実装者は本節に反する判断をコード側で独自に行ってはならない。
 
 #### 13.14.1 パッケージ境界
 
@@ -1682,7 +1708,7 @@ ID 生成、時刻取得、保存処理は Service に注入された依存関�
 
 #### 13.14.9 保留機能の実装禁止契約
 
-Rev.17 時点では以下を実装してはならない。
+Rev.18 時点では以下を実装してはならない。
 
 - SDK
 - APIキー管理
@@ -1698,7 +1724,7 @@ Rev.17 時点では以下を実装してはならない。
 
 ### 13.15 実装詳細固定仕様
 
-本節は Rev.17 時点で実装時に固定する詳細仕様である。
+本節は Rev.18 時点で実装時に固定する詳細仕様である。
 
 #### 13.15.1 API エンドポイント固定表
 
@@ -1801,7 +1827,7 @@ GitHub Webhook は `push` event のみ処理する。
 
 Webhook 処理成功後に冪等キーを `config/webhooks.json` へ保存する。
 
-Webhook 署名検証は Rev.17 時点では必須化しない。
+Webhook 署名検証は Rev.18 時点では必須化しない。
 
 #### 13.15.6 実装順序固定
 
@@ -1822,7 +1848,7 @@ Webhook 署名検証は Rev.17 時点では必須化しない。
 
 ### 13.16 入出力契約固定仕様
 
-本節は Rev.17 時点で API、JSON保存、ログ、起動時検証の入出力を固定する仕様である。
+本節は Rev.18 時点で API、JSON保存、ログ、起動時検証の入出力を固定する仕様である。
 
 #### 13.16.1 共通成功レスポンス契約
 
@@ -2023,7 +2049,7 @@ ASB_STARTUP_ERROR code=ERR_STORAGE_VALIDATION_FAILED message="Storage validation
 
 #### 13.16.8 テスト固定項目
 
-Rev.17 の実装では、以下のテストを必須とする。
+Rev.18 の実装では、以下のテストを必須とする。
 
 - 全API成功レスポンスの固定JSONキー検証
 - 全APIエラーレスポンスの固定JSONキー検証
@@ -2035,7 +2061,7 @@ Rev.17 の実装では、以下のテストを必須とする。
 
 ### 13.17 実装境界とファイル操作固定仕様
 
-本節は Rev.17 時点で package 境界、公開 interface、Repository、Storage、複数ファイル更新の実装契約を固定する仕様である。
+本節は Rev.18 時点で package 境界、公開 interface、Repository、Storage、複数ファイル更新の実装契約を固定する仕様である。
 
 #### 13.17.1 package 公開 interface 固定
 
@@ -2184,7 +2210,7 @@ Backup restore は以下の順序で実行する。
 
 途中失敗時に自動ロールバックを実装する場合も、ロールバック失敗時は成功扱いにしてはならない。
 
-Rev.17 時点では、複数JSON更新に外部トランザクション機構を導入してはならない。
+Rev.18 時点では、複数JSON更新に外部トランザクション機構を導入してはならない。
 
 #### 13.17.10 最低テスト分類固定
 
@@ -2267,7 +2293,7 @@ Rev.17 時点では、複数JSON更新に外部トランザクション機構を
 ### 15.2 テスト対象外
 
 以下はモック・スタブで対応：
-- ACME 実通信および CA 連携（Rev.17 時点では実通信を実装対象外とし、SSL管理境界のみ検証）
+- ACME 実通信および CA 連携（Rev.18 時点では実通信を実装対象外とし、SSL管理境界のみ検証）
 - GitHub Webhook（テスト用ペイロード）
 - 実際のファイルストレージ大容量テスト（テスト時は最大100MB）
 
@@ -2291,83 +2317,157 @@ $ ./tests/e2e.sh
 
 ## 16 マイグレーション戦略
 
-### 16.1 バージョン互換性
+### 16.1 基本方針
 
-**マイナーバージョン（v1.0 → v1.1）**
-- JSON スキーマ変更なし
-- 既存データとの互換性保証
-- 自動マイグレーション不要
-- 互換性：完全互換
+ASB のマイグレーションは、実行時 JSON ファイルのスキーマ変更に限定する。
 
-**メジャーバージョン（v1.x → v2.0）**
-- スキーマ変更の可能性
-- マイグレーションスクリプト提供予定
-- バックアップから復元可能
-- 互換性：後方互換性なし
+ASB は外部DBを使用しないため、DBマイグレーション機構、外部トランザクション機構、外部マイグレーションフレームワークを使用しない。
 
-### 16.2 マイグレーション手順
+マイグレーションは `storage.basePath` 配下の実行時データに対してのみ行う。
 
-**準備**
+開発リポジトリ内にマイグレーション作業ファイル、一時ファイル、退避ファイル、履歴ファイルを作成してはならない。
 
-```bash
-# 1. バックアップ作成
-$ asb-backup-create --output backup-v1.tar.gz
+ASB の開発版バージョンは累積連番 `v0.N` とし、メジャー/マイナー/パッチの意味を持たせない。
 
-# 2. バックアップ整合性確認
-$ asb-backup-verify backup-v1.tar.gz
+安定版バージョン `vX.Y` は、安定版リリース番号 `X` と切り出し元の開発版 `v0.Y` を示す表示であり、互換性判定には `schemaVersion` を使用する。
+
+### 16.2 マイグレーション対象
+
+マイグレーション対象は以下に限定する。
+
+| 対象 | 説明 |
+|------|------|
+| `config/projects.json` | Project スキーマ |
+| `config/domains.json` | Domain スキーマ |
+| `config/backups.json` | Backup スキーマ |
+| `config/webhooks.json` | Webhook 冪等キー履歴スキーマ |
+| `storage/projects/:projectId/files.json` | File メタデータスキーマ |
+
+静的コンテンツ実体、ログファイル、証明書ファイル、ビルド済みバイナリは、Rev.18 時点のマイグレーション対象外とする。
+
+### 16.3 schemaVersion 固定
+
+各実行時 JSON ファイルはトップレベルに `schemaVersion` を持つ。
+
+Rev.18 時点の `schemaVersion` は `1` とする。
+
+例：
+
+```json
+{
+  "schemaVersion": 1,
+  "projects": []
+}
 ```
 
-**実行**
+`schemaVersion` が存在しない JSON ファイルは、`schemaVersion: 0` として扱う。
+
+ASB 起動時に現在のASBが対応しない `schemaVersion` を検出した場合は起動失敗とする。
+
+起動時に自動マイグレーションを実行してはならない。
+
+### 16.4 実行方式
+
+マイグレーションは ASB 本体バイナリの管理コマンドとして提供する。
+
+外部スクリプトを正本実行方式として扱ってはならない。
+
+管理コマンドは以下を固定する。
 
 ```bash
-# 3. 新バイナリ起動（旧バージョンと並行動作テスト）
-$ ./asb-linux-amd64-v2.0 --dry-run
-
-# 4. 旧バイナリ停止
-$ sudo systemctl stop asb
-
-# 5. バイナリ置き換え
-$ cp asb-linux-amd64-v2.0 /usr/local/bin/asb
-$ chmod +x /usr/local/bin/asb
-
-# 6. マイグレーション実行（必要な場合）
-$ asb-migrate --from v1.0 --to v2.0
-
-# 7. サービス起動
-$ sudo systemctl start asb
+asb migrate --storage /var/asb --from-schema 0 --to-schema 1 --dry-run
+asb migrate --storage /var/asb --from-schema 0 --to-schema 1 --apply
 ```
 
-**検証**
+`--storage` は `storage.basePath` を指定する。
 
-```bash
-# 8. ログ確認
-$ sudo journalctl -u asb -n 50
+`--dry-run` は読み込み、検証、変換後データ生成、書き込み可否検証までを行い、実行時 JSON ファイルを変更してはならない。
 
-# 9. API 動作確認
-$ curl http://localhost:3000/api/projects
+`--apply` は実行時 JSON ファイルを更新する。
 
-# 10. データ整合性確認
-$ asb-verify-data
+`--dry-run` と `--apply` は同時指定してはならない。
+
+### 16.5 実行順序
+
+`--apply` のマイグレーションは以下の順序で実行する。
+
+1. ASB サーバープロセスが停止していることを確認する
+2. `storage.basePath` が開発リポジトリ配下でないことを検証する
+3. 対象 JSON ファイルの存在、構文、現在スキーマを検証する
+4. 対象 JSON ファイルの読み込み権限と書き込み権限を検証する
+5. `storage.basePath/backups/migrations/` 配下へ事前バックアップを作成する
+6. 変換後 JSON をメモリ上に生成する
+7. 変換後 JSON のスキーマを検証する
+8. 対象 JSON ファイルと同一ディレクトリ内の一時ファイルへ書き込む
+9. `fsync` 後に atomic rename で置き換える
+10. `config/migrations.json` に完了履歴を保存する
+11. 完了ログを JSON Lines で記録する
+
+5-10 の途中で失敗した場合、成功扱いにしてはならない。
+
+### 16.6 migrationHistory 保存形式
+
+マイグレーション履歴は `config/migrations.json` に保存する。
+
+`config/migrations.json` は起動時必須 JSON ファイルではなく、初回マイグレーション実行時に `storage.basePath/config/` 配下へ作成できる。
+
+作成場所は実行時データ領域に限定し、開発リポジトリ内へ作成してはならない。
+
+保存形式は以下とする。
+
+```json
+{
+  "schemaVersion": 1,
+  "migrations": [
+    {
+      "id": "string(UUID)",
+      "fromSchema": 0,
+      "toSchema": 1,
+      "startedAt": "2026-09-08T00:00:00Z",
+      "finishedAt": "2026-09-08T00:00:00Z",
+      "status": "applied",
+      "backupPath": "backups/migrations/migration-id.tar.gz"
+    }
+  ]
+}
 ```
 
-**ロールバック（必要な場合）**
+`status` は `applied` または `failed` のみ許可する。
 
-```bash
-# 11. バイナリ置き換え（旧）
-$ cp /usr/local/bin/asb-v1.0 /usr/local/bin/asb
+### 16.7 ロールバック
 
-# 12. サービス再起動
-$ sudo systemctl restart asb
+マイグレーション失敗時は、事前バックアップが作成済みであればバックアップから復元する。
 
-# 13. バックアップから復元（必要な場合）
-$ asb-backup-restore backup-v1.tar.gz
-```
+ロールバックは `storage.basePath` 配下の実行時データのみを対象とする。
 
-### 16.3 データ互換性の考慮
+ロールバックに失敗した場合は、標準エラー、エラーログ、`config/migrations.json` に `failed` として記録する。
 
-- JSON フォーマット：バージョン情報を付与（将来の互換性判定用）
-- スキーマ変更時：変更前後のスキーマを記録
-- マイグレーション情報：実行したマイグレーション履歴をログ記録
+ロールバック失敗時に成功扱いとしてはならない。
+
+### 16.8 禁止事項
+
+Rev.18 時点では以下を禁止する。
+
+- 起動時の自動マイグレーション
+- 開発リポジトリ内でのマイグレーション作業ファイル作成
+- 外部DBマイグレーション
+- 外部トランザクション機構
+- 外部マイグレーションフレームワーク
+- `.gitignore` を必要とする移行生成物設計
+
+### 16.9 テスト固定項目
+
+マイグレーション実装では以下のテストを必須とする。
+
+- `schemaVersion` なしを `0` として扱うテスト
+- 未対応 `schemaVersion` の起動失敗テスト
+- `--dry-run` が実行時 JSON ファイルを変更しないテスト
+- `--apply` が対象 JSON ファイルを atomic rename で更新するテスト
+- 事前バックアップ作成テスト
+- 途中失敗時の成功禁止テスト
+- ロールバック成功テスト
+- ロールバック失敗時の `failed` 記録テスト
+- 開発リポジトリ内に移行作業ファイルを作成しないテスト
 
 ---
 
@@ -2375,6 +2475,7 @@ $ asb-backup-restore backup-v1.tar.gz
 
 | バージョン | 日付 | 内容 |
 |-----------|------|------|
+| Rev.18 | 2026-09-08 | マイグレーション戦略をASBのJSONファイルベース実行時データ移行契約へ全面置換 |
 | Rev.17 | 2026-09-08 | package公開interface、Repository/Storage責務、ファイル操作、Project削除、Backup/Restore、複数JSON更新失敗時契約を固定 |
 | Rev.16 | 2026-09-08 | API成功/エラーレスポンス、保存JSONスキーマ、起動時検証出力、ログJSON Linesを固定 |
 | Rev.15 | 2026-09-08 | API、設定値、JSONファイル、静的配信、Webhook、実装順序を実装単位で固定 |

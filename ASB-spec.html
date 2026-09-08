@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ASB 仕様書 Rev.17</title>
+<title>ASB 仕様書 Rev.18</title>
 <style>
 :root { color-scheme: light; --bg: #f4f7f9; --panel: #ffffff; --panel-2: #f8fafc; --panel-3: #edf6f3; --line: #d8e1e7; --line-strong: #b7c6cf; --text: #162126; --muted: #5b6d76; --subtle: #83919a; --brand: #0f766e; --brand-2: #14532d; --ok: #16845f; --code-bg: #111827; --code-text: #e8eef4; --toc-w: 310px; --radius: 8px; }
 @media (prefers-color-scheme: dark) { :root { color-scheme: dark; --bg: #0e1416; --panel: #141d20; --panel-2: #101719; --panel-3: #16312d; --line: #27363b; --line-strong: #3d5057; --text: #e6eef0; --muted: #a7b6bb; --subtle: #7e8e94; --brand: #5eead4; --brand-2: #99f6e4; --ok: #6ee7b7; --code-bg: #080d10; --code-text: #edf7f8; } }
@@ -71,7 +71,7 @@ pre code { background: transparent; border: 0; color: inherit; padding: 0; }
     <div class="sidebar-header">
       <span class="logo">Adlaire-Static-Base</span>
       <h1 class="sidebar-title">ASB Developer Docs</h1>
-      <span class="version-pill">Rev.17</span>
+      <span class="version-pill">Rev.18</span>
     </div>
     <nav class="toc" id="asb-toc">
       <a class="toc-l1" href="#セルフホスト型静的コンテンツ配信ホスティングシステム仕様書">セルフホスト型静的コンテンツ配信ホスティングシステム仕様書</a>
@@ -122,6 +122,7 @@ pre code { background: transparent; border: 0; color: inherit; padding: 0; }
 <a class="toc-l3" href="#10.4-configdomains.json">10.4 config/domains.json</a>
 <a class="toc-l3" href="#10.5-storageprojectsprojectidfiles.json">10.5 storage/projects/:projectId/files.json</a>
 <a class="toc-l3" href="#10.6-configwebhooks.json">10.6 config/webhooks.json</a>
+<a class="toc-l3" href="#10.7-configmigrations.json">10.7 config/migrations.json</a>
 <a class="toc-l2" href="#11-ポリシー">11 ポリシー</a>
 <a class="toc-l3" href="#11.1-management-domain-ポリシー">11.1 Management Domain ポリシー</a>
 <a class="toc-l3" href="#11.2-delivery-domain-ポリシー">11.2 Delivery Domain ポリシー</a>
@@ -166,20 +167,26 @@ pre code { background: transparent; border: 0; color: inherit; padding: 0; }
 <a class="toc-l3" href="#15.2-テスト対象外">15.2 テスト対象外</a>
 <a class="toc-l3" href="#15.3-テスト実行">15.3 テスト実行</a>
 <a class="toc-l2" href="#16-マイグレーション戦略">16 マイグレーション戦略</a>
-<a class="toc-l3" href="#16.1-バージョン互換性">16.1 バージョン互換性</a>
-<a class="toc-l3" href="#16.2-マイグレーション手順">16.2 マイグレーション手順</a>
-<a class="toc-l3" href="#16.3-データ互換性の考慮">16.3 データ互換性の考慮</a>
+<a class="toc-l3" href="#16.1-基本方針">16.1 基本方針</a>
+<a class="toc-l3" href="#16.2-マイグレーション対象">16.2 マイグレーション対象</a>
+<a class="toc-l3" href="#16.3-schemaversion-固定">16.3 schemaVersion 固定</a>
+<a class="toc-l3" href="#16.4-実行方式">16.4 実行方式</a>
+<a class="toc-l3" href="#16.5-実行順序">16.5 実行順序</a>
+<a class="toc-l3" href="#16.6-migrationhistory-保存形式">16.6 migrationHistory 保存形式</a>
+<a class="toc-l3" href="#16.7-ロールバック">16.7 ロールバック</a>
+<a class="toc-l3" href="#16.8-禁止事項">16.8 禁止事項</a>
+<a class="toc-l3" href="#16.9-テスト固定項目">16.9 テスト固定項目</a>
 <a class="toc-l2" href="#17-変更履歴">17 変更履歴</a>
     </nav>
   </aside>
   <main class="portal-main">
-    <div class="topbar"><div class="topbar-left"><button class="sidebar-toggle" type="button" aria-label="目次を折りたたむ" aria-expanded="true" aria-controls="asb-toc">☰</button><span class="topbar-title">ASB Specification</span></div><span class="version-pill">Rev.17</span></div>
+    <div class="topbar"><div class="topbar-left"><button class="sidebar-toggle" type="button" aria-label="目次を折りたたむ" aria-expanded="true" aria-controls="asb-toc">☰</button><span class="topbar-title">ASB Specification</span></div><span class="version-pill">Rev.18</span></div>
     <div class="content">
       <section class="doc-hero">
         <p class="eyebrow">Adlaire-Static-Base</p>
         <h1>セルフホスト型静的コンテンツ配信ホスティングシステム仕様書</h1>
         <p class="subtitle">ASBの仕様正本 <code>ASB-spec.md</code> に基づくHTML版仕様書。</p>
-        <div class="hero-meta"><span class="meta-chip">Rev.17</span><span class="meta-chip">Generated from ASB-spec.md</span></div>
+        <div class="hero-meta"><span class="meta-chip">Rev.18</span><span class="meta-chip">Generated from ASB-spec.md</span></div>
       </section>
       <h1 id="セルフホスト型静的コンテンツ配信ホスティングシステム仕様書">セルフホスト型静的コンテンツ配信ホスティングシステム仕様書</h1>
 <h2 id="1-本書の位置づけ">1 本書の位置づけ</h2>
@@ -216,7 +223,7 @@ pre code { background: transparent; border: 0; color: inherit; padding: 0; }
 <tr><td>提供形態</td><td>HTTP サーバー（単一バイナリ）</td></tr>
 <tr><td>データ保存</td><td>JSON ファイルベース（外部DB不使用）</td></tr>
 <tr><td>ライセンス</td><td>クローズドライセンス</td></tr>
-<tr><td>本書バージョン</td><td>Rev.17</td></tr>
+<tr><td>本書バージョン</td><td>Rev.18</td></tr>
 </tbody></table></div>
 <hr>
 <h2 id="3-asb-の責務範囲">3 ASB の責務範囲</h2>
@@ -930,6 +937,28 @@ CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -o asb-linux-arm64 ./main.go</cod
 <li><code>after</code>：GitHub Push イベントの after commit hash</li>
 <li><code>receivedAt</code>：Webhook 処理成功日時（ISO 8601形式）</li>
 </ul>
+<h3 id="10.7-configmigrations.json">10.7 config/migrations.json</h3>
+<pre><code>{
+  &quot;schemaVersion&quot;: 1,
+  &quot;migrations&quot;: [
+    {
+      &quot;id&quot;: &quot;string(UUID)&quot;,
+      &quot;fromSchema&quot;: 0,
+      &quot;toSchema&quot;: 1,
+      &quot;startedAt&quot;: &quot;2026-09-08T00:00:00Z&quot;,
+      &quot;finishedAt&quot;: &quot;2026-09-08T00:00:00Z&quot;,
+      &quot;status&quot;: &quot;applied&quot;,
+      &quot;backupPath&quot;: &quot;backups/migrations/migration-id.tar.gz&quot;
+    }
+  ]
+}</code></pre>
+<p><strong>フィールド説明</strong></p>
+<ul>
+<li><code>schemaVersion</code>：マイグレーション履歴ファイルのスキーマバージョン</li>
+<li><code>migrations</code>：実行済みまたは失敗したマイグレーション履歴</li>
+<li><code>status</code>：<code>applied</code> または <code>failed</code></li>
+<li><code>backupPath</code>：<code>storage.basePath</code> からの相対バックアップパス</li>
+</ul>
 <hr>
 <h2 id="11-ポリシー">11 ポリシー</h2>
 <p>ASB の主要ポリシーは、以下の 10 種類で構成される。各ポリシーはドメイン別、機能別、運用別に管理され、仕様正本として機能する。</p>
@@ -993,7 +1022,7 @@ CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -o asb-linux-arm64 ./main.go</cod
 </ul>
 <h3 id="11.5-api-sdk-ポリシー">11.5 API/SDK ポリシー</h3>
 <p>ASB はヘッドレスアーキテクチャを採用し、UI層に依存しない。</p>
-<p>Rev.17 時点の確定対象は、ASB 本体が提供する HTTP JSON API である。</p>
+<p>Rev.18 時点の確定対象は、ASB 本体が提供する HTTP JSON API である。</p>
 <p>SDK は実装対象外とし、通信仕様および配布方針が確定した後に実装対象へ昇格する。</p>
 <p><strong>API 設計原則</strong></p>
 <ul>
@@ -1009,10 +1038,11 @@ CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -o asb-linux-arm64 ./main.go</cod
   &quot;timestamp&quot;: &quot;string (ISO 8601)&quot;,
   &quot;httpStatus&quot;: 400
 }</code></pre>
-<p><strong>API 互換性</strong></p>
+<p><strong>API / スキーマ互換性</strong></p>
 <ul>
-<li>マイナーバージョン：完全互換</li>
-<li>メジャーバージョン：後方互換性なし、マイグレーション仕様を提供</li>
+<li>API互換性は仕様書RevとASB本体バージョンの組み合わせで判断する</li>
+<li>実行時JSON互換性は <code>schemaVersion</code> で判断する</li>
+<li><code>schemaVersion</code> 変更時は §16 マイグレーション戦略に従う</li>
 </ul>
 <h3 id="11.6-技術依存ポリシー">11.6 技術・依存ポリシー</h3>
 <ul>
@@ -1200,7 +1230,7 @@ $ sudo systemctl start asb</code></pre>
 <h4 id="11.11.4-アップデート手順">11.11.4 アップデート手順</h4>
 <p><strong>既存バイナリの置き換え</strong></p>
 <pre><code># 1. 新しいバイナリをダウンロード
-$ wget https://releases.example.com/asb-linux-amd64-v1.1
+$ wget https://releases.example.com/asb-linux-amd64-v0.1
 
 # 2. 既存バイナリを停止
 $ pkill asb
@@ -1208,7 +1238,7 @@ $ pkill asb
 $ sudo systemctl stop asb
 
 # 3. バイナリを置き換え
-$ mv asb-linux-amd64-v1.1 asb-linux-amd64
+$ mv asb-linux-amd64-v0.1 asb-linux-amd64
 $ chmod +x asb-linux-amd64
 
 # 4. 起動
@@ -1218,7 +1248,7 @@ $ sudo systemctl start asb</code></pre>
 <h4 id="11.11.5-ダウンロードリリース管理">11.11.5 ダウンロード・リリース管理</h4>
 <ul>
 <li>リリース形式：<code>asb-linux-{architecture}-v{version}</code></li>
-<li>例：<code>asb-linux-amd64-v1.0</code>, <code>asb-linux-arm64-v1.0</code></li>
+<li>例：<code>asb-linux-amd64-v0.1</code>, <code>asb-linux-arm64-v0.1</code></li>
 <li>リリースページ：GitHub Releases 等で公開予定</li>
 <li>チェックサム検証：SHA-256 ハッシュを提供（整合性確認用）</li>
 </ul>
@@ -1342,7 +1372,7 @@ $ sudo systemctl stop asb</code></pre>
 <hr>
 <h2 id="13-実装詳細仕様">13 実装詳細仕様</h2>
 <h3 id="13.1-実装対象の基準">13.1 実装対象の基準</h3>
-<p>Rev.17 時点の実装対象は、ASB のセルフホスト型静的コンテンツ配信ホスティングに必要なバックエンド機能に限定する。</p>
+<p>Rev.18 時点の実装対象は、ASB のセルフホスト型静的コンテンツ配信ホスティングに必要なバックエンド機能に限定する。</p>
 <p>実装は以下の順序で進める：</p>
 <ol>
 <li>起動設定、実行時データ検証、HTTP サーバー、共通レスポンス</li>
@@ -1484,7 +1514,7 @@ $ sudo systemctl stop asb</code></pre>
 <li>プロジェクト削除時は関連ドメインを削除する</li>
 </ul>
 <h3 id="13.9-ssl-管理詳細">13.9 SSL 管理詳細</h3>
-<p>Rev.17 時点では、SSL 管理は管理境界とデータモデルを実装対象とし、ACME は ASB互換目標に含める。ACME 実通信、CA選定、ワイルドカード証明書対応は詳細仕様確定後に実装対象へ昇格する。</p>
+<p>Rev.18 時点では、SSL 管理は管理境界とデータモデルを実装対象とし、ACME は ASB互換目標に含める。ACME 実通信、CA選定、ワイルドカード証明書対応は詳細仕様確定後に実装対象へ昇格する。</p>
 <p>実装対象：</p>
 <ul>
 <li>SSL 証明書IDの管理</li>
@@ -1554,7 +1584,7 @@ $ sudo systemctl stop asb</code></pre>
 <li>仕様上保留の機能が実装されていないことを確認する</li>
 </ul>
 <h3 id="13.14-実装契約">13.14 実装契約</h3>
-<p>本節は Rev.17 時点の実装契約である。実装者は本節に反する判断をコード側で独自に行ってはならない。</p>
+<p>本節は Rev.18 時点の実装契約である。実装者は本節に反する判断をコード側で独自に行ってはならない。</p>
 <h4 id="13.14.1-パッケージ境界">13.14.1 パッケージ境界</h4>
 <div class="tbl-wrap"><table><thead>
 <tr><th>パッケージ</th><th>責務</th><th>外部副作用</th></tr>
@@ -1639,7 +1669,7 @@ $ sudo systemctl stop asb</code></pre>
 </tbody></table></div>
 <p>複数ファイルにまたがる操作では、途中失敗時に成功レスポンスを返してはならない。</p>
 <h4 id="13.14.9-保留機能の実装禁止契約">13.14.9 保留機能の実装禁止契約</h4>
-<p>Rev.17 時点では以下を実装してはならない。</p>
+<p>Rev.18 時点では以下を実装してはならない。</p>
 <ul>
 <li>SDK</li>
 <li>APIキー管理</li>
@@ -1653,7 +1683,7 @@ $ sudo systemctl stop asb</code></pre>
 </ul>
 <p>上記を実装する場合は、先に <code>ASB-spec.md</code> を改訂し、確定仕様として昇格させる。</p>
 <h3 id="13.15-実装詳細固定仕様">13.15 実装詳細固定仕様</h3>
-<p>本節は Rev.17 時点で実装時に固定する詳細仕様である。</p>
+<p>本節は Rev.18 時点で実装時に固定する詳細仕様である。</p>
 <h4 id="13.15.1-api-エンドポイント固定表">13.15.1 API エンドポイント固定表</h4>
 <div class="tbl-wrap"><table><thead>
 <tr><th>機能</th><th>Method</th><th>Path</th><th>Body</th><th>Query</th><th>成功</th><th>主な失敗</th></tr>
@@ -1729,7 +1759,7 @@ $ sudo systemctl stop asb</code></pre>
 <li>冪等キーは <code>branch + ":" + after</code> とする</li>
 <li>同一冪等キーが <code>config/webhooks.json</code> に存在する場合は <code>200 OK</code> とし、<code>{"status":"duplicate"}</code> を返す</li>
 <li>Webhook 処理成功後に冪等キーを <code>config/webhooks.json</code> へ保存する</li>
-<li>Webhook 署名検証は Rev.17 時点では必須化しない</li>
+<li>Webhook 署名検証は Rev.18 時点では必須化しない</li>
 </ul>
 <h4 id="13.15.6-実装順序固定">13.15.6 実装順序固定</h4>
 <ol>
@@ -1746,7 +1776,7 @@ $ sudo systemctl stop asb</code></pre>
 </ol>
 <p>各段階は <code>go test ./...</code> が通る単位で完了させる。</p>
 <h3 id="13.16-入出力契約固定仕様">13.16 入出力契約固定仕様</h3>
-<p>本節は Rev.17 時点で API、JSON保存、ログ、起動時検証の入出力を固定する仕様である。</p>
+<p>本節は Rev.18 時点で API、JSON保存、ログ、起動時検証の入出力を固定する仕様である。</p>
 <h4 id="13.16.1-共通成功レスポンス契約">13.16.1 共通成功レスポンス契約</h4>
 <ul>
 <li>成功レスポンスは常に JSON object とする</li>
@@ -1901,7 +1931,7 @@ $ sudo systemctl stop asb</code></pre>
 <li>アクセスログとエラーログのJSON Linesフィールド検証</li>
 </ul>
 <h3 id="13.17-実装境界とファイル操作固定仕様">13.17 実装境界とファイル操作固定仕様</h3>
-<p>本節は Rev.17 時点で package 境界、公開 interface、Repository、Storage、複数ファイル更新の実装契約を固定する仕様である。</p>
+<p>本節は Rev.18 時点で package 境界、公開 interface、Repository、Storage、複数ファイル更新の実装契約を固定する仕様である。</p>
 <h4 id="13.17.1-package-公開-interface-固定">13.17.1 package 公開 interface 固定</h4>
 <div class="tbl-wrap"><table><thead>
 <tr><th>package</th><th>公開 interface</th><th>主な責務</th></tr>
@@ -2013,7 +2043,7 @@ $ sudo systemctl stop asb</code></pre>
 <li>複数JSON更新では、最終JSONの保存が完了するまで成功レスポンスを返してはならない</li>
 <li>途中失敗時は、更新済みJSON名、未更新JSON名、操作名、requestId をエラーログへ記録する</li>
 <li>途中失敗時に自動ロールバックを実装する場合も、ロールバック失敗時は成功扱いにしてはならない</li>
-<li>Rev.17 時点では、複数JSON更新に外部トランザクション機構を導入してはならない</li>
+<li>Rev.18 時点では、複数JSON更新に外部トランザクション機構を導入してはならない</li>
 </ul>
 <h4 id="13.17.10-最低テスト分類固定">13.17.10 最低テスト分類固定</h4>
 <div class="tbl-wrap"><table><thead>
@@ -2094,7 +2124,7 @@ $ sudo systemctl stop asb</code></pre>
 <h3 id="15.2-テスト対象外">15.2 テスト対象外</h3>
 <p>以下はモック・スタブで対応：</p>
 <ul>
-<li>ACME 実通信および CA 連携（Rev.17 時点では実通信を実装対象外とし、SSL管理境界のみ検証）</li>
+<li>ACME 実通信および CA 連携（Rev.18 時点では実通信を実装対象外とし、SSL管理境界のみ検証）</li>
 <li>GitHub Webhook（テスト用ペイロード）</li>
 <li>実際のファイルストレージ大容量テスト（テスト時は最大100MB）</li>
 </ul>
@@ -2112,73 +2142,112 @@ $ go test -integration ./...
 $ ./tests/e2e.sh</code></pre>
 <hr>
 <h2 id="16-マイグレーション戦略">16 マイグレーション戦略</h2>
-<h3 id="16.1-バージョン互換性">16.1 バージョン互換性</h3>
-<p><strong>マイナーバージョン（v1.0 → v1.1）</strong></p>
+<h3 id="16.1-基本方針">16.1 基本方針</h3>
+<p>ASB のマイグレーションは、実行時 JSON ファイルのスキーマ変更に限定する。</p>
+<p>ASB は外部DBを使用しないため、DBマイグレーション機構、外部トランザクション機構、外部マイグレーションフレームワークを使用しない。</p>
+<p>マイグレーションは <code>storage.basePath</code> 配下の実行時データに対してのみ行う。</p>
+<p>開発リポジトリ内にマイグレーション作業ファイル、一時ファイル、退避ファイル、履歴ファイルを作成してはならない。</p>
+<p>ASB の開発版バージョンは累積連番 <code>v0.N</code> とし、メジャー/マイナー/パッチの意味を持たせない。</p>
+<p>安定版バージョン <code>vX.Y</code> は、安定版リリース番号 <code>X</code> と切り出し元の開発版 <code>v0.Y</code> を示す表示であり、互換性判定には <code>schemaVersion</code> を使用する。</p>
+<h3 id="16.2-マイグレーション対象">16.2 マイグレーション対象</h3>
+<p>マイグレーション対象は以下に限定する。</p>
+<div class="tbl-wrap"><table><thead>
+<tr><th>対象</th><th>説明</th></tr>
+</thead><tbody>
+<tr><td><code>config/projects.json</code></td><td>Project スキーマ</td></tr>
+<tr><td><code>config/domains.json</code></td><td>Domain スキーマ</td></tr>
+<tr><td><code>config/backups.json</code></td><td>Backup スキーマ</td></tr>
+<tr><td><code>config/webhooks.json</code></td><td>Webhook 冪等キー履歴スキーマ</td></tr>
+<tr><td><code>storage/projects/:projectId/files.json</code></td><td>File メタデータスキーマ</td></tr>
+</tbody></table></div>
+<p>静的コンテンツ実体、ログファイル、証明書ファイル、ビルド済みバイナリは、Rev.18 時点のマイグレーション対象外とする。</p>
+<h3 id="16.3-schemaversion-固定">16.3 schemaVersion 固定</h3>
+<p>各実行時 JSON ファイルはトップレベルに <code>schemaVersion</code> を持つ。</p>
+<p>Rev.18 時点の <code>schemaVersion</code> は <code>1</code> とする。</p>
+<pre><code>{
+  "schemaVersion": 1,
+  "projects": []
+}</code></pre>
+<p><code>schemaVersion</code> が存在しない JSON ファイルは、<code>schemaVersion: 0</code> として扱う。</p>
+<p>ASB 起動時に現在のASBが対応しない <code>schemaVersion</code> を検出した場合は起動失敗とする。</p>
+<p>起動時に自動マイグレーションを実行してはならない。</p>
+<h3 id="16.4-実行方式">16.4 実行方式</h3>
+<p>マイグレーションは ASB 本体バイナリの管理コマンドとして提供する。</p>
+<p>外部スクリプトを正本実行方式として扱ってはならない。</p>
+<pre><code>asb migrate --storage /var/asb --from-schema 0 --to-schema 1 --dry-run
+asb migrate --storage /var/asb --from-schema 0 --to-schema 1 --apply</code></pre>
+<p><code>--storage</code> は <code>storage.basePath</code> を指定する。</p>
+<p><code>--dry-run</code> は読み込み、検証、変換後データ生成、書き込み可否検証までを行い、実行時 JSON ファイルを変更してはならない。</p>
+<p><code>--apply</code> は実行時 JSON ファイルを更新する。</p>
+<p><code>--dry-run</code> と <code>--apply</code> は同時指定してはならない。</p>
+<h3 id="16.5-実行順序">16.5 実行順序</h3>
+<p><code>--apply</code> のマイグレーションは以下の順序で実行する。</p>
+<ol>
+<li>ASB サーバープロセスが停止していることを確認する</li>
+<li><code>storage.basePath</code> が開発リポジトリ配下でないことを検証する</li>
+<li>対象 JSON ファイルの存在、構文、現在スキーマを検証する</li>
+<li>対象 JSON ファイルの読み込み権限と書き込み権限を検証する</li>
+<li><code>storage.basePath/backups/migrations/</code> 配下へ事前バックアップを作成する</li>
+<li>変換後 JSON をメモリ上に生成する</li>
+<li>変換後 JSON のスキーマを検証する</li>
+<li>対象 JSON ファイルと同一ディレクトリ内の一時ファイルへ書き込む</li>
+<li><code>fsync</code> 後に atomic rename で置き換える</li>
+<li><code>config/migrations.json</code> に完了履歴を保存する</li>
+<li>完了ログを JSON Lines で記録する</li>
+</ol>
+<p>5-10 の途中で失敗した場合、成功扱いにしてはならない。</p>
+<h3 id="16.6-migrationhistory-保存形式">16.6 migrationHistory 保存形式</h3>
+<p>マイグレーション履歴は <code>config/migrations.json</code> に保存する。</p>
+<p><code>config/migrations.json</code> は起動時必須 JSON ファイルではなく、初回マイグレーション実行時に <code>storage.basePath/config/</code> 配下へ作成できる。</p>
+<p>作成場所は実行時データ領域に限定し、開発リポジトリ内へ作成してはならない。</p>
+<pre><code>{
+  "schemaVersion": 1,
+  "migrations": [
+    {
+      "id": "string(UUID)",
+      "fromSchema": 0,
+      "toSchema": 1,
+      "startedAt": "2026-09-08T00:00:00Z",
+      "finishedAt": "2026-09-08T00:00:00Z",
+      "status": "applied",
+      "backupPath": "backups/migrations/migration-id.tar.gz"
+    }
+  ]
+}</code></pre>
+<p><code>status</code> は <code>applied</code> または <code>failed</code> のみ許可する。</p>
+<h3 id="16.7-ロールバック">16.7 ロールバック</h3>
+<p>マイグレーション失敗時は、事前バックアップが作成済みであればバックアップから復元する。</p>
+<p>ロールバックは <code>storage.basePath</code> 配下の実行時データのみを対象とする。</p>
+<p>ロールバックに失敗した場合は、標準エラー、エラーログ、<code>config/migrations.json</code> に <code>failed</code> として記録する。</p>
+<p>ロールバック失敗時に成功扱いとしてはならない。</p>
+<h3 id="16.8-禁止事項">16.8 禁止事項</h3>
+<p>Rev.18 時点では以下を禁止する。</p>
 <ul>
-<li>JSON スキーマ変更なし</li>
-<li>既存データとの互換性保証</li>
-<li>自動マイグレーション不要</li>
-<li>互換性：完全互換</li>
+<li>起動時の自動マイグレーション</li>
+<li>開発リポジトリ内でのマイグレーション作業ファイル作成</li>
+<li>外部DBマイグレーション</li>
+<li>外部トランザクション機構</li>
+<li>外部マイグレーションフレームワーク</li>
+<li><code>.gitignore</code> を必要とする移行生成物設計</li>
 </ul>
-<p><strong>メジャーバージョン（v1.x → v2.0）</strong></p>
+<h3 id="16.9-テスト固定項目">16.9 テスト固定項目</h3>
 <ul>
-<li>スキーマ変更の可能性</li>
-<li>マイグレーションスクリプト提供予定</li>
-<li>バックアップから復元可能</li>
-<li>互換性：後方互換性なし</li>
-</ul>
-<h3 id="16.2-マイグレーション手順">16.2 マイグレーション手順</h3>
-<p><strong>準備</strong></p>
-<pre><code># 1. バックアップ作成
-$ asb-backup-create --output backup-v1.tar.gz
-
-# 2. バックアップ整合性確認
-$ asb-backup-verify backup-v1.tar.gz</code></pre>
-<p><strong>実行</strong></p>
-<pre><code># 3. 新バイナリ起動（旧バージョンと並行動作テスト）
-$ ./asb-linux-amd64-v2.0 --dry-run
-
-# 4. 旧バイナリ停止
-$ sudo systemctl stop asb
-
-# 5. バイナリ置き換え
-$ cp asb-linux-amd64-v2.0 /usr/local/bin/asb
-$ chmod +x /usr/local/bin/asb
-
-# 6. マイグレーション実行（必要な場合）
-$ asb-migrate --from v1.0 --to v2.0
-
-# 7. サービス起動
-$ sudo systemctl start asb</code></pre>
-<p><strong>検証</strong></p>
-<pre><code># 8. ログ確認
-$ sudo journalctl -u asb -n 50
-
-# 9. API 動作確認
-$ curl http://localhost:3000/api/projects
-
-# 10. データ整合性確認
-$ asb-verify-data</code></pre>
-<p><strong>ロールバック（必要な場合）</strong></p>
-<pre><code># 11. バイナリ置き換え（旧）
-$ cp /usr/local/bin/asb-v1.0 /usr/local/bin/asb
-
-# 12. サービス再起動
-$ sudo systemctl restart asb
-
-# 13. バックアップから復元（必要な場合）
-$ asb-backup-restore backup-v1.tar.gz</code></pre>
-<h3 id="16.3-データ互換性の考慮">16.3 データ互換性の考慮</h3>
-<ul>
-<li>JSON フォーマット：バージョン情報を付与（将来の互換性判定用）</li>
-<li>スキーマ変更時：変更前後のスキーマを記録</li>
-<li>マイグレーション情報：実行したマイグレーション履歴をログ記録</li>
+<li><code>schemaVersion</code> なしを <code>0</code> として扱うテスト</li>
+<li>未対応 <code>schemaVersion</code> の起動失敗テスト</li>
+<li><code>--dry-run</code> が実行時 JSON ファイルを変更しないテスト</li>
+<li><code>--apply</code> が対象 JSON ファイルを atomic rename で更新するテスト</li>
+<li>事前バックアップ作成テスト</li>
+<li>途中失敗時の成功禁止テスト</li>
+<li>ロールバック成功テスト</li>
+<li>ロールバック失敗時の <code>failed</code> 記録テスト</li>
+<li>開発リポジトリ内に移行作業ファイルを作成しないテスト</li>
 </ul>
 <hr>
 <h2 id="17-変更履歴">17 変更履歴</h2>
 <div class="tbl-wrap"><table><thead>
 <tr><th>バージョン</th><th>日付</th><th>内容</th></tr>
 </thead><tbody>
+<tr><td>Rev.18</td><td>2026-09-08</td><td>マイグレーション戦略をASBのJSONファイルベース実行時データ移行契約へ全面置換</td></tr>
 <tr><td>Rev.17</td><td>2026-09-08</td><td>package公開interface、Repository/Storage責務、ファイル操作、Project削除、Backup/Restore、複数JSON更新失敗時契約を固定</td></tr>
 <tr><td>Rev.16</td><td>2026-09-08</td><td>API成功/エラーレスポンス、保存JSONスキーマ、起動時検証出力、ログJSON Linesを固定</td></tr>
 <tr><td>Rev.15</td><td>2026-09-08</td><td>API、設定値、JSONファイル、静的配信、Webhook、実装順序を実装単位で固定</td></tr>

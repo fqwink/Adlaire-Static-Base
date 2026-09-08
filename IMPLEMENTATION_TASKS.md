@@ -6,7 +6,7 @@
 
 本ファイルは、`ASB-spec.md` に基づいて実装タスクを管理する。
 
-参照仕様バージョン: `ASB-spec.md Rev.17`
+参照仕様バージョン: `ASB-spec.md Rev.18`
 
 `ASB-spec.md` で仕様確定済みの事項を実装タスクとしてリスト化する。
 
@@ -75,9 +75,9 @@
 - 保存失敗時に成功レスポンスを返さないことを実装する。
 - 複数JSON更新では最終JSONの保存完了まで成功レスポンスを返さないことを実装する。
 - 複数JSON更新の途中失敗時に更新済みJSON名、未更新JSON名、操作名、requestId をエラーログへ記録する。
-- Rev.17 時点では複数JSON更新に外部トランザクション機構を導入しない。
-- Rev.17 時点の API エンドポイント固定表に記載されたメソッド、パス、成功ステータス、失敗コードを実装する。
-- Rev.17 API 成功レスポンス固定表に記載された JSON キーと型を実装する。
+- Rev.18 時点では複数JSON更新に外部トランザクション機構を導入しない。
+- Rev.18 時点の API エンドポイント固定表に記載されたメソッド、パス、成功ステータス、失敗コードを実装する。
+- Rev.18 API 成功レスポンス固定表に記載された JSON キーと型を実装する。
 - 配列レスポンスは対象データが空でも空配列を返す。
 - URL パラメータ `:id`、`:domain`、`:name` の URL decode、正規化、バリデーションを実装する。
 - `:id` は UUID 形式のみ許可する。
@@ -132,6 +132,21 @@
 - Unit、Handler、Repository、Storage、Integration、Startup の最低テスト分類を整備する。
 - Project削除、File upload、File overwrite、File delete、Backup作成、Backup復旧の処理順序テストを整備する。
 - Handler が永続化層へ直接依存しないことをコード構造で確認する。
+- マイグレーション対象を `config/projects.json`、`config/domains.json`、`config/backups.json`、`config/webhooks.json`、`storage/projects/:projectId/files.json` に限定する。
+- 各実行時 JSON ファイルのトップレベル `schemaVersion` を実装する。
+- `schemaVersion` 未指定の JSON ファイルを `0` として扱う。
+- 未対応 `schemaVersion` 検出時の起動失敗を実装する。
+- 起動時の自動マイグレーションを禁止する。
+- `asb migrate --storage /var/asb --from-schema 0 --to-schema 1 --dry-run` を実装する。
+- `asb migrate --storage /var/asb --from-schema 0 --to-schema 1 --apply` を実装する。
+- `--dry-run` と `--apply` の同時指定を拒否する。
+- `--dry-run` では実行時 JSON ファイルを変更しないことを実装する。
+- `--apply` では事前検証、事前バックアップ、変換後JSON生成、再検証、atomic rename、履歴保存、完了ログ記録の順に実装する。
+- マイグレーション作業ファイル、一時ファイル、退避ファイル、履歴ファイルを開発リポジトリ内に作成しないことを実装する。
+- `config/migrations.json` の `schemaVersion`、`migrations[]`、`status`、`backupPath` スキーマを実装する。
+- マイグレーション失敗時の事前バックアップからのロールバックを実装する。
+- ロールバック失敗時に標準エラー、エラーログ、`config/migrations.json` へ `failed` として記録する。
+- 外部DBマイグレーション、外部トランザクション機構、外部マイグレーションフレームワークを導入しない。
 
 ## 3. 中優先度
 
@@ -212,7 +227,8 @@
 - Webhook失敗時の自動リトライスケジュール仕様を確定する。
 - Brotli 圧縮を採用する場合の外部ライブラリ例外採用可否を確定する。
 - SSL証明書自動更新の実通信とスケジューリング仕様を確定する。
-- Rev.17 の保留機能実装禁止契約に反する実装が入らないことを確認する。
+- Rev.18 の保留機能実装禁止契約に反する実装が入らないことを確認する。
+- マイグレーションの `schemaVersion`、`--dry-run`、`--apply`、事前バックアップ、途中失敗、ロールバック、開発リポジトリ非生成のテストを整備する。
 
 ## 6. 実装済みリスト
 
