@@ -39,7 +39,7 @@ ASB は仕様駆動システムである。
 | 提供形態 | HTTP サーバー（単一バイナリ） |
 | データ保存 | JSON ファイルベース（外部DB不使用） |
 | ライセンス | クローズドライセンス |
-| 本書バージョン | Rev.18 |
+| 本書バージョン | Rev.19 |
 
 ---
 
@@ -938,7 +938,7 @@ System Domain は、監視・ログ管理の責務を担う。
 
 ASB はヘッドレスアーキテクチャを採用し、UI層に依存しない。
 
-Rev.18 時点の確定対象は、ASB 本体が提供する HTTP JSON API である。
+Rev.19 時点の確定対象は、ASB 本体が提供する HTTP JSON API である。
 
 SDK は実装対象外とし、通信仕様および配布方針が確定した後に実装対象へ昇格する。
 
@@ -1013,7 +1013,7 @@ E2E テスト
 - SSL/TLS：本番環境では必須（リバースプロキシで対応）
 
 **レート制限**
-- Rev.18 時点では実装対象外とし、保留事項として扱う
+- Rev.19 時点では実装対象外とし、保留事項として扱う
 
 **タイムアウト**
 - リクエスト読み込み：30秒
@@ -1082,14 +1082,14 @@ Adlaire-Static-Base（ASB）に含まれるソースコード、ドキュメン�
 
 ASB製品（ソフトウェア）の開発版バージョン。
 
-- 表記は`v0.N`（Nは1から始まる連番）。先頭の0は固定とする（将来1への切り替えを検討する余地は残すが、基準は未策定。切り替えてもNはリセットしない）
+- 表記は`v0.N`（Nは1から始まる連番）。先頭の0は固定とする
 - 本仕様書の変更を伴うすべての変更に付与する
 - Nは変更のたびに1ずつ増加する。桁揃えは行わない（v0.1, v0.2, … v0.9, v0.10, …）
 - いかなる理由があってもリセット（巻き戻し・1からの数え直し）はしない
 
 ##### 11.9.2.3 安定版バージョン（vX.Y）
 
-リリース（外部への公開・配布）は安定版のみを対象とする。開発版バージョンの全エントリがリリースされるわけではなく、安定していると判断された時点の開発版を選んで安定版として切り出す。「安定している」の具体的な判断基準は未策定であり、別途策定するリリースポリシーで定める。
+リリース（外部への公開・配布）は安定版のみを対象とする。開発版バージョンの全エントリがリリースされるわけではなく、以下の判定基準をすべて満たした開発版を安定版として切り出す。
 
 - 表記は`vX.Y`（例: v1.9, v3.20, v12.35）
 - X = 安定版リリースの通し番号（1件目を1、2件目を2、…）。メジャー/マイナーのような重大度の意味は持たない
@@ -1097,6 +1097,21 @@ ASB製品（ソフトウェア）の開発版バージョン。
 - X・Yともにいかなる理由でもリセットしない
 - 同一の安定版リリースの中でX・Yが指す時点がずれることはない（Yは常にそのリリース時点の開発版Nと一致する）
 - 現時点ではまだ安定版リリースを1件も出していない
+
+安定版切り出し判定基準は以下とする。
+
+1. `ASB-spec.md`、`ASB-spec.html`、`IMPLEMENTATION_TASKS.md` の参照Revが一致している
+2. `go test ./...` が成功している
+3. `git diff --check` が成功している
+4. Linux amd64 と Linux arm64 のビルドが成功している
+5. リリース対象バイナリの `--version` 出力が安定版バージョンと一致している
+6. `checksums.txt` に全リリース成果物のSHA-256が記録されている
+7. `.gitignore` が存在しない
+8. 開発リポジトリ内に実行時データ、ビルド成果物、一時ファイル、ログファイル、移行作業ファイルが残っていない
+9. Pull Request 経由で `main` に反映済みである
+10. 対象 commit hash をリリース記録へ残している
+
+上記のいずれかを満たさない場合、安定版として配布してはならない。
 
 ##### 11.9.2.4 互換性対応表
 
@@ -1135,130 +1150,193 @@ ASB は単一バイナリとして提供される。この形式により以下�
 - 権限設定のみで実行可能
 - ローリングアップデートが可能
 
-#### 11.11.3 インストール手順
+#### 11.11.3 配布成果物固定仕様
+
+ASB の標準配布先は GitHub Releases とする。
+
+リリースタグは安定版バージョンと同一文字列にする。
+
+例：
+
+```text
+v1.19
+```
+
+標準配布成果物は以下に固定する。
+
+| ファイル | 内容 | 必須 |
+|---------|------|------|
+| `asb-linux-amd64-vX.Y` | Linux amd64 向けASB本体バイナリ | 必須 |
+| `asb-linux-arm64-vX.Y` | Linux arm64 向けASB本体バイナリ | 必須 |
+| `checksums.txt` | SHA-256 checksum 一覧 | 必須 |
+
+配布成果物をGit管理対象として開発リポジトリ内へ保存してはならない。
+
+`checksums.txt` は以下の形式とする。
+
+```text
+<sha256>  asb-linux-amd64-vX.Y
+<sha256>  asb-linux-arm64-vX.Y
+```
+
+`checksums.txt` に記載するファイル名は、GitHub Releases 上の配布ファイル名と完全一致させる。
+
+#### 11.11.4 ビルド固定仕様
+
+標準ビルドコマンドは以下に固定する。
+
+```bash
+CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -trimpath -ldflags "-s -w" -o dist/asb-linux-amd64-vX.Y ./main.go
+CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -trimpath -ldflags "-s -w" -o dist/asb-linux-arm64-vX.Y ./main.go
+```
+
+`dist/` はリリース作業用の一時出力先であり、開発リポジトリへ残してはならない。
+
+ビルド成果物は、GitHub Releases へアップロードした後に開発リポジトリから削除する。
+
+#### 11.11.5 インストール手順
 
 **前提**
 - Linux amd64 または arm64 環境
 - SSH アクセス可能
+- GitHub Releases から対象バージョンの配布成果物を取得可能
+- `sha256sum` または `shasum -a 256` を利用可能
 
 **手順**
 
 ```bash
-# 1. バイナリをダウンロード
-$ wget https://releases.example.com/asb-linux-amd64
+# 1. バイナリと checksums.txt をダウンロード
+$ curl -fL -O https://github.com/fqwink/Adlaire-Static-Base/releases/download/vX.Y/asb-linux-amd64-vX.Y
+$ curl -fL -O https://github.com/fqwink/Adlaire-Static-Base/releases/download/vX.Y/checksums.txt
 
-# 2. 実行権限を付与
-$ chmod +x asb-linux-amd64
+# 2. checksum を検証
+$ sha256sum -c checksums.txt --ignore-missing
 
-# 3. 起動テスト
-$ ./asb-linux-amd64 --version
+# 3. 実行権限を付与
+$ chmod +x asb-linux-amd64-vX.Y
 
-# 4. バックグラウンド起動
-$ ./asb-linux-amd64 &
+# 4. 起動テスト
+$ ./asb-linux-amd64-vX.Y --version
 
-# または systemd での管理（オプション）
-$ sudo mv asb-linux-amd64 /usr/local/bin/asb
+# 5. systemd で管理
+$ sudo install -o root -g root -m 0755 asb-linux-amd64-vX.Y /usr/local/bin/asb
 $ sudo systemctl enable asb
 $ sudo systemctl start asb
 ```
 
-#### 11.11.4 アップデート手順
+`--version` の出力が対象安定版バージョンと一致しない場合、インストールしてはならない。
+
+#### 11.11.6 アップデート手順
 
 **既存バイナリの置き換え**
 
 ```bash
-# 1. 新しいバイナリをダウンロード
-$ wget https://releases.example.com/asb-linux-amd64-v0.1
+# 1. 新しいバイナリと checksums.txt をダウンロード
+$ curl -fL -O https://github.com/fqwink/Adlaire-Static-Base/releases/download/vX.Y/asb-linux-amd64-vX.Y
+$ curl -fL -O https://github.com/fqwink/Adlaire-Static-Base/releases/download/vX.Y/checksums.txt
 
-# 2. 既存バイナリを停止
-$ pkill asb
-# または
+# 2. checksum を検証
+$ sha256sum -c checksums.txt --ignore-missing
+
+# 3. バージョンを確認
+$ ./asb-linux-amd64-vX.Y --version
+
+# 4. 既存サービスを停止
 $ sudo systemctl stop asb
 
-# 3. バイナリを置き換え
-$ mv asb-linux-amd64-v0.1 asb-linux-amd64
-$ chmod +x asb-linux-amd64
+# 5. 既存バイナリを退避して置き換え
+$ sudo cp /usr/local/bin/asb /usr/local/bin/asb.previous
+$ sudo install -o root -g root -m 0755 asb-linux-amd64-vX.Y /usr/local/bin/asb
 
-# 4. 起動
-$ ./asb-linux-amd64 &
-# または
+# 6. 起動
 $ sudo systemctl start asb
+
+# 7. 起動状態を確認
+$ sudo systemctl is-active --quiet asb
 ```
 
-#### 11.11.5 ダウンロード・リリース管理
+アップデート後に起動確認が失敗した場合、`/usr/local/bin/asb.previous` を `/usr/local/bin/asb` へ戻し、`systemctl start asb` を再実行する。
 
-- リリース形式：`asb-linux-{architecture}-v{version}`
-  - 例：`asb-linux-amd64-v0.1`, `asb-linux-arm64-v0.1`
-- リリースページ：GitHub Releases 等で公開予定
-- チェックサム検証：SHA-256 ハッシュを提供（整合性確認用）
+#### 11.11.7 install.sh / update.sh 固定仕様
 
-#### 11.11.6 インストール・アップデート自動化
+ASB の初回インストールとアップデートを自動化するため、`install.sh` と `update.sh` を提供する。
 
-ASB の初回インストールとアップデートを自動化するためのスクリプトを提供する。
+両スクリプトはPOSIX sh互換で実装する。
 
 **提供ファイル**
 
 | ファイル | 用途 | 説明 |
 |---------|------|------|
-| install.sh | 初回インストール | バイナリダウンロード、権限設定、systemd登録を自動実行 |
-| update.sh | アップデート | 最新バイナリダウンロード、サービス再起動を自動実行 |
+| install.sh | 初回インストール | 指定バージョンのダウンロード、checksum検証、権限設定、systemd登録を実行 |
+| update.sh | アップデート | 指定バージョンのダウンロード、checksum検証、サービス停止、置換、再起動、失敗時復旧を実行 |
 | asb.service | systemd ユニット | systemctl での自動起動・停止・再起動・ログ管理 |
 
-**install.sh 実行例**
+**install.sh 引数**
 
 ```bash
-$ chmod +x install.sh
-$ ./install.sh
-# または
-$ sudo ./install.sh  # systemd 登録時は sudo 必要
+./install.sh --version vX.Y --arch amd64
+./install.sh --version vX.Y --arch arm64
 ```
 
-実行内容：
-1. 環境（amd64/arm64）を自動判定
-2. 最新バイナリをダウンロード
-3. 実行権限を付与
-4. `/usr/local/bin/asb` にコピー
-5. asb.service を systemd に登録
-6. サービス自動起動を有効化
-7. サービス起動
+| 引数 | 必須 | 内容 |
+|------|------|------|
+| `--version` | 必須 | インストール対象の安定版バージョン |
+| `--arch` | 任意 | `amd64` または `arm64`。未指定時は `uname -m` から判定 |
 
-**update.sh 実行例**
+**update.sh 引数**
 
 ```bash
-$ chmod +x update.sh
-$ ./update.sh
+./update.sh --version vX.Y --arch amd64
+./update.sh --version vX.Y --arch arm64
 ```
 
-実行内容：
-1. 最新バージョンをチェック
-2. アップデート必要な場合：
-   - 新しいバイナリをダウンロード
-   - サービスを停止
-   - バイナリを置き換え
-   - サービスを再起動
+| 引数 | 必須 | 内容 |
+|------|------|------|
+| `--version` | 必須 | 更新対象の安定版バージョン |
+| `--arch` | 任意 | `amd64` または `arm64`。未指定時は `uname -m` から判定 |
 
-**asb.service（systemd ユニット）**
+`latest` 指定、自動最新版選択、未指定バージョンでの実行は Rev.19 時点では禁止する。
+
+スクリプトは以下を満たす。
+
+1. `set -eu` で実行する
+2. 一時作業ディレクトリは `mktemp -d` で作成する
+3. 一時作業ディレクトリは終了時に削除する
+4. 開発リポジトリ内にビルド成果物、一時ファイル、ログファイルを作成しない
+5. ダウンロード失敗時は終了コード `1` で失敗する
+6. checksum不一致時は終了コード `1` で失敗する
+7. `--version` 出力不一致時は終了コード `1` で失敗する
+8. systemd 操作失敗時は終了コード `1` で失敗する
+9. `update.sh` は起動失敗時に `/usr/local/bin/asb.previous` から復旧を試行する
+10. 復旧に失敗した場合も成功扱いしてはならない
+
+#### 11.11.8 asb.service 固定仕様
 
 ```ini
 [Unit]
 Description=Adlaire-Static-Base HTTP Server
-After=network.target
+After=network-online.target
 Wants=network-online.target
 
 [Service]
 Type=simple
 User=asb
 Group=asb
-ExecStart=/usr/local/bin/asb
-Restart=always
+ExecStart=/usr/local/bin/asb --config /etc/asb/config.json
+Restart=on-failure
 RestartSec=5
 StandardOutput=journal
 StandardError=journal
 SyslogIdentifier=asb
+NoNewPrivileges=true
 
 [Install]
 WantedBy=multi-user.target
 ```
+
+`asb.service` は `/etc/systemd/system/asb.service` へ配置する。
+
+`asb` ユーザーおよび `asb` グループが存在しない場合、`install.sh` は system user として作成する。
 
 **systemctl での管理**
 
@@ -1328,7 +1406,7 @@ $ sudo systemctl stop asb
 
 ### 13.1 実装対象の基準
 
-Rev.18 時点の実装対象は、ASB のセルフホスト型静的コンテンツ配信ホスティングに必要なバックエンド機能に限定する。
+Rev.19 時点の実装対象は、ASB のセルフホスト型静的コンテンツ配信ホスティングに必要なバックエンド機能に限定する。
 
 実装は以下の順序で進める：
 
@@ -1487,7 +1565,7 @@ JSON ファイル更新は以下の方針で行う：
 
 ### 13.9 SSL 管理詳細
 
-Rev.18 時点では、SSL 管理は管理境界とデータモデルを実装対象とし、ACME は ASB互換目標に含める。ACME 実通信、CA選定、ワイルドカード証明書対応は詳細仕様確定後に実装対象へ昇格する。
+Rev.19 時点では、SSL 管理は管理境界とデータモデルを実装対象とし、ACME は ASB互換目標に含める。ACME 実通信、CA選定、ワイルドカード証明書対応は詳細仕様確定後に実装対象へ昇格する。
 
 実装対象：
 
@@ -1563,7 +1641,7 @@ GitHub Webhook は Push イベントのみを対象とする。
 
 ### 13.14 実装契約
 
-本節は Rev.18 時点の実装契約である。実装者は本節に反する判断をコード側で独自に行ってはならない。
+本節は Rev.19 時点の実装契約である。実装者は本節に反する判断をコード側で独自に行ってはならない。
 
 #### 13.14.1 パッケージ境界
 
@@ -1708,7 +1786,7 @@ ID 生成、時刻取得、保存処理は Service に注入された依存関�
 
 #### 13.14.9 保留機能の実装禁止契約
 
-Rev.18 時点では以下を実装してはならない。
+Rev.19 時点では以下を実装してはならない。
 
 - SDK
 - APIキー管理
@@ -1724,7 +1802,7 @@ Rev.18 時点では以下を実装してはならない。
 
 ### 13.15 実装詳細固定仕様
 
-本節は Rev.18 時点で実装時に固定する詳細仕様である。
+本節は Rev.19 時点で実装時に固定する詳細仕様である。
 
 #### 13.15.1 API エンドポイント固定表
 
@@ -1827,7 +1905,7 @@ GitHub Webhook は `push` event のみ処理する。
 
 Webhook 処理成功後に冪等キーを `config/webhooks.json` へ保存する。
 
-Webhook 署名検証は Rev.18 時点では必須化しない。
+Webhook 署名検証は Rev.19 時点では必須化しない。
 
 #### 13.15.6 実装順序固定
 
@@ -1848,7 +1926,7 @@ Webhook 署名検証は Rev.18 時点では必須化しない。
 
 ### 13.16 入出力契約固定仕様
 
-本節は Rev.18 時点で API、JSON保存、ログ、起動時検証の入出力を固定する仕様である。
+本節は Rev.19 時点で API、JSON保存、ログ、起動時検証の入出力を固定する仕様である。
 
 #### 13.16.1 共通成功レスポンス契約
 
@@ -2049,7 +2127,7 @@ ASB_STARTUP_ERROR code=ERR_STORAGE_VALIDATION_FAILED message="Storage validation
 
 #### 13.16.8 テスト固定項目
 
-Rev.18 の実装では、以下のテストを必須とする。
+Rev.19 の実装では、以下のテストを必須とする。
 
 - 全API成功レスポンスの固定JSONキー検証
 - 全APIエラーレスポンスの固定JSONキー検証
@@ -2061,7 +2139,7 @@ Rev.18 の実装では、以下のテストを必須とする。
 
 ### 13.17 実装境界とファイル操作固定仕様
 
-本節は Rev.18 時点で package 境界、公開 interface、Repository、Storage、複数ファイル更新の実装契約を固定する仕様である。
+本節は Rev.19 時点で package 境界、公開 interface、Repository、Storage、複数ファイル更新の実装契約を固定する仕様である。
 
 #### 13.17.1 package 公開 interface 固定
 
@@ -2210,7 +2288,7 @@ Backup restore は以下の順序で実行する。
 
 途中失敗時に自動ロールバックを実装する場合も、ロールバック失敗時は成功扱いにしてはならない。
 
-Rev.18 時点では、複数JSON更新に外部トランザクション機構を導入してはならない。
+Rev.19 時点では、複数JSON更新に外部トランザクション機構を導入してはならない。
 
 #### 13.17.10 最低テスト分類固定
 
@@ -2293,7 +2371,7 @@ Rev.18 時点では、複数JSON更新に外部トランザクション機構を
 ### 15.2 テスト対象外
 
 以下はモック・スタブで対応：
-- ACME 実通信および CA 連携（Rev.18 時点では実通信を実装対象外とし、SSL管理境界のみ検証）
+- ACME 実通信および CA 連携（Rev.19 時点では実通信を実装対象外とし、SSL管理境界のみ検証）
 - GitHub Webhook（テスト用ペイロード）
 - 実際のファイルストレージ大容量テスト（テスト時は最大100MB）
 
@@ -2343,13 +2421,13 @@ ASB の開発版バージョンは累積連番 `v0.N` とし、メジャー/マ�
 | `config/webhooks.json` | Webhook 冪等キー履歴スキーマ |
 | `storage/projects/:projectId/files.json` | File メタデータスキーマ |
 
-静的コンテンツ実体、ログファイル、証明書ファイル、ビルド済みバイナリは、Rev.18 時点のマイグレーション対象外とする。
+静的コンテンツ実体、ログファイル、証明書ファイル、ビルド済みバイナリは、Rev.19 時点のマイグレーション対象外とする。
 
 ### 16.3 schemaVersion 固定
 
 各実行時 JSON ファイルはトップレベルに `schemaVersion` を持つ。
 
-Rev.18 時点の `schemaVersion` は `1` とする。
+Rev.19 時点の `schemaVersion` は `1` とする。
 
 例：
 
@@ -2446,7 +2524,7 @@ asb migrate --storage /var/asb --from-schema 0 --to-schema 1 --apply
 
 ### 16.8 禁止事項
 
-Rev.18 時点では以下を禁止する。
+Rev.19 時点では以下を禁止する。
 
 - 起動時の自動マイグレーション
 - 開発リポジトリ内でのマイグレーション作業ファイル作成
@@ -2475,6 +2553,7 @@ Rev.18 時点では以下を禁止する。
 
 | バージョン | 日付 | 内容 |
 |-----------|------|------|
+| Rev.19 | 2026-09-08 | 安定版リリース判定、GitHub Releases配布、checksum、install/update、systemd仕様を実装レベルで固定 |
 | Rev.18 | 2026-09-08 | マイグレーション戦略をASBのJSONファイルベース実行時データ移行契約へ全面置換 |
 | Rev.17 | 2026-09-08 | package公開interface、Repository/Storage責務、ファイル操作、Project削除、Backup/Restore、複数JSON更新失敗時契約を固定 |
 | Rev.16 | 2026-09-08 | API成功/エラーレスポンス、保存JSONスキーマ、起動時検証出力、ログJSON Linesを固定 |
