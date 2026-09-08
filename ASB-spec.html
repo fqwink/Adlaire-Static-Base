@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ASB 仕様書 Rev.31</title>
+<title>ASB 仕様書 Rev.32</title>
 <style>
 :root { color-scheme: light; --bg: #f4f7f9; --panel: #ffffff; --panel-2: #f8fafc; --panel-3: #edf6f3; --line: #d8e1e7; --line-strong: #b7c6cf; --text: #162126; --muted: #5b6d76; --subtle: #83919a; --brand: #0f766e; --brand-2: #14532d; --ok: #16845f; --code-bg: #111827; --code-text: #e8eef4; --toc-w: 310px; --radius: 8px; }
 @media (prefers-color-scheme: dark) { :root { color-scheme: dark; --bg: #0e1416; --panel: #141d20; --panel-2: #101719; --panel-3: #16312d; --line: #27363b; --line-strong: #3d5057; --text: #e6eef0; --muted: #a7b6bb; --subtle: #7e8e94; --brand: #5eead4; --brand-2: #99f6e4; --ok: #6ee7b7; --code-bg: #080d10; --code-text: #edf7f8; } }
@@ -71,7 +71,7 @@ pre code { background: transparent; border: 0; color: inherit; padding: 0; }
     <div class="sidebar-header">
       <span class="logo">Adlaire-Static-Base</span>
       <h1 class="sidebar-title">ASB Developer Docs</h1>
-      <span class="version-pill">Rev.31</span>
+      <span class="version-pill">Rev.32</span>
     </div>
     <nav class="toc" id="asb-toc">
       <a class="toc-l1" href="#セルフホスト型静的コンテンツ配信ホスティングシステム仕様書">セルフホスト型静的コンテンツ配信ホスティングシステム仕様書</a>
@@ -128,13 +128,24 @@ pre code { background: transparent; border: 0; color: inherit; padding: 0; }
 <a class="toc-l3" href="#11.2-delivery-domain-ポリシー">11.2 Delivery Domain ポリシー</a>
 <a class="toc-l3" href="#11.3-data-domain-ポリシー">11.3 Data Domain ポリシー</a>
 <a class="toc-l3" href="#11.4-system-domain-ポリシー">11.4 System Domain ポリシー</a>
-<a class="toc-l3" href="#11.5-api-sdk-ポリシー">11.5 API/SDK ポリシー</a>
+<a class="toc-l3" href="#11.5-apisdk-ポリシー">11.5 API/SDK ポリシー</a>
 <a class="toc-l3" href="#11.6-技術依存ポリシー">11.6 技術・依存ポリシー</a>
+<a class="toc-l3" href="#11.6.1-例外外部ライブラリリスト">11.6.1 例外外部ライブラリリスト</a>
 <a class="toc-l3" href="#11.7-テスト品質ポリシー">11.7 テスト・品質ポリシー</a>
 <a class="toc-l3" href="#11.8-セキュリティポリシー">11.8 セキュリティポリシー</a>
 <a class="toc-l3" href="#11.9-ライセンスバージョンポリシー">11.9 ライセンス・バージョンポリシー</a>
+<a class="toc-l3" href="#11.9.1-ライセンス方針">11.9.1 ライセンス方針</a>
+<a class="toc-l3" href="#11.9.2-バージョン方針">11.9.2 バージョン方針</a>
 <a class="toc-l3" href="#11.10-将来計画管理ポリシー">11.10 将来計画管理ポリシー</a>
 <a class="toc-l3" href="#11.11-設定管理インストールアップデート">11.11 設定管理・インストール・アップデート</a>
+<a class="toc-l3" href="#11.11.1-設定管理ポリシー">11.11.1 設定管理ポリシー</a>
+<a class="toc-l3" href="#11.11.2-単一バイナリ形式の利点">11.11.2 単一バイナリ形式の利点</a>
+<a class="toc-l3" href="#11.11.3-配布成果物固定仕様">11.11.3 配布成果物固定仕様</a>
+<a class="toc-l3" href="#11.11.4-ビルド固定仕様">11.11.4 ビルド固定仕様</a>
+<a class="toc-l3" href="#11.11.5-インストール手順">11.11.5 インストール手順</a>
+<a class="toc-l3" href="#11.11.6-アップデート手順">11.11.6 アップデート手順</a>
+<a class="toc-l3" href="#11.11.7-install.sh--update.sh-固定仕様">11.11.7 install.sh / update.sh 固定仕様</a>
+<a class="toc-l3" href="#11.11.8-asb.service-固定仕様">11.11.8 asb.service 固定仕様</a>
 <a class="toc-l2" href="#12-将来計画">12 将来計画</a>
 <a class="toc-l3" href="#12.1-段階的対応対象">12.1 段階的対応対象</a>
 <a class="toc-l3" href="#12.1.1-phase-別詳細">12.1.1 Phase 別詳細</a>
@@ -155,9 +166,48 @@ pre code { background: transparent; border: 0; color: inherit; padding: 0; }
 <a class="toc-l3" href="#13.12-監視ログ詳細">13.12 監視・ログ詳細</a>
 <a class="toc-l3" href="#13.13-テスト受け入れ条件">13.13 テスト受け入れ条件</a>
 <a class="toc-l3" href="#13.14-実装契約">13.14 実装契約</a>
+<a class="toc-l3" href="#13.14.1-パッケージ境界">13.14.1 パッケージ境界</a>
+<a class="toc-l3" href="#13.14.2-http-ルーティング契約">13.14.2 HTTP ルーティング契約</a>
+<a class="toc-l3" href="#13.14.3-http-リクエスト契約">13.14.3 HTTP リクエスト契約</a>
+<a class="toc-l3" href="#13.14.4-http-レスポンス契約">13.14.4 HTTP レスポンス契約</a>
+<a class="toc-l3" href="#13.14.5-json-保存契約">13.14.5 JSON 保存契約</a>
+<a class="toc-l3" href="#13.14.6-起動時検証契約">13.14.6 起動時検証契約</a>
+<a class="toc-l3" href="#13.14.7-handler--service--entity-契約">13.14.7 Handler / Service / Entity 契約</a>
+<a class="toc-l3" href="#13.14.8-機能別副作用契約">13.14.8 機能別副作用契約</a>
+<a class="toc-l3" href="#13.14.9-保留機能の実装禁止契約">13.14.9 保留機能の実装禁止契約</a>
 <a class="toc-l3" href="#13.15-実装詳細固定仕様">13.15 実装詳細固定仕様</a>
+<a class="toc-l3" href="#13.15.1-api-エンドポイント固定表">13.15.1 API エンドポイント固定表</a>
+<a class="toc-l3" href="#13.15.2-設定値固定表">13.15.2 設定値固定表</a>
+<a class="toc-l3" href="#13.15.3-json-ファイル固定仕様">13.15.3 JSON ファイル固定仕様</a>
+<a class="toc-l3" href="#13.15.4-静的配信固定仕様">13.15.4 静的配信固定仕様</a>
+<a class="toc-l3" href="#13.15.5-webhook-固定仕様">13.15.5 Webhook 固定仕様</a>
+<a class="toc-l3" href="#13.15.6-実装順序固定">13.15.6 実装順序固定</a>
 <a class="toc-l3" href="#13.16-入出力契約固定仕様">13.16 入出力契約固定仕様</a>
+<a class="toc-l3" href="#13.16.1-共通成功レスポンス契約">13.16.1 共通成功レスポンス契約</a>
+<a class="toc-l3" href="#13.16.2-api-成功レスポンス固定表">13.16.2 API 成功レスポンス固定表</a>
+<a class="toc-l3" href="#13.16.3-共通エラーレスポンス契約">13.16.3 共通エラーレスポンス契約</a>
+<a class="toc-l3" href="#13.16.4-保存json配列要素スキーマ固定">13.16.4 保存JSON配列要素スキーマ固定</a>
+<a class="toc-l3" href="#13.16.5-保存順序固定">13.16.5 保存順序固定</a>
+<a class="toc-l3" href="#13.16.6-起動時検証出力固定">13.16.6 起動時検証出力固定</a>
+<a class="toc-l3" href="#13.16.7-ログjson-lines固定">13.16.7 ログJSON Lines固定</a>
+<a class="toc-l3" href="#13.16.8-テスト固定項目">13.16.8 テスト固定項目</a>
 <a class="toc-l3" href="#13.17-実装境界とファイル操作固定仕様">13.17 実装境界とファイル操作固定仕様</a>
+<a class="toc-l3" href="#13.17.1-package-公開-interface-固定">13.17.1 package 公開 interface 固定</a>
+<a class="toc-l3" href="#13.17.2-repository--storage-責務固定">13.17.2 Repository / Storage 責務固定</a>
+<a class="toc-l3" href="#13.17.3-静的配信処理順序固定">13.17.3 静的配信処理順序固定</a>
+<a class="toc-l3" href="#13.17.4-ファイルアップロード処理順序固定">13.17.4 ファイルアップロード処理順序固定</a>
+<a class="toc-l3" href="#13.17.5-ファイル上書き処理順序固定">13.17.5 ファイル上書き処理順序固定</a>
+<a class="toc-l3" href="#13.17.6-ファイル削除処理順序固定">13.17.6 ファイル削除処理順序固定</a>
+<a class="toc-l3" href="#13.17.7-project削除処理順序固定">13.17.7 Project削除処理順序固定</a>
+<a class="toc-l3" href="#13.17.8-backup作成処理順序固定">13.17.8 Backup作成処理順序固定</a>
+<a class="toc-l3" href="#13.17.9-backup復旧処理順序固定">13.17.9 Backup復旧処理順序固定</a>
+<a class="toc-l3" href="#13.17.10-複数json更新失敗時契約">13.17.10 複数JSON更新失敗時契約</a>
+<a class="toc-l3" href="#13.17.11-最低テスト分類固定">13.17.11 最低テスト分類固定</a>
+<a class="toc-l3" href="#13.17.12-実装ファイル構成固定">13.17.12 実装ファイル構成固定</a>
+<a class="toc-l3" href="#13.17.13-package-内ファイル役割固定">13.17.13 package 内ファイル役割固定</a>
+<a class="toc-l3" href="#13.17.14-エラーコード固定表">13.17.14 エラーコード固定表</a>
+<a class="toc-l3" href="#13.17.15-テストファイル配置固定">13.17.15 テストファイル配置固定</a>
+<a class="toc-l3" href="#13.17.16-フェーズ完了判定固定">13.17.16 フェーズ完了判定固定</a>
 <a class="toc-l3" href="#13.18-apiキー管理認証固定仕様">13.18 APIキー管理・認証固定仕様</a>
 <a class="toc-l3" href="#13.19-rate-limiting-固定仕様">13.19 Rate limiting 固定仕様</a>
 <a class="toc-l3" href="#13.20-brotli-圧縮固定仕様">13.20 Brotli 圧縮固定仕様</a>
@@ -187,15 +237,15 @@ pre code { background: transparent; border: 0; color: inherit; padding: 0; }
     </nav>
   </aside>
   <main class="portal-main">
-    <div class="topbar"><div class="topbar-left"><button class="sidebar-toggle" type="button" aria-label="目次を折りたたむ" aria-expanded="true" aria-controls="asb-toc">☰</button><span class="topbar-title">ASB Specification</span></div><span class="version-pill">Rev.31</span></div>
-    <div class="content">
+    <div class="topbar"><div class="topbar-left"><button class="sidebar-toggle" type="button" aria-label="目次を折りたたむ" aria-expanded="true" aria-controls="asb-toc">☰</button><span class="topbar-title">ASB Specification</span></div><span class="version-pill">Rev.32</span></div>
+    <article class="content">
       <section class="doc-hero">
-        <p class="eyebrow">Adlaire-Static-Base</p>
-        <h1>セルフホスト型静的コンテンツ配信ホスティングシステム仕様書</h1>
-        <p class="subtitle">ASBの仕様正本 <code>ASB-spec.md</code> に基づくHTML版仕様書。</p>
-        <div class="hero-meta"><span class="meta-chip">Rev.31</span><span class="meta-chip">Generated from ASB-spec.md</span></div>
+        <p class="eyebrow">Specification</p>
+        <h1>ASB 仕様書</h1>
+        <p class="subtitle">セルフホスト型静的コンテンツ配信ホスティングシステム</p>
+        <div class="hero-meta"><span class="meta-chip">Rev.32</span><span class="meta-chip">Generated from ASB-spec.md</span></div>
       </section>
-      <h1 id="セルフホスト型静的コンテンツ配信ホスティングシステム仕様書">セルフホスト型静的コンテンツ配信ホスティングシステム仕様書</h1>
+<h1 class="doc-title" id="セルフホスト型静的コンテンツ配信ホスティングシステム仕様書">セルフホスト型静的コンテンツ配信ホスティングシステム仕様書</h1>
 <h2 id="1-本書の位置づけ">1 本書の位置づけ</h2>
 <p>本書は、セルフホスト型静的コンテンツ配信ホスティングシステム「Adlaire-Static-Base（ASB）」の仕様正本である。</p>
 <p>本システムはゼロベースで設計され、完全な内製化を原則とする。本書には、ASB の確定仕様、将来計画、保留事項を記載する。</p>
@@ -230,7 +280,7 @@ pre code { background: transparent; border: 0; color: inherit; padding: 0; }
 <tr><td>提供形態</td><td>HTTP サーバー（単一バイナリ）</td></tr>
 <tr><td>データ保存</td><td>JSON ファイルベース（外部DB不使用）</td></tr>
 <tr><td>ライセンス</td><td>クローズドライセンス</td></tr>
-<tr><td>本書バージョン</td><td>Rev.31</td></tr>
+<tr><td>本書バージョン</td><td>Rev.32</td></tr>
 </tbody></table></div>
 <hr>
 <h2 id="3-asb-の責務範囲">3 ASB の責務範囲</h2>
@@ -266,7 +316,7 @@ pre code { background: transparent; border: 0; color: inherit; padding: 0; }
 <h3 id="3.2-asb互換目標と-asb-独自仕様">3.2 ASB互換目標と ASB 独自仕様</h3>
 <p>ASB は、静的コンテンツ専用ホスティングとして XServer Static 等の利用体験を参考基準とし、ASB互換目標として定義する。</p>
 <p>本節の「ASB互換目標」とは、外部サービスとの完全互換ではなく、セルフホスト環境で同種の運用体験を提供するための機能目標を指す。</p>
-<p>ASB互換目標は将来の到達目標であり、Rev.31 時点の実装対象ではない。</p>
+<p>ASB互換目標は将来の到達目標であり、Rev.32 時点の実装対象ではない。</p>
 <p>ASB互換目標に含まれることは、未確定機能を実装してよい根拠にならない。</p>
 <p>ASB互換目標に含まれる機能を実装対象へ昇格する場合は、事前に <code>ASB-spec.md</code> を改訂し、実装範囲、入出力、保存形式、副作用、生成物、テスト条件を確定しなければならない。</p>
 <p><strong>ASB互換目標</strong></p>
@@ -285,7 +335,7 @@ pre code { background: transparent; border: 0; color: inherit; padding: 0; }
 <li>ファイルアップロードおよびフォルダ階層を保持したファイル管理を提供する</li>
 <li>SSL更新状態、デプロイ状態、ログを確認できる</li>
 </ul>
-<p><strong>Rev.31 時点で ASB互換目標に含めないもの</strong></p>
+<p><strong>Rev.32 時点で ASB互換目標に含めないもの</strong></p>
 <ul>
 <li>外部サービスとのAPI完全互換</li>
 <li>外部サービスの管理画面互換</li>
@@ -367,7 +417,7 @@ pre code { background: transparent; border: 0; color: inherit; padding: 0; }
 <tr><td>ファイル操作</td><td>Go 標準 <code>os</code>, <code>io</code></td></tr>
 <tr><td>圧縮</td><td>Go 標準 <code>archive/tar</code>, <code>compress/gzip</code></td></tr>
 <tr><td>暗号化</td><td>Go 標準 <code>crypto</code></td></tr>
-<tr><td>SSL 証明書</td><td>SSL証明書管理境界（ACME 実通信・CA選定・証明書自動更新は Rev.31 時点では実装しない）</td></tr>
+<tr><td>SSL 証明書</td><td>SSL証明書管理境界（ACME 実通信・CA選定・証明書自動更新は Rev.32 時点では実装しない）</td></tr>
 <tr><td>対応 OS</td><td>Linux</td></tr>
 <tr><td>対応アーキテクチャ</td><td>amd64（x86_64）、arm64（aarch64）</td></tr>
 </tbody></table></div>
@@ -389,10 +439,10 @@ pre code { background: transparent; border: 0; color: inherit; padding: 0; }
 <p>注：追加の際は、必須性・メンテナンス・ライセンスを確認の上、仕様に追記</p>
 <h3 id="5.3-ビルド">5.3 ビルド</h3>
 <pre><code># Linux amd64
-CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o asb-linux-amd64 ./main.go
+CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o asb-linux-amd64 ./cmd/asb
 
 # Linux arm64
-CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -o asb-linux-arm64 ./main.go</code></pre>
+CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -o asb-linux-arm64 ./cmd/asb</code></pre>
 <hr>
 <h2 id="6-ディレクトリ構成">6 ディレクトリ構成</h2>
 <pre><code>static-hosting-system/
@@ -507,7 +557,7 @@ CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -o asb-linux-arm64 ./main.go</cod
 <li>証明書保存先 <code>certs/</code> の検証</li>
 <li>証明書ファイルの存在、パス、有効期限の検証</li>
 <li>証明書生成・更新は ASB 外部の手動配置または外部運用で扱う</li>
-<li>ACME 実通信は Rev.31 時点では ASB 本体に実装しない</li>
+<li>ACME 実通信は Rev.32 時点では ASB 本体に実装しない</li>
 </ul>
 <h3 id="7.4-ファイル管理">7.4 ファイル管理</h3>
 <p><strong>ファイルアップロード</strong></p>
@@ -515,7 +565,7 @@ CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -o asb-linux-arm64 ./main.go</cod
 <li>最大容量：1GB/プロジェクト（設定可能）</li>
 <li>形式：制限なし（HTML, CSS, JavaScript, 画像等）</li>
 <li>圧縮：Gzip による自動圧縮</li>
-<li>Brotli は Rev.31 時点では ASB 本体に実装しない</li>
+<li>Brotli は Rev.32 時点では ASB 本体に実装しない</li>
 </ul>
 <p><strong>ファイル削除</strong></p>
 <ul>
@@ -879,7 +929,7 @@ CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -o asb-linux-arm64 ./main.go</cod
 <li><code>createdAt</code>：バックアップ作成日時（ISO 8601形式）</li>
 <li><code>size</code>：バックアップサイズ（バイト）</li>
 <li><code>path</code>：<code>storage.basePath</code> からの相対バックアップファイルパス</li>
-<li><code>sha256</code>：バックアップ tar.gz の SHA-256 ハッシュ</li>
+<li><code>sha256</code>：バックアップtar.gzのSHA-256</li>
 <li><code>status</code>：<code>completed</code> または <code>failed</code></li>
 </ul>
 <hr>
@@ -1051,7 +1101,7 @@ CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -o asb-linux-arm64 ./main.go</cod
 <li>エラー時の通知とログ記録</li>
 </ul>
 <p>Webhook 処理失敗は、システムログおよび <code>config/webhooks.json</code> へ記録する。</p>
-<p>Rev.31 時点では、Webhook失敗時の自動リトライスケジュールを実装しない。</p>
+<p>Rev.32 時点では、Webhook失敗時の自動リトライスケジュールを実装しない。</p>
 <h3 id="11.3-data-domain-ポリシー">11.3 Data Domain ポリシー</h3>
 <p>Data Domain は、バックアップ・ストレージの責務を担う。</p>
 <p><strong>責務優先順位</strong></p>
@@ -1065,8 +1115,8 @@ CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -o asb-linux-arm64 ./main.go</cod
 <ul>
 <li>バックアップ取得後はハッシュ検証を実施</li>
 <li>ASB標準バックアップ保存先は <code>storage.basePath/backups/</code> とする</li>
-<li>バックアップ保存先を別障害領域へ複製する作業は Rev.31 時点ではASB外の運用責務とする</li>
-<li>外部ストレージ連携は Rev.31 時点では実装対象外とする</li>
+<li>バックアップ保存先を別障害領域へ複製する作業は Rev.32 時点ではASB外の運用責務とする</li>
+<li>外部ストレージ連携は Rev.32 時点では実装対象外とする</li>
 <li>復旧は対象バックアップの存在、SHA-256、JSON構文、スキーマ検証後に実施</li>
 <li>バックアップ・復旧・検証失敗・復旧操作は監査ログへ記録</li>
 </ul>
@@ -1080,7 +1130,7 @@ CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -o asb-linux-arm64 ./main.go</cod
 <li>標準構成では <code>storage.basePath/logs/</code> 配下へ JSON Lines として保存する</li>
 <li>アクセスログは <code>storage.basePath/logs/access.log</code> に保存する</li>
 <li>エラーログは <code>storage.basePath/logs/error.log</code> に保存する</li>
-<li>標準出力（stdout）への通常ログ出力は Rev.31 時点では実装しない</li>
+<li>標準出力（stdout）への通常ログ出力は Rev.32 時点では実装しない</li>
 <li>起動失敗時のみ標準エラー（stderr）へ単一行の起動エラーを出力する</li>
 </ul>
 <p><strong>必須フィールド</strong></p>
@@ -1097,17 +1147,17 @@ CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -o asb-linux-arm64 ./main.go</cod
 <li>接続数・リクエスト数</li>
 <li>バックアップ状態、証明書有効期限</li>
 </ul>
-<h3 id="11.5-api-sdk-ポリシー">11.5 API/SDK ポリシー</h3>
+<h3 id="11.5-apisdk-ポリシー">11.5 API/SDK ポリシー</h3>
 <p>ASB はヘッドレスアーキテクチャを採用し、UI層に依存しない。</p>
-<p>Rev.31 時点の確定対象は、ASB 本体が提供する HTTP JSON API、および将来 SDK が使用する通信規格である。</p>
-<p>SDK 本体、SDK 配布方針、SDK 認証仕様は Rev.31 時点では実装対象外とする。</p>
+<p>Rev.32 時点の確定対象は、ASB 本体が提供する HTTP JSON API、および将来 SDK が使用する通信規格である。</p>
+<p>SDK 本体、SDK 配布方針、SDK 認証仕様は Rev.32 時点では実装対象外とする。</p>
 <p>SDK 通信規格は、ASB 本体が提供する HTTP JSON API と同一とする。</p>
 <p><strong>API 設計原則</strong></p>
 <ul>
 <li>HTTP + JSON を使用する</li>
-<li>HTTP/2 対応は ASB互換目標として扱い、Rev.31 時点では実装詳細を確定しない</li>
+<li>HTTP/2 対応は ASB互換目標として扱い、Rev.32 時点では実装詳細を確定しない</li>
 <li>デフォルト接続境界は <code>localhost:3000</code> とする</li>
-<li>管理 API は Rev.31 時点では認証なしとする</li>
+<li>管理 API は Rev.32 時点では認証なしとする</li>
 <li>SDK 通信は ASB 管理 API と同じ request / response / error / timestamp / pagination / upload 規約に従う</li>
 <li>SDK 専用プロトコル、SDK 専用エンドポイント、SDK 専用セッションを追加しない</li>
 <li>APIキー管理、ユーザー認証、SDK認証仕様は保留事項として扱う</li>
@@ -1174,15 +1224,15 @@ CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -o asb-linux-arm64 ./main.go</cod
 <ul>
 <li>API バインドアドレス：localhost のみ（デフォルト）</li>
 <li>ASB 本体の標準 listen address は <code>127.0.0.1</code> とする</li>
-<li>ASB 本体は Rev.31 時点ではインターネット公開用 listen 設定を既定値として提供しない</li>
+<li>ASB 本体は Rev.32 時点ではインターネット公開用 listen 設定を既定値として提供しない</li>
 <li>リモートアクセスは ASB 外部のリバースプロキシ、VPN、SSH tunnel、ファイアウォール等の運用境界で扱う</li>
-<li>ASB 本体は Rev.31 時点ではリバースプロキシ設定ファイルを生成しない</li>
-<li>SSL/TLS：本番環境では必須とするが、Rev.31 時点では ASB 本体では TLS 終端を実装しない</li>
+<li>ASB 本体は Rev.32 時点ではリバースプロキシ設定ファイルを生成しない</li>
+<li>SSL/TLS：本番環境では必須とするが、Rev.32 時点では ASB 本体では TLS 終端を実装しない</li>
 <li>TLS 終端は ASB 外部のリバースプロキシまたはロードバランサで扱う</li>
 </ul>
 <p><strong>レート制限</strong></p>
 <ul>
-<li>Rev.31 時点では ASB 本体に実装しない</li>
+<li>Rev.32 時点では ASB 本体に実装しない</li>
 <li>Rate limiting は、本番公開時に ASB 外部のリバースプロキシ、WAF、CDN、ファイアウォール等で扱う</li>
 </ul>
 <p><strong>タイムアウト</strong></p>
@@ -1195,7 +1245,7 @@ CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -o asb-linux-arm64 ./main.go</cod
 <ul>
 <li>最大サイズ：1GB</li>
 <li>形式制限：なし</li>
-<li>ウイルススキャン：Rev.31 時点では ASB 本体に実装しない</li>
+<li>ウイルススキャン：Rev.32 時点では ASB 本体に実装しない</li>
 <li>ASB 本体はアップロードファイルのマルウェア判定、隔離、駆除、外部スキャンAPI連携を行わない</li>
 <li>ウイルススキャン用の JSON、設定項目、隔離ディレクトリ、スキャンログを生成してはならない</li>
 <li>置換許可：同名ファイル上書き可能</li>
@@ -1204,7 +1254,7 @@ CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -o asb-linux-arm64 ./main.go</cod
 <ul>
 <li>アクセスログ：全HTTP リクエスト（JSON形式）</li>
 <li>エラーログ：エラー・例外・警告</li>
-<li>ログファイル暗号化：Rev.31 時点では ASB 本体に実装しない</li>
+<li>ログファイル暗号化：Rev.32 時点では ASB 本体に実装しない</li>
 <li>ログ暗号化用の鍵管理、鍵生成、鍵保存、暗号化ログ形式、復号API、外部KMS連携を追加してはならない</li>
 </ul>
 <h3 id="11.9-ライセンスバージョンポリシー">11.9 ライセンス・バージョンポリシー</h3>
@@ -1309,9 +1359,9 @@ CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -o asb-linux-arm64 ./main.go</cod
 <p>ただし、仕様整理、テスト設計、レビュー指摘対応は、該当フェーズの実装着手前に準備作業として行うことを許可する。</p>
 <p>フェーズを追加、削除、分割、統合、順序変更、バージョン変更する場合は、事前に <code>ASB-spec.md</code> を改訂し、<code>IMPLEMENTATION_TASKS.md</code> を同期する。</p>
 <h3 id="11.10-将来計画管理ポリシー">11.10 将来計画管理ポリシー</h3>
-<p>将来計画は、Rev.31 時点の実装対象ではない。</p>
+<p>将来計画は、Rev.32 時点の実装対象ではない。</p>
 <p>将来計画に記載された項目は、実装、設定追加、API追加、JSON追加、ディレクトリ追加、外部依存追加、実行時データ生成の根拠として扱ってはならない。</p>
-<p>Rev.31 時点で実装対象外とする将来計画は以下とする。</p>
+<p>Rev.32 時点で実装対象外とする将来計画は以下とする。</p>
 <ul>
 <li>GUI</li>
 <li>Web UI</li>
@@ -1366,8 +1416,8 @@ CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -o asb-linux-arm64 ./main.go</cod
 <p><code>checksums.txt</code> に記載するファイル名は、GitHub Releases 上の配布ファイル名と完全一致させる。</p>
 <h4 id="11.11.4-ビルド固定仕様">11.11.4 ビルド固定仕様</h4>
 <p>標準ビルドコマンドは以下に固定する。</p>
-<pre><code>CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -trimpath -ldflags &quot;-s -w&quot; -o dist/asb-linux-amd64-vX.Y ./main.go
-CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -trimpath -ldflags &quot;-s -w&quot; -o dist/asb-linux-arm64-vX.Y ./main.go</code></pre>
+<pre><code>CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -trimpath -ldflags &quot;-s -w&quot; -o dist/asb-linux-amd64-vX.Y ./cmd/asb
+CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -trimpath -ldflags &quot;-s -w&quot; -o dist/asb-linux-arm64-vX.Y ./cmd/asb</code></pre>
 <p><code>dist/</code> はリリース作業用の一時出力先であり、開発リポジトリへ残してはならない。</p>
 <p>ビルド成果物は、GitHub Releases へアップロードした後に開発リポジトリから削除する。</p>
 <h4 id="11.11.5-インストール手順">11.11.5 インストール手順</h4>
@@ -1417,11 +1467,12 @@ $ sudo cp /usr/local/bin/asb /usr/local/bin/asb.previous
 $ sudo install -o root -g root -m 0755 asb-linux-amd64-vX.Y /usr/local/bin/asb
 
 # 6. 起動
-$ sudo systemctl start asb</code></pre>
-<pre><code># 7. 起動状態を確認
+$ sudo systemctl start asb
+
+# 7. 起動状態を確認
 $ sudo systemctl is-active --quiet asb</code></pre>
 <p>アップデート後に起動確認が失敗した場合、<code>/usr/local/bin/asb.previous</code> を <code>/usr/local/bin/asb</code> へ戻し、<code>systemctl start asb</code> を再実行する。</p>
-<h4 id="11.11.7-install.sh-update.sh-固定仕様">11.11.7 install.sh / update.sh 固定仕様</h4>
+<h4 id="11.11.7-install.sh--update.sh-固定仕様">11.11.7 install.sh / update.sh 固定仕様</h4>
 <p>ASB の初回インストールとアップデートを自動化するため、<code>install.sh</code> と <code>update.sh</code> を提供する。</p>
 <p>両スクリプトはPOSIX sh互換で実装する。</p>
 <p><strong>提供ファイル</strong></p>
@@ -1450,7 +1501,7 @@ $ sudo systemctl is-active --quiet asb</code></pre>
 <tr><td><code>--version</code></td><td>必須</td><td>更新対象の安定版バージョン</td></tr>
 <tr><td><code>--arch</code></td><td>任意</td><td><code>amd64</code> または <code>arm64</code>。未指定時は <code>uname -m</code> から判定</td></tr>
 </tbody></table></div>
-<p><code>latest</code> 指定、自動最新版選択、未指定バージョンでの実行は Rev.31 時点では禁止する。</p>
+<p><code>latest</code> 指定、自動最新版選択、未指定バージョンでの実行は Rev.32 時点では禁止する。</p>
 <p>スクリプトは以下を満たす。</p>
 <ol>
 <li><code>set -eu</code> で実行する</li>
@@ -1504,10 +1555,10 @@ $ sudo systemctl stop asb</code></pre>
 <hr>
 <h2 id="12-将来計画">12 将来計画</h2>
 <h3 id="12.1-段階的対応対象">12.1 段階的対応対象</h3>
-<p>本章は将来計画の記録であり、Rev.31 時点の実装対象を増やすものではない。</p>
-<p>以下は Rev.31 時点では実装対象外とする。</p>
+<p>本章は将来計画の記録であり、Rev.32 時点の実装対象を増やすものではない。</p>
+<p>以下は Rev.32 時点では実装対象外とする。</p>
 <div class="tbl-wrap"><table><thead>
-<tr><th>対象</th><th>Rev.31 時点の扱い</th><th>実装禁止範囲</th></tr>
+<tr><th>対象</th><th>Rev.32 時点の扱い</th><th>実装禁止範囲</th></tr>
 </thead><tbody>
 <tr><td>GUI</td><td>実装対象外</td><td>UI サーバー、画面、画面用API、画面用設定</td></tr>
 <tr><td>Web UI</td><td>実装対象外</td><td>SPA、SSR、管理画面、フロントエンドビルド</td></tr>
@@ -1521,22 +1572,22 @@ $ sudo systemctl stop asb</code></pre>
 <h3 id="12.1.1-phase-別詳細">12.1.1 Phase 別詳細</h3>
 <p><strong>Phase 2：GUI 実装</strong></p>
 <ul>
-<li>Rev.31 時点では実装しない</li>
+<li>Rev.32 時点では実装しない</li>
 <li>GUI 用の API、設定項目、JSON ファイル、ディレクトリを追加しない</li>
 <li>Electron、React、Vue、Svelte 等の外部フレームワークを追加しない</li>
 </ul>
 <p><strong>Phase 3：モバイルアプリ</strong></p>
 <ul>
-<li>Rev.31 時点では実装しない</li>
+<li>Rev.32 時点では実装しない</li>
 <li>モバイル専用 API、認証、セッション、push通知、配布設定を追加しない</li>
 </ul>
 <p><strong>Phase 4：クラウドサービス化</strong></p>
 <ul>
-<li>Rev.31 時点では実装しない</li>
+<li>Rev.32 時点では実装しない</li>
 <li>マルチテナント、認証、認可、ユーザー管理、課金、契約、アカウント管理を追加しない</li>
 </ul>
 <h3 id="12.2-保留事項">12.2 保留事項</h3>
-<p>以下は Rev.31 時点では実装対象外とする。</p>
+<p>以下は Rev.32 時点では実装対象外とする。</p>
 <ul>
 <li>ユーザー認証</li>
 <li>マルチテナント対応</li>
@@ -1551,7 +1602,7 @@ $ sudo systemctl stop asb</code></pre>
 </ul>
 <p>上記を理由に、API、設定項目、保存 JSON、ディレクトリ、外部依存、実行時データを追加してはならない。</p>
 <h3 id="12.3-検討調査中事項">12.3 検討・調査中事項</h3>
-<p>Rev.31 時点では、検討・調査中事項を実装へ反映してはならない。</p>
+<p>Rev.32 時点では、検討・調査中事項を実装へ反映してはならない。</p>
 <p>以下は調査対象としてのみ記録し、実装対象外とする。</p>
 <ul>
 <li>複数インスタンス時の NFS / 分散ストレージ選定</li>
@@ -1579,7 +1630,7 @@ $ sudo systemctl stop asb</code></pre>
 <hr>
 <h2 id="13-実装詳細仕様">13 実装詳細仕様</h2>
 <h3 id="13.1-実装対象の基準">13.1 実装対象の基準</h3>
-<p>Rev.31 時点の実装対象は、ASB のセルフホスト型静的コンテンツ配信ホスティングに必要なバックエンド機能に限定する。</p>
+<p>Rev.32 時点の実装対象は、ASB のセルフホスト型静的コンテンツ配信ホスティングに必要なバックエンド機能に限定する。</p>
 <p>実装は以下の順序で進める：</p>
 <ol>
 <li>起動設定、実行時データ検証、HTTP サーバー、共通レスポンス</li>
@@ -1711,7 +1762,7 @@ $ sudo systemctl stop asb</code></pre>
 <p><strong>圧縮</strong></p>
 <ul>
 <li>Gzip 圧縮を実装対象とする</li>
-<li>Brotli 圧縮は Rev.31 時点では ASB 本体に実装しない</li>
+<li>Brotli 圧縮は Rev.32 時点では ASB 本体に実装しない</li>
 <li><code>Accept-Encoding: br</code> を受信しても Brotli 応答へ切り替えない</li>
 </ul>
 <h3 id="13.8-ドメイン管理詳細">13.8 ドメイン管理詳細</h3>
@@ -1724,8 +1775,8 @@ $ sudo systemctl stop asb</code></pre>
 <li>プロジェクト削除時は関連ドメインを削除する</li>
 </ul>
 <h3 id="13.9-ssl-管理詳細">13.9 SSL 管理詳細</h3>
-<p>Rev.31 時点では、SSL 管理は証明書メタデータ、証明書配置、証明書検証に限定する。</p>
-<p>ACME は ASB互換目標に含めるが、ACME 実通信、CA選定、ワイルドカード証明書対応、証明書自動更新は Rev.31 時点では ASB 本体に実装しない。</p>
+<p>Rev.32 時点では、SSL 管理は証明書メタデータ、証明書配置、証明書検証に限定する。</p>
+<p>ACME は ASB互換目標に含めるが、ACME 実通信、CA選定、ワイルドカード証明書対応、証明書自動更新は Rev.32 時点では ASB 本体に実装しない。</p>
 <p>実装対象：</p>
 <ul>
 <li>SSL 証明書IDの管理</li>
@@ -1767,7 +1818,7 @@ $ sudo systemctl stop asb</code></pre>
 <li>デプロイ処理に失敗した場合は <code>ERR_WEBHOOK_PROCESSING_FAILED</code> を返す</li>
 <li>同一 GitHub Push イベントを重複受信した場合は、同一 commit hash と対象ブランチの組み合わせを冪等キーとして扱い、二重デプロイを避ける</li>
 <li>冪等キーの保存方式は JSON ファイルベースとし、保存先は <code>storage.basePath</code> 配下に限定する</li>
-<li>Webhook失敗時の自動リトライは Rev.31 時点では実装しない</li>
+<li>Webhook失敗時の自動リトライは Rev.32 時点では実装しない</li>
 <li>GitHub側からの再送は通常のWebhook受信として扱い、冪等キーで重複判定する</li>
 </ul>
 <h3 id="13.11-バックアップ復旧詳細">13.11 バックアップ・復旧詳細</h3>
@@ -1781,21 +1832,21 @@ $ sudo systemctl stop asb</code></pre>
 <li>バックアップ作成後に SHA-256 ハッシュを計算する</li>
 <li>バックアップ履歴は <code>config/backups.json</code> に記録する</li>
 <li>バックアップ成功時の <code>status</code> は <code>completed</code> とする</li>
-<li>バックアップ失敗時は成功履歴を作成してはならない</li>
-<li>バックアップ作成中の一時tarは <code>storage.basePath/backups/.tmp/</code> 配下に限定する</li>
-<li>開発リポジトリ内にバックアップtar、一時tar、checksumファイル、復旧用ステージングデータを作成してはならない</li>
+<li>バックアップ失敗時は <code>status: &quot;completed&quot;</code> の履歴を作成してはならない</li>
+<li>バックアップ作成用の一時tarは <code>storage.basePath/backups/.tmp/</code> 配下にのみ作成できる</li>
+<li>開発リポジトリ内にバックアップtar、一時tar、checksum、退避データを作成してはならない</li>
 </ul>
 <p><strong>復旧</strong></p>
 <ul>
 <li>復旧前にバックアップファイルの存在と SHA-256 ハッシュを検証する</li>
 <li>復旧前退避先は <code>storage.basePath/backups/restore-staging/{restoreId}/previous/</code> とする</li>
-<li>復旧展開先は <code>storage.basePath/backups/restore-staging/{restoreId}/next/</code> とする</li>
+<li>復旧用展開先は <code>storage.basePath/backups/restore-staging/{restoreId}/next/</code> とする</li>
 <li>既存データを退避してから復旧する</li>
 <li>復旧後に JSON ファイル構文と必須フィールドを検証する</li>
 <li>復旧失敗時は <code>ERR_BACKUP_RESTORE_FAILED</code> を返す</li>
-<li>復旧失敗時は退避済み <code>previous/</code> から可能な限り復元する</li>
-<li><code>previous/</code> からの復元に失敗した場合も成功レスポンスを返してはならない</li>
-<li>復旧完了後または失敗処理後、<code>restore-staging/{restoreId}/</code> は best effort で削除し、削除失敗時は WARN ログに記録する</li>
+<li>復旧失敗時は可能な限り退避済みの <code>previous/</code> から復元する</li>
+<li>退避領域からの復元に失敗した場合も成功扱いしてはならない</li>
+<li>復旧完了後の <code>restore-staging/{restoreId}/</code> 削除は best effort とし、削除失敗時は WARN ログへ記録する</li>
 </ul>
 <h3 id="13.12-監視ログ詳細">13.12 監視・ログ詳細</h3>
 <p><strong>監視</strong></p>
@@ -1839,8 +1890,9 @@ $ sudo systemctl stop asb</code></pre>
 <li>仕様上保留の機能が実装されていないことを確認する</li>
 </ul>
 <h3 id="13.14-実装契約">13.14 実装契約</h3>
-<p>本節は Rev.31 時点の実装契約である。実装者は本節に反する判断をコード側で独自に行ってはならない。</p>
+<p>本節は Rev.32 時点の実装契約である。実装者は本節に反する判断をコード側で独自に行ってはならない。</p>
 <h4 id="13.14.1-パッケージ境界">13.14.1 パッケージ境界</h4>
+<p>実装は以下の Go package 境界を基本とする。</p>
 <div class="tbl-wrap"><table><thead>
 <tr><th>パッケージ</th><th>責務</th><th>外部副作用</th></tr>
 </thead><tbody>
@@ -1851,35 +1903,40 @@ $ sudo systemctl stop asb</code></pre>
 <tr><td><code>data</code></td><td>Backup、Storage</td><td>tar.gz 作成、復旧、JSON メタデータ更新</td></tr>
 <tr><td><code>system</code></td><td>Monitoring、Log</td><td>ログ読み書き、監視値取得</td></tr>
 </tbody></table></div>
-<p><code>main.go</code> は設定読み込み、依存関係生成、HTTP サーバー起動、graceful shutdown のみを行う。</p>
+<p><code>cmd/asb/main.go</code> は設定読み込み、依存関係生成、HTTP サーバー起動、graceful shutdown のみを行う。</p>
 <p>各 package は他 package の具象型に直接依存せず、必要な境界は interface で受け渡す。</p>
 <h4 id="13.14.2-http-ルーティング契約">13.14.2 HTTP ルーティング契約</h4>
-<ul>
-<li>HTTP ルーティングは Go 標準 <code>net/http</code> で実装する</li>
-<li>外部ルーターライブラリは採用しない</li>
-<li>API パスは <code>/api/</code> で始まり、静的ファイル配信より優先する</li>
-<li>API パスは <code>strings.TrimPrefix</code> と <code>/</code> 分割により解析する</li>
-<li>空セグメント、余分な末尾スラッシュ、想定外セグメントは <code>404 Not Found</code> とする</li>
-<li>定義済みパスで HTTP メソッドだけが不一致の場合は <code>405 Method Not Allowed</code> とし、<code>Allow</code> ヘッダーを設定する</li>
-</ul>
+<p>HTTP ルーティングは Go 標準 <code>net/http</code> で実装する。</p>
+<p>外部ルーターライブラリは採用しない。</p>
+<p>API パスは <code>/api/</code> で始まる。</p>
+<p>API パス判定は静的ファイル配信より優先する。</p>
+<p>静的ファイル配信は API パスに一致しないリクエストのみを対象とする。</p>
+<p>API パスは <code>strings.TrimPrefix</code> と <code>/</code> 分割により解析し、空セグメント、余分な末尾スラッシュ、想定外セグメントは <code>404 Not Found</code> とする。</p>
+<p>定義済みパスで HTTP メソッドだけが不一致の場合は <code>405 Method Not Allowed</code> とし、<code>Allow</code> ヘッダーに許可メソッドを設定する。</p>
 <h4 id="13.14.3-http-リクエスト契約">13.14.3 HTTP リクエスト契約</h4>
-<ul>
-<li>JSON API は <code>Content-Type: application/json</code> を要求し、charset 付きも許可する</li>
-<li>Body を要求する API で空 Body の場合は <code>400 Bad Request</code> とする</li>
-<li>JSON decode は <code>json.Decoder</code> を使用し、<code>DisallowUnknownFields</code> を有効にする</li>
-<li>1リクエストにつき JSON 値は1個のみ許可し、後続トークンが存在する場合は <code>400 Bad Request</code> とする</li>
-<li>multipart upload は <code>POST /api/projects/:id/files/upload</code> のみ許可し、フィールド名は <code>file</code> に固定する</li>
-</ul>
+<p>JSON API は <code>Content-Type: application/json</code> を要求する。</p>
+<p><code>Content-Type</code> に charset が付く場合は許可する。</p>
+<p>Body を持たない API では Body を読み込まない。</p>
+<p>Body を要求する API で空 Body の場合は <code>400 Bad Request</code> とする。</p>
+<p>JSON decode は <code>json.Decoder</code> を使用し、<code>DisallowUnknownFields</code> を有効にする。</p>
+<p>1リクエストにつき JSON 値は1個のみ許可し、後続トークンが存在する場合は <code>400 Bad Request</code> とする。</p>
+<p>multipart upload は <code>POST /api/projects/:id/files/upload</code> のみ許可し、フィールド名は <code>file</code> に固定する。</p>
 <h4 id="13.14.4-http-レスポンス契約">13.14.4 HTTP レスポンス契約</h4>
 <p>成功レスポンスとエラーレスポンスは常に <code>Content-Type: application/json; charset=utf-8</code> とする。</p>
+<p>エラーレスポンスは以下のフィールドを必須とする。</p>
 <pre><code>{
   &quot;error&quot;: &quot;string&quot;,
   &quot;code&quot;: &quot;string&quot;,
   &quot;timestamp&quot;: &quot;2026-09-08T00:00:00Z&quot;,
   &quot;httpStatus&quot;: 400
 }</code></pre>
-<p><code>timestamp</code> は UTC の RFC3339 形式とする。内部ファイルパス、スタックトレース、環境変数、機密値を含めてはならない。</p>
+<p><code>timestamp</code> は UTC の RFC3339 形式とする。</p>
+<p>エラーレスポンスに内部ファイルパス、スタックトレース、環境変数、機密値を含めてはならない。</p>
 <h4 id="13.14.5-json-保存契約">13.14.5 JSON 保存契約</h4>
+<p>実行時データは <code>storage.basePath</code> 配下にのみ保存する。</p>
+<p>開発リポジトリ配下を <code>storage.basePath</code> に指定してはならない。</p>
+<p>ASB は起動時に実行時データ用ディレクトリまたは JSON ファイルを自動生成しない。</p>
+<p>JSON ファイル更新は以下の順序で行う。</p>
 <ol>
 <li>対象 JSON ファイルを読み込む</li>
 <li>JSON 構文と必須フィールドを検証する</li>
@@ -1889,25 +1946,31 @@ $ sudo systemctl stop asb</code></pre>
 <li>対象ファイルを truncate せず、同一ディレクトリ内の一時ファイルへ書き込む</li>
 <li><code>fsync</code> 後に atomic rename で置き換える</li>
 </ol>
-<p>実行時データは <code>storage.basePath</code> 配下にのみ保存し、開発リポジトリ配下を <code>storage.basePath</code> に指定してはならない。起動時に実行時データ用ディレクトリまたは JSON ファイルを自動生成してはならない。</p>
+<p>一時ファイル名は実行時データ領域内に限り使用できる。開発リポジトリ内へ一時ファイルを作成してはならない。</p>
+<p>保存失敗時は成功レスポンスを返してはならない。</p>
 <h4 id="13.14.6-起動時検証契約">13.14.6 起動時検証契約</h4>
-<p>起動時検証は HTTP サーバー起動前に完了する。検証失敗時は標準エラーへ単一行のエラーを出力し、終了コード <code>1</code> で終了する。</p>
+<p>起動時検証は HTTP サーバー起動前に完了する。</p>
+<p>以下のいずれかに該当する場合、ASB は起動失敗とする。</p>
 <ul>
-<li>設定ファイルが存在しない、JSON として不正、または未知フィールドが存在する</li>
-<li><code>storage.basePath</code> が存在しない、または開発リポジトリ配下を指す</li>
+<li>設定ファイルが存在しない</li>
+<li>設定ファイルが JSON として不正</li>
+<li>未知フィールドが存在する</li>
+<li><code>storage.basePath</code> が存在しない</li>
+<li><code>storage.basePath</code> が開発リポジトリ配下を指す</li>
 <li><code>config/</code>、<code>storage/</code>、<code>logs/</code>、<code>certs/</code> のいずれかが存在しない</li>
-<li>必須 JSON ファイルが存在しない、または JSON として不正</li>
+<li>必須 JSON ファイルが存在しない</li>
+<li>必須 JSON ファイルが JSON として不正</li>
 <li>読み込みまたは書き込み権限が不足する</li>
 <li>設定値が許容範囲外である</li>
 </ul>
-<h4 id="13.14.7-handler-service-entity-契約">13.14.7 Handler / Service / Entity 契約</h4>
-<ul>
-<li>Handler は HTTP 入出力、パス/クエリ/Body の取り出し、HTTP ステータス決定のみを担当する</li>
-<li>Handler は JSON ファイルを直接読み書きしてはならない</li>
-<li>Service はバリデーション、整合性確認、永続化操作、ドメインルール適用を担当する</li>
-<li>Entity は JSON 保存形式と API レスポンス形式に使う構造体を定義する</li>
-<li>Entity はファイル入出力、HTTP 入出力、時刻取得、ID生成を行ってはならない</li>
-</ul>
+<p>起動失敗時は標準エラーへ単一行のエラーを出力し、終了コード <code>1</code> で終了する。</p>
+<h4 id="13.14.7-handler--service--entity-契約">13.14.7 Handler / Service / Entity 契約</h4>
+<p>Handler は HTTP 入出力、パス/クエリ/Body の取り出し、HTTP ステータス決定のみを担当する。</p>
+<p>Handler は JSON ファイルを直接読み書きしてはならない。</p>
+<p>Service はバリデーション、整合性確認、永続化操作、ドメインルール適用を担当する。</p>
+<p>Entity は JSON 保存形式と API レスポンス形式に使う構造体を定義する。</p>
+<p>Entity はファイル入出力、HTTP 入出力、時刻取得、ID生成を行ってはならない。</p>
+<p>ID 生成、時刻取得、保存処理は Service に注入された依存関係を経由して行う。</p>
 <h4 id="13.14.8-機能別副作用契約">13.14.8 機能別副作用契約</h4>
 <div class="tbl-wrap"><table><thead>
 <tr><th>機能</th><th>読み込み</th><th>書き込み</th><th>削除</th></tr>
@@ -1923,8 +1986,9 @@ $ sudo systemctl stop asb</code></pre>
 <tr><td>Log API</td><td>logs</td><td>なし</td><td>なし</td></tr>
 </tbody></table></div>
 <p>複数ファイルにまたがる操作では、途中失敗時に成功レスポンスを返してはならない。</p>
+<p>途中失敗時はエラーログを記録し、可能な範囲で整合性検証を行う。</p>
 <h4 id="13.14.9-保留機能の実装禁止契約">13.14.9 保留機能の実装禁止契約</h4>
-<p>Rev.31 時点では以下を実装してはならない。</p>
+<p>Rev.32 時点では以下を実装してはならない。</p>
 <ul>
 <li>SDK</li>
 <li>SDK 専用プロトコル</li>
@@ -1971,68 +2035,69 @@ $ sudo systemctl stop asb</code></pre>
 </ul>
 <p>上記を実装する場合は、先に <code>ASB-spec.md</code> を改訂し、確定仕様として昇格させる。</p>
 <h3 id="13.15-実装詳細固定仕様">13.15 実装詳細固定仕様</h3>
-<p>本節は Rev.31 時点で実装時に固定する詳細仕様である。</p>
+<p>本節は Rev.32 時点で実装時に固定する詳細仕様である。</p>
 <h4 id="13.15.1-api-エンドポイント固定表">13.15.1 API エンドポイント固定表</h4>
 <div class="tbl-wrap"><table><thead>
-<tr><th>機能</th><th>Method</th><th>Path</th><th>Body</th><th>Query</th><th>成功</th><th>主な失敗</th></tr>
+<tr><th>API</th><th>Method</th><th>Path</th><th>Body</th><th>Query</th><th>成功</th><th>主な失敗</th></tr>
 </thead><tbody>
-<tr><td>Project 作成</td><td>POST</td><td><code>/api/projects</code></td><td><code>{"name":string,"quota":number?}</code></td><td>なし</td><td>201</td><td>400, 409, 500</td></tr>
-<tr><td>Project 一覧</td><td>GET</td><td><code>/api/projects</code></td><td>なし</td><td>なし</td><td>200</td><td>500</td></tr>
-<tr><td>Project 削除</td><td>DELETE</td><td><code>/api/projects/:id</code></td><td>なし</td><td>なし</td><td>200</td><td>400, 404, 500</td></tr>
-<tr><td>Domain 追加</td><td>POST</td><td><code>/api/projects/:id/domains</code></td><td><code>{"domain":string}</code></td><td>なし</td><td>201</td><td>400, 404, 409, 500</td></tr>
-<tr><td>Domain 一覧</td><td>GET</td><td><code>/api/projects/:id/domains</code></td><td>なし</td><td>なし</td><td>200</td><td>400, 404, 500</td></tr>
-<tr><td>Domain 削除</td><td>DELETE</td><td><code>/api/projects/:id/domains/:domain</code></td><td>なし</td><td>なし</td><td>200</td><td>400, 404, 500</td></tr>
-<tr><td>File upload</td><td>POST</td><td><code>/api/projects/:id/files/upload</code></td><td><code>multipart/form-data</code></td><td>なし</td><td>201</td><td>400, 404, 413, 500</td></tr>
-<tr><td>File 一覧</td><td>GET</td><td><code>/api/projects/:id/files</code></td><td>なし</td><td>なし</td><td>200</td><td>400, 404, 500</td></tr>
-<tr><td>File 削除</td><td>DELETE</td><td><code>/api/projects/:id/files/:name</code></td><td>なし</td><td>なし</td><td>200</td><td>400, 404, 500</td></tr>
-<tr><td>Backup 一覧</td><td>GET</td><td><code>/api/backups</code></td><td>なし</td><td>なし</td><td>200</td><td>500</td></tr>
-<tr><td>Backup 復旧</td><td>POST</td><td><code>/api/backups/restore/:id</code></td><td>なし</td><td>なし</td><td>200</td><td>404, 409, 500</td></tr>
-<tr><td>Monitoring</td><td>GET</td><td><code>/api/monitoring/stats</code></td><td>なし</td><td>なし</td><td>200</td><td>500</td></tr>
-<tr><td>Access Log</td><td>GET</td><td><code>/api/logs/access</code></td><td>なし</td><td><code>limit</code>, <code>offset</code></td><td>200</td><td>400, 500</td></tr>
-<tr><td>Error Log</td><td>GET</td><td><code>/api/logs/error</code></td><td>なし</td><td><code>limit</code>, <code>offset</code></td><td>200</td><td>400, 500</td></tr>
-<tr><td>GitHub Webhook</td><td>POST</td><td><code>/api/webhook/github</code></td><td>GitHub Push payload</td><td>なし</td><td>200</td><td>400, 401, 500</td></tr>
+<tr><td>Project 作成</td><td>POST</td><td><code>/api/projects</code></td><td><code>{&quot;name&quot;:string,&quot;quota&quot;:number?}</code></td><td>なし</td><td>201 Project</td><td>400, 409, 500</td></tr>
+<tr><td>Project 一覧</td><td>GET</td><td><code>/api/projects</code></td><td>なし</td><td>なし</td><td>200 <code>{projects:[]}</code></td><td>500</td></tr>
+<tr><td>Project 削除</td><td>DELETE</td><td><code>/api/projects/:id</code></td><td>なし</td><td>なし</td><td>200 <code>{status,projectId,deletedAt}</code></td><td>404, 500</td></tr>
+<tr><td>Domain 追加</td><td>POST</td><td><code>/api/projects/:id/domains</code></td><td><code>{&quot;domain&quot;:string}</code></td><td>なし</td><td>201 Domain</td><td>400, 404, 409, 500</td></tr>
+<tr><td>Domain 一覧</td><td>GET</td><td><code>/api/projects/:id/domains</code></td><td>なし</td><td>なし</td><td>200 <code>{domains:[]}</code></td><td>404, 500</td></tr>
+<tr><td>Domain 削除</td><td>DELETE</td><td><code>/api/projects/:id/domains/:domain</code></td><td>なし</td><td>なし</td><td>200 <code>{status,projectId,domain,deletedAt}</code></td><td>404, 500</td></tr>
+<tr><td>File upload</td><td>POST</td><td><code>/api/projects/:id/files/upload</code></td><td>multipart <code>file</code></td><td>なし</td><td>201 File</td><td>400, 404, 413, 500</td></tr>
+<tr><td>File 一覧</td><td>GET</td><td><code>/api/projects/:id/files</code></td><td>なし</td><td>なし</td><td>200 <code>{files:[]}</code></td><td>404, 500</td></tr>
+<tr><td>File 削除</td><td>DELETE</td><td><code>/api/projects/:id/files/:name</code></td><td>なし</td><td>なし</td><td>200 <code>{status,projectId,fileName,deletedAt}</code></td><td>404, 500</td></tr>
+<tr><td>Backup 一覧</td><td>GET</td><td><code>/api/backups</code></td><td>なし</td><td>なし</td><td>200 <code>{backups:[]}</code></td><td>500</td></tr>
+<tr><td>Backup 復旧</td><td>POST</td><td><code>/api/backups/restore/:id</code></td><td>なし</td><td>なし</td><td>200 <code>{status,backupId,restoredAt}</code></td><td>404, 409, 500</td></tr>
+<tr><td>Monitoring</td><td>GET</td><td><code>/api/monitoring/stats</code></td><td>なし</td><td>なし</td><td>200 Monitoring</td><td>500</td></tr>
+<tr><td>Access log</td><td>GET</td><td><code>/api/logs/access</code></td><td>なし</td><td><code>limit</code>,<code>offset</code></td><td>200 <code>{logs:[]}</code></td><td>400, 500</td></tr>
+<tr><td>Error log</td><td>GET</td><td><code>/api/logs/error</code></td><td>なし</td><td><code>limit</code>,<code>offset</code></td><td>200 <code>{logs:[]}</code></td><td>400, 500</td></tr>
+<tr><td>GitHub Webhook</td><td>POST</td><td><code>/api/webhook/github</code></td><td>GitHub Push JSON</td><td>なし</td><td>200 <code>{status}</code></td><td>400, 500</td></tr>
 </tbody></table></div>
-<ul>
-<li><code>:id</code> は UUID 形式のみ許可する</li>
-<li><code>:domain</code> は URL decode 後に小文字正規化し、ドメイン仕様で検証する</li>
-<li><code>:name</code> は URL decode 後に検証し、パス区切り文字を含む場合は拒否する</li>
-<li><code>limit</code> はデフォルト100、最小1、最大1000とする</li>
-<li><code>offset</code> はデフォルト0、最小0とする</li>
-<li><code>limit</code> または <code>offset</code> が整数として解釈できない場合は <code>400 Bad Request</code> とする</li>
-<li><code>limit</code> が <code>1</code> 未満または <code>1000</code> を超える場合は <code>400 Bad Request</code> とする</li>
-<li><code>offset</code> が <code>0</code> 未満の場合は <code>400 Bad Request</code> とする</li>
-</ul>
+<p><code>:id</code> は UUID 形式の文字列のみ許可する。</p>
+<p><code>:domain</code> は URL decode 後に小文字正規化し、ドメイン検証を行う。</p>
+<p><code>:name</code> は URL decode 後にファイル名検証を行い、パス区切り文字を含む値は拒否する。</p>
+<p><code>limit</code> は未指定時 <code>100</code>、最小 <code>1</code>、最大 <code>1000</code> とする。</p>
+<p><code>offset</code> は未指定時 <code>0</code>、最小 <code>0</code> とする。</p>
+<p><code>limit</code> または <code>offset</code> が整数として解釈できない場合は <code>400 Bad Request</code> とする。</p>
+<p><code>limit</code> が <code>1</code> 未満または <code>1000</code> を超える場合は <code>400 Bad Request</code> とする。</p>
+<p><code>offset</code> が <code>0</code> 未満の場合は <code>400 Bad Request</code> とする。</p>
 <h4 id="13.15.2-設定値固定表">13.15.2 設定値固定表</h4>
 <div class="tbl-wrap"><table><thead>
-<tr><th>項目</th><th>型</th><th>デフォルト</th><th>許容範囲</th><th>必須</th></tr>
+<tr><th>設定</th><th>必須</th><th>デフォルト</th><th>許容範囲</th><th>起動失敗条件</th></tr>
 </thead><tbody>
-<tr><td><code>server.port</code></td><td>int</td><td>3000</td><td>1-65535</td><td>No</td></tr>
-<tr><td><code>server.host</code></td><td>string</td><td>localhost</td><td>空文字禁止</td><td>No</td></tr>
-<tr><td><code>server.shutdownTimeout</code></td><td>int</td><td>30</td><td>1-300秒</td><td>No</td></tr>
-<tr><td><code>storage.basePath</code></td><td>string</td><td>/var/asb</td><td>絶対パス、開発リポジトリ配下禁止</td><td>No</td></tr>
-<tr><td><code>storage.maxProjectSize</code></td><td>number</td><td>1073741824</td><td>104857600-1099511627776</td><td>No</td></tr>
-<tr><td><code>ssl.email</code></td><td>string</td><td>admin@example.com</td><td>空文字禁止</td><td>No</td></tr>
-<tr><td><code>ssl.renewBefore</code></td><td>int</td><td>7776000</td><td>86400-15552000秒</td><td>No</td></tr>
-<tr><td><code>log.level</code></td><td>string</td><td>info</td><td>debug/info/warn/error</td><td>No</td></tr>
-<tr><td><code>log.format</code></td><td>string</td><td>json</td><td>json 固定</td><td>No</td></tr>
-<tr><td><code>log.maxSize</code></td><td>number</td><td>104857600</td><td>1048576-1073741824</td><td>No</td></tr>
-<tr><td><code>deploy.projectId</code></td><td>string</td><td>空文字</td><td>UUID形式または空文字</td><td>No</td></tr>
-<tr><td><code>deploy.sourcePath</code></td><td>string</td><td>/srv/asb/source</td><td>絶対パス、Git worktree</td><td>No</td></tr>
-<tr><td><code>deploy.branch</code></td><td>string</td><td>main</td><td>空文字、空白、<code>..</code> 禁止</td><td>No</td></tr>
-<tr><td><code>webhook.githubSecret</code></td><td>string</td><td>空文字</td><td>文字列</td><td>No</td></tr>
+<tr><td><code>server.port</code></td><td>任意</td><td><code>3000</code></td><td><code>1</code>-<code>65535</code></td><td>範囲外、数値以外</td></tr>
+<tr><td><code>server.host</code></td><td>任意</td><td><code>localhost</code></td><td><code>localhost</code>、<code>127.0.0.1</code>、<code>0.0.0.0</code></td><td>空文字、許可外</td></tr>
+<tr><td><code>server.shutdownTimeout</code></td><td>任意</td><td><code>30</code></td><td><code>1</code>-<code>300</code> 秒</td><td>範囲外、数値以外</td></tr>
+<tr><td><code>storage.basePath</code></td><td>任意</td><td><code>/var/asb</code></td><td>絶対パス</td><td>相対パス、開発リポジトリ配下</td></tr>
+<tr><td><code>storage.maxProjectSize</code></td><td>任意</td><td><code>1073741824</code></td><td><code>104857600</code>-<code>1099511627776</code></td><td>範囲外、数値以外</td></tr>
+<tr><td><code>ssl.email</code></td><td>任意</td><td><code>admin@example.com</code></td><td>email 形式</td><td>形式不正</td></tr>
+<tr><td><code>ssl.renewBefore</code></td><td>任意</td><td><code>7776000</code></td><td><code>86400</code>-<code>15552000</code> 秒</td><td>範囲外、数値以外</td></tr>
+<tr><td><code>log.level</code></td><td>任意</td><td><code>info</code></td><td><code>debug</code>,<code>info</code>,<code>warn</code>,<code>error</code></td><td>許可外</td></tr>
+<tr><td><code>log.format</code></td><td>任意</td><td><code>json</code></td><td><code>json</code></td><td><code>json</code> 以外</td></tr>
+<tr><td><code>log.maxSize</code></td><td>任意</td><td><code>104857600</code></td><td><code>1048576</code>-<code>1073741824</code></td><td>範囲外、数値以外</td></tr>
+<tr><td><code>deploy.projectId</code></td><td>任意</td><td>空文字</td><td>UUID形式または空文字</td><td>UUID形式以外</td></tr>
+<tr><td><code>deploy.sourcePath</code></td><td>任意</td><td><code>/srv/asb/source</code></td><td>絶対パス</td><td>相対パス、存在しない、Git worktreeでない</td></tr>
+<tr><td><code>deploy.branch</code></td><td>任意</td><td><code>main</code></td><td>Git ref name</td><td>空文字、空白文字を含む、<code>..</code> を含む</td></tr>
+<tr><td><code>webhook.githubSecret</code></td><td>任意</td><td>空文字</td><td>文字列</td><td>文字列以外</td></tr>
 </tbody></table></div>
-<p>未知フィールドが存在する場合は起動失敗とする。省略可能項目はデフォルト値を適用してから検証する。</p>
+<p>設定ファイルに未知フィールドがある場合は起動失敗とする。</p>
+<p>任意項目が未指定の場合はデフォルト値を適用する。</p>
 <h4 id="13.15.3-json-ファイル固定仕様">13.15.3 JSON ファイル固定仕様</h4>
 <div class="tbl-wrap"><table><thead>
-<tr><th>ファイル</th><th>空状態</th><th>必須フィールド</th><th>所有責務</th><th>用途</th></tr>
+<tr><th>ファイル</th><th>空状態</th><th>必須トップレベル</th><th>更新主体</th><th>備考</th></tr>
 </thead><tbody>
-<tr><td><code>config/projects.json</code></td><td><code>{"projects":[]}</code></td><td><code>projects</code></td><td>Project Service</td><td>プロジェクト一覧</td></tr>
-<tr><td><code>config/domains.json</code></td><td><code>{"domains":[]}</code></td><td><code>domains</code></td><td>Domain Service</td><td>ドメイン割当</td></tr>
-<tr><td><code>config/backups.json</code></td><td><code>{"backups":[]}</code></td><td><code>backups</code></td><td>Backup Service</td><td><code>createdAt</code> 降順で保存。<code>path</code> は <code>storage.basePath</code> からの相対パス</td></tr>
-<tr><td><code>storage/projects/:projectId/files.json</code></td><td><code>{"files":[]}</code></td><td><code>files</code></td><td>File Service</td><td>ファイルメタデータ</td></tr>
-<tr><td><code>config/webhooks.json</code></td><td><code>{"events":[]}</code></td><td><code>events</code></td><td>Webhook Service</td><td>冪等キー、処理状態、失敗コード</td></tr>
+<tr><td><code>config/projects.json</code></td><td><code>{&quot;projects&quot;:[]}</code></td><td><code>projects</code></td><td>Project Service</td><td>Project 配列を <code>createdAt</code> 昇順で保存</td></tr>
+<tr><td><code>config/domains.json</code></td><td><code>{&quot;domains&quot;:[]}</code></td><td><code>domains</code></td><td>Domain Service</td><td><code>domain</code> は小文字で保存</td></tr>
+<tr><td><code>config/backups.json</code></td><td><code>{&quot;backups&quot;:[]}</code></td><td><code>backups</code></td><td>Backup Service</td><td><code>createdAt</code> 降順で保存。<code>path</code> は <code>storage.basePath</code> からの相対パス</td></tr>
+<tr><td><code>storage/projects/:projectId/files.json</code></td><td><code>{&quot;files&quot;:[]}</code></td><td><code>files</code></td><td>File Service</td><td><code>name</code> 昇順で保存</td></tr>
+<tr><td><code>config/webhooks.json</code></td><td><code>{&quot;events&quot;:[]}</code></td><td><code>events</code></td><td>Webhook Service</td><td>冪等キー、処理状態、失敗コードを保存</td></tr>
 </tbody></table></div>
-<p>上記ファイルは起動時に存在していなければならない。ASB は起動時に自動生成しない。実行時データはすべて JSON ファイルベースとし、外部DBを使用しない。</p>
+<p>上記 JSON ファイルは起動時に存在していなければならない。</p>
+<p>ASB は上記 JSON ファイルを起動時に作成しない。</p>
+<p><code>config/webhooks.json</code> は Webhook 冪等性管理に使用する実行時 JSON ファイルであり、外部DBを使用しない。</p>
 <h4 id="13.15.4-静的配信固定仕様">13.15.4 静的配信固定仕様</h4>
 <p>静的配信は API パスに一致しない HTTP リクエストのうち、<code>GET</code> または <code>HEAD</code> のみ対象とする。</p>
 <p>API パスとは <code>/api/</code> で始まるパスを指す。</p>
@@ -2076,46 +2141,44 @@ $ sudo systemctl stop asb</code></pre>
 <p>読み込み権限不足、ファイル情報取得失敗、読み込み途中失敗は <code>500 Internal Server Error</code> とする。</p>
 <p>静的配信レスポンスの <code>Content-Type</code> は、Go 標準ライブラリの拡張子判定を優先し、判定不能な場合は先頭512 bytesによる判定を行う。なお判定不能な場合は <code>application/octet-stream</code> とする。</p>
 <p><code>HEAD</code> は <code>GET</code> と同じヘッダーを返し、レスポンスボディを返してはならない。</p>
-<p><code>ETag</code> は <code>"{size}-{unixModifiedTime}"</code> 形式の弱い validator とし、レスポンスでは <code>W/"{size}-{unixModifiedTime}"</code> として返す。</p>
+<p><code>ETag</code> は <code>&quot;{size}-{unixModifiedTime}&quot;</code> 形式の弱い validator とし、レスポンスでは <code>W/&quot;{size}-{unixModifiedTime}&quot;</code> として返す。</p>
 <p><code>Last-Modified</code> は対象ファイルの更新時刻を HTTP-date 形式で返す。</p>
 <p><code>Cache-Control</code> は既定で <code>public, max-age=60</code> とする。</p>
 <p><code>If-None-Match</code> が <code>ETag</code> と一致する場合は <code>304 Not Modified</code> を返す。</p>
 <p><code>If-Modified-Since</code> が <code>Last-Modified</code> 以降の場合は <code>304 Not Modified</code> を返す。</p>
 <p><code>304 Not Modified</code> ではレスポンスボディを返してはならない。</p>
-<p>Range request は Rev.31 時点では実装しない。</p>
+<p>Range request は Rev.32 時点では実装しない。</p>
 <p><code>Range</code> ヘッダーを受信した場合も無視し、通常の <code>200 OK</code> または <code>304 Not Modified</code> 判定を行う。</p>
 <p>Gzip 圧縮済みファイルを返す場合は <code>Content-Encoding: gzip</code> を設定する。</p>
 <p>静的配信処理は開発リポジトリ内に配信用一時ファイル、キャッシュファイル、ログ以外の実行時データを作成してはならない。</p>
 <h4 id="13.15.5-webhook-固定仕様">13.15.5 Webhook 固定仕様</h4>
-<ul>
-<li>GitHub Webhook は Push イベントのみ処理する</li>
-<li><code>X-GitHub-Event</code> が <code>push</code> 以外の場合は <code>200 OK</code> とし、<code>{"status":"ignored"}</code> を返す</li>
-<li>対象ブランチは <code>deploy.branch</code> で指定する</li>
-<li>対象外ブランチの場合は <code>200 OK</code> とし、<code>{"status":"ignored"}</code> を返す</li>
-<li><code>webhook.githubSecret</code> が空文字でない場合は、<code>X-Hub-Signature-256</code> を必須とする</li>
-<li>署名ヘッダーは <code>sha256=&lt;hex&gt;</code> 形式のみ許可する</li>
-<li>署名検証はリクエストBodyの生バイト列に対してHMAC-SHA256を計算し、<code>hmac.Equal</code> で比較する</li>
-<li>署名ヘッダーが存在しない、形式不正、または署名不一致の場合は <code>401 Unauthorized</code> とし、<code>ERR_WEBHOOK_SIGNATURE_INVALID</code> を返す</li>
-<li><code>webhook.githubSecret</code> が空文字の場合、署名ヘッダーの有無にかかわらず署名検証を行わない</li>
-<li>デプロイ元は <code>deploy.sourcePath</code> のローカルcheckoutに限定する</li>
-<li>デプロイ先Projectは <code>deploy.projectId</code> で指定する</li>
-<li><code>deploy.projectId</code> が空文字の場合は <code>ERR_WEBHOOK_PROJECT_NOT_CONFIGURED</code> を返す</li>
-<li>GitHub Push payload の <code>repository.clone_url</code>、<code>repository.ssh_url</code>、<code>repository.html_url</code> から clone、fetch、pull してはならない</li>
-<li>Webhook処理はネットワーク越しにGit操作を行ってはならない</li>
-<li><code>deploy.sourcePath</code> が存在しない、Git worktreeでない、または <code>after</code> commit を参照できない場合は <code>ERR_WEBHOOK_SOURCE_INVALID</code> を返す</li>
-<li>静的コンテンツ反映元は <code>deploy.sourcePath</code> の <code>after</code> commit 時点のファイルツリーとする</li>
-<li>Rev.31 時点では、Webhookデプロイ時の対象ファイルパスはリポジトリルート配下の全静的ファイルとする</li>
-<li><code>.git/</code>、<code>.github/</code>、<code>AGENTS.md</code>、<code>ASB-spec.md</code>、<code>ASB-spec.html</code>、<code>IMPLEMENTATION_TASKS.md</code>、<code>DOCUMENT_INDEX.md</code>、<code>README.md</code> は配信対象から除外する</li>
-<li>デプロイ先は対象Projectの <code>storage/projects/:projectId/contents/</code> 配下に限定する</li>
-<li>Webhookデプロイは開発リポジトリ内へ実行時データ、一時ファイル、ログファイルを作成してはならない</li>
-<li>冪等キーは <code>branch + ":" + after</code> とする</li>
-<li>同一冪等キーが <code>config/webhooks.json</code> に存在する場合は <code>200 OK</code> とし、<code>{"status":"duplicate"}</code> を返す</li>
-<li>Webhook 処理完了後に処理状態を <code>config/webhooks.json</code> へ保存する</li>
-<li>成功時の <code>status</code> は <code>deployed</code> とする</li>
-<li>失敗時の <code>status</code> は <code>failed</code> とし、<code>errorCode</code> を保存する</li>
-<li>Webhook失敗時の自動リトライは Rev.31 時点では実装しない</li>
-<li>GitHub側から同一イベントが再送された場合は、<code>config/webhooks.json</code> の既存イベントにより重複判定する</li>
-</ul>
+<p>GitHub Webhook は <code>push</code> event のみ処理する。</p>
+<p><code>X-GitHub-Event</code> が <code>push</code> 以外の場合は <code>200 OK</code> とし、<code>{&quot;status&quot;:&quot;ignored&quot;}</code> を返す。</p>
+<p>対象ブランチは <code>deploy.branch</code> で指定する。</p>
+<p>対象外ブランチの場合は <code>200 OK</code> とし、<code>{&quot;status&quot;:&quot;ignored&quot;}</code> を返す。</p>
+<p><code>webhook.githubSecret</code> が空文字でない場合は、<code>X-Hub-Signature-256</code> を必須とする。</p>
+<p>署名ヘッダーは <code>sha256=&lt;hex&gt;</code> 形式のみ許可する。</p>
+<p>署名検証はリクエストBodyの生バイト列に対してHMAC-SHA256を計算し、<code>hmac.Equal</code> で比較する。</p>
+<p>署名ヘッダーが存在しない、形式不正、または署名不一致の場合は <code>401 Unauthorized</code> とし、<code>ERR_WEBHOOK_SIGNATURE_INVALID</code> を返す。</p>
+<p><code>webhook.githubSecret</code> が空文字の場合、署名ヘッダーの有無にかかわらず署名検証を行わない。</p>
+<p>デプロイ元は <code>deploy.sourcePath</code> のローカルcheckoutに限定する。</p>
+<p>デプロイ先Projectは <code>deploy.projectId</code> で指定する。</p>
+<p><code>deploy.projectId</code> が空文字の場合は <code>ERR_WEBHOOK_PROJECT_NOT_CONFIGURED</code> を返す。</p>
+<p>GitHub Push payload の <code>repository.clone_url</code>、<code>repository.ssh_url</code>、<code>repository.html_url</code> から clone、fetch、pull してはならない。</p>
+<p>Webhook処理はネットワーク越しにGit操作を行ってはならない。</p>
+<p><code>deploy.sourcePath</code> が存在しない、Git worktreeでない、または <code>after</code> commit を参照できない場合は <code>ERR_WEBHOOK_SOURCE_INVALID</code> を返す。</p>
+<p>静的コンテンツ反映元は <code>deploy.sourcePath</code> の <code>after</code> commit 時点のファイルツリーとする。</p>
+<p>Rev.32 時点では、Webhookデプロイ時の対象ファイルパスはリポジトリルート配下の全静的ファイルとする。</p>
+<p><code>.git/</code>、<code>.github/</code>、<code>AGENTS.md</code>、<code>ASB-spec.md</code>、<code>ASB-spec.html</code>、<code>IMPLEMENTATION_TASKS.md</code>、<code>DOCUMENT_INDEX.md</code>、<code>README.md</code> は配信対象から除外する。</p>
+<p>デプロイ先は対象Projectの <code>storage/projects/:projectId/contents/</code> 配下に限定する。</p>
+<p>Webhookデプロイは開発リポジトリ内へ実行時データ、一時ファイル、ログファイルを作成してはならない。</p>
+<p>冪等キーは <code>branch + &quot;:&quot; + after</code> とする。</p>
+<p>同一冪等キーが <code>config/webhooks.json</code> に存在する場合は <code>200 OK</code> とし、<code>{&quot;status&quot;:&quot;duplicate&quot;}</code> を返す。</p>
+<p>Webhook 処理完了後に処理状態を <code>config/webhooks.json</code> へ保存する。</p>
+<p>成功時の <code>status</code> は <code>deployed</code> とする。</p>
+<p>失敗時の <code>status</code> は <code>failed</code> とし、<code>errorCode</code> を保存する。</p>
+<p>Webhook失敗時の自動リトライは Rev.32 時点では実装しない。</p>
+<p>GitHub側から同一イベントが再送された場合は、<code>config/webhooks.json</code> の既存イベントにより重複判定する。</p>
 <p>Webhookデプロイ処理順序は以下に固定する。</p>
 <ol>
 <li><code>X-GitHub-Event</code> を確認する</li>
@@ -2153,119 +2216,115 @@ $ sudo systemctl stop asb</code></pre>
 <li>開発リポジトリ内に実行時データ、一時ファイル、ログファイルを作成しない</li>
 </ul>
 <h4 id="13.15.6-実装順序固定">13.15.6 実装順序固定</h4>
+<p>初期実装は以下の順序で進める。</p>
 <ol>
-<li>設定読み込み、デフォルト適用、起動時検証</li>
-<li>JSON ファイル読み込み、検証、排他、atomic save</li>
-<li>HTTP サーバー、ルーティング、共通レスポンス</li>
-<li>Project API</li>
-<li>File API と静的配信</li>
-<li>Domain API</li>
-<li>Log API と Monitoring API</li>
-<li>Backup API と Restore</li>
-<li>GitHub Webhook</li>
+<li><code>config</code> package と起動時検証</li>
+<li>JSON 保存基盤</li>
+<li><code>server</code> package と共通HTTPレスポンス</li>
+<li>Project Service / Handler</li>
+<li>File Service / Handler と静的配信</li>
+<li>Domain Service / Handler</li>
+<li>Log / Monitoring</li>
+<li>Backup / Restore</li>
+<li>Webhook</li>
 <li>SSL 管理境界</li>
 </ol>
-<p>各段階は <code>go test ./...</code> が通る単位で完了させる。</p>
+<p>各段階は <code>go test ./...</code> が成功する状態で次へ進む。</p>
 <h3 id="13.16-入出力契約固定仕様">13.16 入出力契約固定仕様</h3>
-<p>本節は Rev.31 時点で API、JSON保存、ログ、起動時検証の入出力を固定する仕様である。</p>
+<p>本節は Rev.32 時点で API、JSON保存、ログ、起動時検証の入出力を固定する仕様である。</p>
 <h4 id="13.16.1-共通成功レスポンス契約">13.16.1 共通成功レスポンス契約</h4>
-<ul>
-<li>成功レスポンスは常に JSON object とする</li>
-<li>成功レスポンスの <code>Content-Type</code> は <code>application/json; charset=utf-8</code> とする</li>
-<li>成功レスポンス内の日時は UTC RFC3339 秒精度とする</li>
-<li>成功レスポンス内のIDは UUID 文字列とする</li>
-<li>配列レスポンスは対象キーを必ず含め、対象データが空の場合は空配列を返す</li>
-</ul>
+<p>成功レスポンスは常に JSON object とする。</p>
+<p>成功レスポンスの <code>Content-Type</code> は <code>application/json; charset=utf-8</code> とする。</p>
+<p>成功レスポンス内の日時は UTC RFC3339 秒精度とする。</p>
+<p>成功レスポンス内のIDは UUID 文字列とする。</p>
+<p>配列レスポンスは対象キーを必ず含め、対象データが空の場合は空配列を返す。</p>
 <h4 id="13.16.2-api-成功レスポンス固定表">13.16.2 API 成功レスポンス固定表</h4>
 <div class="tbl-wrap"><table><thead>
 <tr><th>API</th><th>HTTP</th><th>固定レスポンス</th></tr>
 </thead><tbody>
-<tr><td>Project 作成</td><td>201</td><td><code>{"id":string,"name":string,"quota":number,"used":number,"domains":[],"createdAt":string}</code></td></tr>
-<tr><td>Project 一覧</td><td>200</td><td><code>{"projects":[Project...]}</code></td></tr>
-<tr><td>Project 削除</td><td>200</td><td><code>{"status":"deleted","projectId":string,"deletedAt":string}</code></td></tr>
-<tr><td>Domain 追加</td><td>201</td><td><code>{"domain":string,"projectId":string,"isCustom":true,"sslCert":string,"createdAt":string}</code></td></tr>
-<tr><td>Domain 一覧</td><td>200</td><td><code>{"domains":[Domain...]}</code></td></tr>
-<tr><td>Domain 削除</td><td>200</td><td><code>{"status":"deleted","projectId":string,"domain":string,"deletedAt":string}</code></td></tr>
-<tr><td>File upload</td><td>201</td><td><code>{"id":string,"projectId":string,"name":string,"size":number,"path":string,"uploadedAt":string}</code></td></tr>
-<tr><td>File 一覧</td><td>200</td><td><code>{"files":[File...]}</code></td></tr>
-<tr><td>File 削除</td><td>200</td><td><code>{"status":"deleted","projectId":string,"fileName":string,"deletedAt":string}</code></td></tr>
-<tr><td>Backup 一覧</td><td>200</td><td><code>{"backups":[Backup...]}</code></td></tr>
-<tr><td>Backup 復旧</td><td>200</td><td><code>{"status":"restored","backupId":string,"restoredAt":string}</code></td></tr>
-<tr><td>Monitoring</td><td>200</td><td><code>{"cpu":number|null,"memory":number|null,"disk":number|null,"connections":number|null,"requests":number|null,"checkedAt":string}</code></td></tr>
-<tr><td>Access log</td><td>200</td><td><code>{"logs":[AccessLog...],"limit":number,"offset":number}</code></td></tr>
-<tr><td>Error log</td><td>200</td><td><code>{"logs":[ErrorLog...],"limit":number,"offset":number}</code></td></tr>
-<tr><td>GitHub Webhook 処理</td><td>200</td><td><code>{"status":"deployed","branch":string,"after":string,"processedAt":string}</code></td></tr>
-<tr><td>GitHub Webhook 無視</td><td>200</td><td><code>{"status":"ignored","reason":string}</code></td></tr>
-<tr><td>GitHub Webhook 重複</td><td>200</td><td><code>{"status":"duplicate","key":string}</code></td></tr>
+<tr><td>Project 作成</td><td>201</td><td><code>{&quot;id&quot;:string,&quot;name&quot;:string,&quot;quota&quot;:number,&quot;used&quot;:number,&quot;domains&quot;:[],&quot;createdAt&quot;:string}</code></td></tr>
+<tr><td>Project 一覧</td><td>200</td><td><code>{&quot;projects&quot;:[Project...]}</code></td></tr>
+<tr><td>Project 削除</td><td>200</td><td><code>{&quot;status&quot;:&quot;deleted&quot;,&quot;projectId&quot;:string,&quot;deletedAt&quot;:string}</code></td></tr>
+<tr><td>Domain 追加</td><td>201</td><td><code>{&quot;domain&quot;:string,&quot;projectId&quot;:string,&quot;isCustom&quot;:true,&quot;sslCert&quot;:string,&quot;createdAt&quot;:string}</code></td></tr>
+<tr><td>Domain 一覧</td><td>200</td><td><code>{&quot;domains&quot;:[Domain...]}</code></td></tr>
+<tr><td>Domain 削除</td><td>200</td><td><code>{&quot;status&quot;:&quot;deleted&quot;,&quot;projectId&quot;:string,&quot;domain&quot;:string,&quot;deletedAt&quot;:string}</code></td></tr>
+<tr><td>File upload</td><td>201</td><td><code>{&quot;id&quot;:string,&quot;projectId&quot;:string,&quot;name&quot;:string,&quot;size&quot;:number,&quot;path&quot;:string,&quot;uploadedAt&quot;:string}</code></td></tr>
+<tr><td>File 一覧</td><td>200</td><td><code>{&quot;files&quot;:[File...]}</code></td></tr>
+<tr><td>File 削除</td><td>200</td><td><code>{&quot;status&quot;:&quot;deleted&quot;,&quot;projectId&quot;:string,&quot;fileName&quot;:string,&quot;deletedAt&quot;:string}</code></td></tr>
+<tr><td>Backup 一覧</td><td>200</td><td><code>{&quot;backups&quot;:[Backup...]}</code></td></tr>
+<tr><td>Backup 復旧</td><td>200</td><td><code>{&quot;status&quot;:&quot;restored&quot;,&quot;backupId&quot;:string,&quot;restoredAt&quot;:string}</code></td></tr>
+<tr><td>Monitoring</td><td>200</td><td>`{&quot;cpu&quot;:number</td><td>null,&quot;memory&quot;:number</td><td>null,&quot;disk&quot;:number</td><td>null,&quot;connections&quot;:number</td><td>null,&quot;requests&quot;:number</td><td>null,&quot;checkedAt&quot;:string}`</td></tr>
+<tr><td>Access log</td><td>200</td><td><code>{&quot;logs&quot;:[AccessLog...],&quot;limit&quot;:number,&quot;offset&quot;:number}</code></td></tr>
+<tr><td>Error log</td><td>200</td><td><code>{&quot;logs&quot;:[ErrorLog...],&quot;limit&quot;:number,&quot;offset&quot;:number}</code></td></tr>
+<tr><td>GitHub Webhook 処理</td><td>200</td><td><code>{&quot;status&quot;:&quot;deployed&quot;,&quot;branch&quot;:string,&quot;after&quot;:string,&quot;processedAt&quot;:string}</code></td></tr>
+<tr><td>GitHub Webhook 無視</td><td>200</td><td><code>{&quot;status&quot;:&quot;ignored&quot;,&quot;reason&quot;:string}</code></td></tr>
+<tr><td>GitHub Webhook 重複</td><td>200</td><td><code>{&quot;status&quot;:&quot;duplicate&quot;,&quot;key&quot;:string}</code></td></tr>
 </tbody></table></div>
 <h4 id="13.16.3-共通エラーレスポンス契約">13.16.3 共通エラーレスポンス契約</h4>
 <p>エラーレスポンスは常に以下の JSON object とする。</p>
 <pre><code>{
-  "error": "string",
-  "code": "string",
-  "timestamp": "2026-09-08T00:00:00Z",
-  "httpStatus": 400
+  &quot;error&quot;: &quot;string&quot;,
+  &quot;code&quot;: &quot;string&quot;,
+  &quot;timestamp&quot;: &quot;2026-09-08T00:00:00Z&quot;,
+  &quot;httpStatus&quot;: 400
 }</code></pre>
-<ul>
-<li><code>error</code> は利用者向けの短い英語メッセージとする</li>
-<li><code>code</code> は <code>8.7 エラーハンドリング</code> のエラーコード定義に存在する値のみ許可する</li>
-<li><code>timestamp</code> は UTC RFC3339 秒精度とする</li>
-<li><code>httpStatus</code> は実際の HTTP ステータスコードと一致させる</li>
-<li>内部ファイルパス、スタックトレース、環境変数、シークレット、OSユーザー名を含めてはならない</li>
-</ul>
+<p><code>error</code> は利用者向けの短い英語メッセージとする。</p>
+<p><code>code</code> は <code>8.7 エラーハンドリング</code> のエラーコード定義に存在する値のみ許可する。</p>
+<p><code>timestamp</code> は UTC RFC3339 秒精度とする。</p>
+<p><code>httpStatus</code> は実際の HTTP ステータスコードと一致させる。</p>
+<p>エラーレスポンスに内部ファイルパス、スタックトレース、環境変数、シークレット、OSユーザー名を含めてはならない。</p>
 <h4 id="13.16.4-保存json配列要素スキーマ固定">13.16.4 保存JSON配列要素スキーマ固定</h4>
 <p><code>config/projects.json</code> の <code>projects[]</code> は以下の形式とする。</p>
 <pre><code>{
-  "id": "string(UUID)",
-  "name": "string",
-  "quota": 1073741824,
-  "used": 0,
-  "domains": [],
-  "createdAt": "2026-09-08T00:00:00Z"
+  &quot;id&quot;: &quot;string(UUID)&quot;,
+  &quot;name&quot;: &quot;string&quot;,
+  &quot;quota&quot;: 1073741824,
+  &quot;used&quot;: 0,
+  &quot;domains&quot;: [],
+  &quot;createdAt&quot;: &quot;2026-09-08T00:00:00Z&quot;
 }</code></pre>
 <p><code>config/domains.json</code> の <code>domains[]</code> は以下の形式とする。</p>
 <pre><code>{
-  "domain": "example.com",
-  "projectId": "string(UUID)",
-  "isCustom": true,
-  "sslCert": "string",
-  "createdAt": "2026-09-08T00:00:00Z"
+  &quot;domain&quot;: &quot;example.com&quot;,
+  &quot;projectId&quot;: &quot;string(UUID)&quot;,
+  &quot;isCustom&quot;: true,
+  &quot;sslCert&quot;: &quot;string&quot;,
+  &quot;createdAt&quot;: &quot;2026-09-08T00:00:00Z&quot;
 }</code></pre>
 <p><code>storage/projects/:projectId/files.json</code> の <code>files[]</code> は以下の形式とする。</p>
 <pre><code>{
-  "id": "string(UUID)",
-  "projectId": "string(UUID)",
-  "name": "index.html",
-  "size": 2048,
-  "path": "contents/index.html",
-  "uploadedAt": "2026-09-08T00:00:00Z"
+  &quot;id&quot;: &quot;string(UUID)&quot;,
+  &quot;projectId&quot;: &quot;string(UUID)&quot;,
+  &quot;name&quot;: &quot;index.html&quot;,
+  &quot;size&quot;: 2048,
+  &quot;path&quot;: &quot;contents/index.html&quot;,
+  &quot;uploadedAt&quot;: &quot;2026-09-08T00:00:00Z&quot;
 }</code></pre>
 <p><code>config/backups.json</code> の <code>backups[]</code> は以下の形式とする。</p>
 <pre><code>{
-  "id": "string(UUID)",
-  "projectId": "string(UUID)",
-  "createdAt": "2026-09-08T00:00:00Z",
-  "size": 536870912,
-  "path": "backups/backup-id.tar.gz",
-  "sha256": "string",
-  "status": "completed"
+  &quot;id&quot;: &quot;string(UUID)&quot;,
+  &quot;projectId&quot;: &quot;string(UUID)&quot;,
+  &quot;createdAt&quot;: &quot;2026-09-08T00:00:00Z&quot;,
+  &quot;size&quot;: 536870912,
+  &quot;path&quot;: &quot;backups/backup-id.tar.gz&quot;,
+  &quot;sha256&quot;: &quot;string&quot;,
+  &quot;status&quot;: &quot;completed&quot;
 }</code></pre>
 <p><code>config/webhooks.json</code> の <code>events[]</code> は以下の形式とする。</p>
 <pre><code>{
-  "key": "main:abcdef1234567890",
-  "branch": "main",
-  "after": "abcdef1234567890",
-  "status": "deployed",
-  "receivedAt": "2026-09-08T00:00:00Z",
-  "completedAt": "2026-09-08T00:00:05Z",
-  "errorCode": ""
+  &quot;key&quot;: &quot;main:abcdef1234567890&quot;,
+  &quot;branch&quot;: &quot;main&quot;,
+  &quot;after&quot;: &quot;abcdef1234567890&quot;,
+  &quot;status&quot;: &quot;deployed&quot;,
+  &quot;receivedAt&quot;: &quot;2026-09-08T00:00:00Z&quot;,
+  &quot;completedAt&quot;: &quot;2026-09-08T00:00:05Z&quot;,
+  &quot;errorCode&quot;: &quot;&quot;
 }</code></pre>
-<ul>
-<li>保存JSON内のパスは <code>storage.basePath</code> からの相対パスとし、絶対パスを保存してはならない</li>
-<li>保存JSON内の日時は UTC RFC3339 秒精度とする</li>
-<li>保存JSON内の未知フィールドは読み込み時にエラーとする</li>
-</ul>
+<p>保存JSON内のパスは <code>storage.basePath</code> からの相対パスとし、絶対パスを保存してはならない。</p>
+<p>保存JSON内の日時は UTC RFC3339 秒精度とする。</p>
+<p>保存JSON内の未知フィールドは読み込み時にエラーとする。</p>
 <h4 id="13.16.5-保存順序固定">13.16.5 保存順序固定</h4>
+<p>JSON 保存時の配列順序は以下で固定する。</p>
 <div class="tbl-wrap"><table><thead>
 <tr><th>ファイル</th><th>ソート順</th></tr>
 </thead><tbody>
@@ -2276,6 +2335,7 @@ $ sudo systemctl stop asb</code></pre>
 <tr><td><code>config/webhooks.json</code></td><td><code>receivedAt</code> 降順、同一時刻の場合は <code>key</code> 昇順</td></tr>
 </tbody></table></div>
 <h4 id="13.16.6-起動時検証出力固定">13.16.6 起動時検証出力固定</h4>
+<p>起動時検証は以下の順序で実行する。</p>
 <ol>
 <li><code>config/config.json</code> の存在確認</li>
 <li><code>config/config.json</code> の JSON 構文検証</li>
@@ -2290,7 +2350,7 @@ $ sudo systemctl stop asb</code></pre>
 </ol>
 <p>起動時検証失敗時は HTTP サーバーを起動せず、終了コード <code>1</code> で終了する。</p>
 <p>標準エラーには以下の1行のみを出力する。</p>
-<pre><code>ASB_STARTUP_ERROR code=ERR_STORAGE_VALIDATION_FAILED message="Storage validation failed"</code></pre>
+<pre><code>ASB_STARTUP_ERROR code=ERR_STORAGE_VALIDATION_FAILED message=&quot;Storage validation failed&quot;</code></pre>
 <p>エラーコードは、失敗原因が JSON 構文の場合は <code>ERR_INVALID_JSON</code>、保存先検証の場合は <code>ERR_STORAGE_VALIDATION_FAILED</code>、設定未知フィールドの場合は <code>ERR_UNKNOWN_FIELD</code> とする。</p>
 <h4 id="13.16.7-ログjson-lines固定">13.16.7 ログJSON Lines固定</h4>
 <p>ログファイルは <code>storage.basePath/logs/</code> 配下に保存する。</p>
@@ -2300,15 +2360,15 @@ $ sudo systemctl stop asb</code></pre>
 <p>1行に1 JSON object のみを出力し、各行末尾は LF とする。</p>
 <p>アクセスログは1リクエストにつき1行の JSON Lines とし、以下のフィールドと順序を固定する。</p>
 <pre><code>{
-  "time": "2026-09-08T00:00:00Z",
-  "level": "INFO",
-  "domain": "system",
-  "method": "GET",
-  "path": "/api/projects",
-  "status": 200,
-  "durationMs": 12,
-  "remoteAddr": "127.0.0.1",
-  "requestId": "string(UUID)"
+  &quot;time&quot;: &quot;2026-09-08T00:00:00Z&quot;,
+  &quot;level&quot;: &quot;INFO&quot;,
+  &quot;domain&quot;: &quot;system&quot;,
+  &quot;method&quot;: &quot;GET&quot;,
+  &quot;path&quot;: &quot;/api/projects&quot;,
+  &quot;status&quot;: 200,
+  &quot;durationMs&quot;: 12,
+  &quot;remoteAddr&quot;: &quot;127.0.0.1&quot;,
+  &quot;requestId&quot;: &quot;string(UUID)&quot;
 }</code></pre>
 <p>アクセスログの <code>level</code> は通常 <code>INFO</code> とする。</p>
 <p>アクセスログの <code>domain</code> は処理対象に応じて <code>management</code>、<code>delivery</code>、<code>data</code>、<code>system</code> のいずれかとする。</p>
@@ -2316,12 +2376,12 @@ $ sudo systemctl stop asb</code></pre>
 <p>アクセスログはレスポンス書き込み完了後に記録する。</p>
 <p>エラーログは WARN 以上を対象とし、以下のフィールドと順序を固定する。</p>
 <pre><code>{
-  "time": "2026-09-08T00:00:00Z",
-  "level": "ERROR",
-  "domain": "delivery",
-  "code": "ERR_FILE_UPLOAD_FAILED",
-  "message": "File upload failed",
-  "requestId": "string(UUID)"
+  &quot;time&quot;: &quot;2026-09-08T00:00:00Z&quot;,
+  &quot;level&quot;: &quot;ERROR&quot;,
+  &quot;domain&quot;: &quot;delivery&quot;,
+  &quot;code&quot;: &quot;ERR_FILE_UPLOAD_FAILED&quot;,
+  &quot;message&quot;: &quot;File upload failed&quot;,
+  &quot;requestId&quot;: &quot;string(UUID)&quot;
 }</code></pre>
 <p>エラーログの <code>level</code> は <code>WARN</code> または <code>ERROR</code> とする。</p>
 <p>エラーログの <code>domain</code> は <code>management</code>、<code>delivery</code>、<code>data</code>、<code>system</code> のいずれかとする。</p>
@@ -2334,17 +2394,18 @@ $ sudo systemctl stop asb</code></pre>
 <p><code>INFO</code> は <code>debug</code> または <code>info</code> 設定時に出力する。</p>
 <p><code>WARN</code> は <code>debug</code>、<code>info</code>、<code>warn</code> 設定時に出力する。</p>
 <p><code>ERROR</code> はすべての <code>log.level</code> 設定で出力する。</p>
-<p><code>log.format</code> は Rev.31 時点では <code>json</code> のみ許可する。</p>
+<p><code>log.format</code> は Rev.32 時点では <code>json</code> のみ許可する。</p>
 <p>通常運用ログを stdout へ出力してはならない。</p>
 <p>起動時検証失敗時のみ、stderr へ以下の形式で単一行を出力する。</p>
-<pre><code>ASB_STARTUP_ERROR code=ERR_STORAGE_VALIDATION_FAILED message="Storage validation failed"</code></pre>
+<pre><code>ASB_STARTUP_ERROR code=ERR_STORAGE_VALIDATION_FAILED message=&quot;Storage validation failed&quot;</code></pre>
 <p>ログローテーションは現在ログファイルのサイズが <code>log.maxSize</code> 以上になった後、次回書き込み前に実行する。</p>
 <p>ローテーションでは現在ログファイルを <code>access.log.{unixTime}</code> または <code>error.log.{unixTime}</code> へ rename し、新しい <code>access.log</code> または <code>error.log</code> を作成する。</p>
 <p>ローテーション済みログの削除対象は、ファイル名末尾の unixTime が現在時刻から7日より古いものに限定する。</p>
 <p>ログローテーション失敗時は対象ログ書き込みを失敗扱いとし、HTTP レスポンスが未送信の場合は <code>500 Internal Server Error</code> を返す。</p>
-<p>ログ API は <code>access.log</code> または <code>error.log</code> の現行ファイルのみを読む。ローテーション済みログは Rev.31 時点ではログ API の対象外とする。</p>
+<p>ログ API は <code>access.log</code> または <code>error.log</code> の現行ファイルのみを読む。ローテーション済みログは Rev.32 時点ではログ API の対象外とする。</p>
 <p>ログには内部ファイルパス、スタックトレース、環境変数、シークレットを含めてはならない。</p>
 <h4 id="13.16.8-テスト固定項目">13.16.8 テスト固定項目</h4>
+<p>Rev.32 の実装では、以下のテストを必須とする。</p>
 <ul>
 <li>全API成功レスポンスの固定JSONキー検証</li>
 <li>全APIエラーレスポンスの固定JSONキー検証</li>
@@ -2355,8 +2416,9 @@ $ sudo systemctl stop asb</code></pre>
 <li>アクセスログとエラーログのJSON Linesフィールド検証</li>
 </ul>
 <h3 id="13.17-実装境界とファイル操作固定仕様">13.17 実装境界とファイル操作固定仕様</h3>
-<p>本節は Rev.31 時点で package 境界、公開 interface、Repository、Storage、複数ファイル更新の実装契約を固定する仕様である。</p>
+<p>本節は Rev.32 時点で package 境界、公開 interface、Repository、Storage、複数ファイル更新の実装契約を固定する仕様である。</p>
 <h4 id="13.17.1-package-公開-interface-固定">13.17.1 package 公開 interface 固定</h4>
+<p>各 package は以下の公開 interface を境界として実装する。</p>
 <div class="tbl-wrap"><table><thead>
 <tr><th>package</th><th>公開 interface</th><th>主な責務</th></tr>
 </thead><tbody>
@@ -2367,21 +2429,17 @@ $ sudo systemctl stop asb</code></pre>
 <tr><td><code>data</code></td><td><code>JSONRepository</code>, <code>StorageService</code>, <code>BackupService</code></td><td>JSON永続化、ストレージ、バックアップ/復旧</td></tr>
 <tr><td><code>system</code></td><td><code>LogService</code>, <code>MonitoringService</code>, <code>Clock</code>, <code>IDGenerator</code></td><td>ログ、監視、時刻、ID生成</td></tr>
 </tbody></table></div>
-<ul>
-<li>Handler は Service interface のみに依存する</li>
-<li>Service は Repository、Storage、Clock、IDGenerator、LogService interface に依存できる</li>
-<li>Entity は interface を定義せず、保存形式とレスポンス形式の型定義のみを持つ</li>
-<li>他 package の具象型を直接生成してよい場所は <code>main.go</code> の依存関係生成処理のみとする</li>
-</ul>
-<h4 id="13.17.2-repository-storage-責務固定">13.17.2 Repository / Storage 責務固定</h4>
-<ul>
-<li><code>JSONRepository</code> は JSON ファイルの読み込み、スキーマ検証、排他、atomic save のみを担当する</li>
-<li><code>JSONRepository</code> は HTTP ステータス、HTTP リクエスト、HTTP レスポンスを扱ってはならない</li>
-<li><code>StorageService</code> は <code>storage.basePath</code> 配下のファイル実体操作のみを担当する</li>
-<li><code>StorageService</code> は Project、Domain、Webhook の業務判断を行ってはならない</li>
-<li>Service は業務判断、整合性判断、複数Repository/Storage操作の順序制御を担当する</li>
-<li>複数JSONまたはJSONとファイル実体をまたぐ操作では、Service が処理全体の成功/失敗を決定する</li>
-</ul>
+<p>Handler は Service interface のみに依存する。</p>
+<p>Service は Repository、Storage、Clock、IDGenerator、LogService interface に依存できる。</p>
+<p>Entity は interface を定義せず、保存形式とレスポンス形式の型定義のみを持つ。</p>
+<p>他 package の具象型を直接生成してよい場所は <code>cmd/asb/main.go</code> の依存関係生成処理のみとする。</p>
+<h4 id="13.17.2-repository--storage-責務固定">13.17.2 Repository / Storage 責務固定</h4>
+<p><code>JSONRepository</code> は JSON ファイルの読み込み、スキーマ検証、排他、atomic save のみを担当する。</p>
+<p><code>JSONRepository</code> は HTTP ステータス、HTTP リクエスト、HTTP レスポンスを扱ってはならない。</p>
+<p><code>StorageService</code> は <code>storage.basePath</code> 配下のファイル実体操作のみを担当する。</p>
+<p><code>StorageService</code> は Project、Domain、Webhook の業務判断を行ってはならない。</p>
+<p>Service は業務判断、整合性判断、複数Repository/Storage操作の順序制御を担当する。</p>
+<p>複数JSONまたはJSONとファイル実体をまたぐ操作では、Service が処理全体の成功/失敗を決定する。</p>
 <h4 id="13.17.3-静的配信処理順序固定">13.17.3 静的配信処理順序固定</h4>
 <p>Static delivery は以下の順序で実行する。</p>
 <ol>
@@ -2410,6 +2468,7 @@ $ sudo systemctl stop asb</code></pre>
 <p>静的配信ではディレクトリ一覧を返してはならない。</p>
 <p>静的配信では開発リポジトリ内に配信用一時ファイル、キャッシュファイル、実行時データを作成してはならない。</p>
 <h4 id="13.17.4-ファイルアップロード処理順序固定">13.17.4 ファイルアップロード処理順序固定</h4>
+<p>File upload は以下の順序で実行する。</p>
 <ol>
 <li>URL <code>:id</code> を検証する</li>
 <li>Project の存在を検証する</li>
@@ -2427,6 +2486,7 @@ $ sudo systemctl stop asb</code></pre>
 <p>7-11 の途中で失敗した場合、成功レスポンスを返してはならない。</p>
 <p>公開先への rename 後に JSON 更新が失敗した場合は、エラーログを記録し、次回起動時検証または整合性検証で検出できる状態にする。</p>
 <h4 id="13.17.5-ファイル上書き処理順序固定">13.17.5 ファイル上書き処理順序固定</h4>
+<p>同名ファイル上書きは以下の順序で実行する。</p>
 <ol>
 <li>旧ファイルメタデータを読み込む</li>
 <li>新ファイルを一時ファイルへ書き込む</li>
@@ -2438,6 +2498,7 @@ $ sudo systemctl stop asb</code></pre>
 <p>旧ファイルは、新ファイルの atomic rename が成功するまで削除してはならない。</p>
 <p>上書き後の <code>used</code> は旧サイズを差し引き、新サイズを加算して計算する。</p>
 <h4 id="13.17.6-ファイル削除処理順序固定">13.17.6 ファイル削除処理順序固定</h4>
+<p>File delete は以下の順序で実行する。</p>
 <ol>
 <li>URL <code>:id</code> と <code>:name</code> を検証する</li>
 <li>Project の存在を検証する</li>
@@ -2450,6 +2511,7 @@ $ sudo systemctl stop asb</code></pre>
 <p>ファイル実体が存在しないが <code>files.json</code> にメタデータが存在する場合は、整合性エラーとして <code>ERR_FILE_NOT_FOUND</code> を返す。</p>
 <p>JSON 更新失敗時は成功レスポンスを返してはならない。</p>
 <h4 id="13.17.7-project削除処理順序固定">13.17.7 Project削除処理順序固定</h4>
+<p>Project delete は以下の順序で実行する。</p>
 <ol>
 <li>Project の存在を検証する</li>
 <li>対象 Project に紐づく Domain を列挙する</li>
@@ -2465,25 +2527,27 @@ $ sudo systemctl stop asb</code></pre>
 <p>5-9 の途中で失敗した場合、成功レスポンスを返してはならない。</p>
 <p>Project削除は best effort 成功扱いにしてはならない。</p>
 <h4 id="13.17.8-backup作成処理順序固定">13.17.8 Backup作成処理順序固定</h4>
+<p>Backup 作成は以下の順序で実行する。</p>
 <ol>
 <li>対象 Project の存在を検証する</li>
 <li>対象 Project の JSON と <code>contents/</code> を読み込み可能であることを検証する</li>
 <li><code>storage.basePath/backups/</code> が存在し、書き込み可能であることを検証する</li>
 <li><code>storage.basePath/backups/.tmp/backup-{backupId}.tar.gz.tmp</code> を作成する</li>
-<li>対象 Project の <code>files.json</code> と <code>contents/</code> のみを tar.gz に含める</li>
+<li>tar.gz には対象Projectの <code>files.json</code> と <code>contents/</code> のみを含める</li>
 <li>tar.gz 作成後に SHA-256 を計算する</li>
 <li><code>storage.basePath/backups/backup-{backupId}.tar.gz</code> へ atomic rename する</li>
-<li><code>config/backups.json</code> に <code>status: "completed"</code> の履歴を保存する</li>
+<li><code>config/backups.json</code> に <code>status: &quot;completed&quot;</code> の履歴を保存する</li>
 <li>成功レスポンスを返す</li>
 </ol>
-<p>tar.gz には <code>logs/</code>、<code>certs/</code>、他 Project の <code>contents/</code> を含めてはならない。</p>
+<p>バックアップtar.gzに <code>logs/</code>、<code>certs/</code>、他Projectの <code>contents/</code> を含めてはならない。</p>
 <p><code>config/backups.json</code> の <code>path</code> には <code>backups/backup-{backupId}.tar.gz</code> を保存する。</p>
-<p>Backup作成処理は、別障害領域への複製や外部ストレージ連携を行わない。</p>
+<p>tar.gz 作成、ハッシュ計算、atomic rename、履歴保存のいずれかに失敗した場合、成功レスポンスを返してはならない。</p>
 <p>tar.gz 作成またはハッシュ計算に失敗した場合、<code>config/backups.json</code> に履歴を追加してはならない。</p>
-<p>atomic rename 後に <code>config/backups.json</code> 保存へ失敗した場合は、作成済みtar.gzを削除し、削除失敗時はエラーログへ記録する。</p>
-<p>処理終了時は一時tarを削除する。一時tar削除に失敗した場合は WARN ログへ記録する。</p>
-<p>開発リポジトリ内にバックアップtar、一時tar、checksumファイル、復旧用ステージングデータを作成してはならない。</p>
+<p>atomic rename 後に履歴保存へ失敗した場合は、作成済みtar.gzを削除し、削除失敗時はエラーログへ記録する。</p>
+<p>バックアップ作成に使用する一時ファイルは、処理終了時に削除する。</p>
+<p>開発リポジトリ内にバックアップtar、一時tar、checksum、退避データを作成してはならない。</p>
 <h4 id="13.17.9-backup復旧処理順序固定">13.17.9 Backup復旧処理順序固定</h4>
+<p>Backup restore は以下の順序で実行する。</p>
 <ol>
 <li>Backup 履歴の存在を検証する</li>
 <li>Backup 履歴の <code>status</code> が <code>completed</code> であることを検証する</li>
@@ -2491,27 +2555,26 @@ $ sudo systemctl stop asb</code></pre>
 <li>SHA-256 を検証する</li>
 <li><code>storage.basePath/backups/restore-staging/{restoreId}/previous/</code> を作成する</li>
 <li><code>storage.basePath/backups/restore-staging/{restoreId}/next/</code> を作成する</li>
-<li>対象 Project の現行 <code>files.json</code> と <code>contents/</code> を <code>previous/</code> へ移動する</li>
+<li>復旧対象Projectの現行 <code>files.json</code> と <code>contents/</code> を <code>previous/</code> へ退避する</li>
 <li>Backup を <code>next/</code> へ展開する</li>
 <li>展開後の JSON 構文とスキーマを検証する</li>
-<li><code>next/</code> を復旧対象へ atomic rename する</li>
+<li><code>next/</code> の内容を復旧対象へ atomic rename する</li>
 <li>成功レスポンスを返す</li>
 </ol>
-<p>対象 Project が存在しない場合は <code>ERR_PROJECT_NOT_FOUND</code> を返す。</p>
-<p>現行データを <code>previous/</code> へ退避できない場合は、復旧を開始してはならない。</p>
-<p>7-10 の途中で失敗した場合、<code>previous/</code> から対象 Project の <code>files.json</code> と <code>contents/</code> を復元する。</p>
-<p><code>previous/</code> からの復元に失敗した場合は <code>ERR_BACKUP_RESTORE_FAILED</code> を返し、成功レスポンスを返してはならない。</p>
-<p>復旧完了後または失敗処理後、<code>storage.basePath/backups/restore-staging/{restoreId}/</code> は best effort で削除し、削除失敗時は WARN ログへ記録する。</p>
-<p>開発リポジトリ内に復旧用ステージングデータ、展開済みデータ、一時ファイルを作成してはならない。</p>
+<p>7-10 の途中で失敗した場合、可能な限り <code>previous/</code> から復元する。</p>
+<p>復元に失敗した場合は <code>ERR_BACKUP_RESTORE_FAILED</code> を返し、成功レスポンスを返してはならない。</p>
+<p>復旧対象Projectが存在しない場合は <code>ERR_PROJECT_NOT_FOUND</code> を返す。</p>
+<p>復旧対象Projectの現行データ退避に失敗した場合は、復旧処理を開始してはならない。</p>
+<p>復旧後の <code>restore-staging/{restoreId}/</code> 削除は best effort とし、削除失敗時は WARN ログへ記録する。</p>
+<p>開発リポジトリ内に復旧用一時ファイル、退避データ、展開データを作成してはならない。</p>
 <h4 id="13.17.10-複数json更新失敗時契約">13.17.10 複数JSON更新失敗時契約</h4>
-<ul>
-<li>複数JSON更新は、操作順序を Service に閉じ込める</li>
-<li>複数JSON更新では、最終JSONの保存が完了するまで成功レスポンスを返してはならない</li>
-<li>途中失敗時は、更新済みJSON名、未更新JSON名、操作名、requestId をエラーログへ記録する</li>
-<li>途中失敗時に自動ロールバックを実装する場合も、ロールバック失敗時は成功扱いにしてはならない</li>
-<li>Rev.31 時点では、複数JSON更新に外部トランザクション機構を導入してはならない</li>
-</ul>
+<p>複数JSON更新は、操作順序を Service に閉じ込める。</p>
+<p>複数JSON更新では、最終JSONの保存が完了するまで成功レスポンスを返してはならない。</p>
+<p>途中失敗時は、更新済みJSON名、未更新JSON名、操作名、requestId をエラーログへ記録する。</p>
+<p>途中失敗時に自動ロールバックを実装する場合も、ロールバック失敗時は成功扱いにしてはならない。</p>
+<p>Rev.32 時点では、複数JSON更新に外部トランザクション機構を導入してはならない。</p>
 <h4 id="13.17.11-最低テスト分類固定">13.17.11 最低テスト分類固定</h4>
+<p><code>go test ./...</code> に含める最低テスト分類は以下とする。</p>
 <div class="tbl-wrap"><table><thead>
 <tr><th>分類</th><th>対象</th></tr>
 </thead><tbody>
@@ -2522,12 +2585,124 @@ $ sudo systemctl stop asb</code></pre>
 <tr><td>Integration</td><td>Project/File/Domain/Backup/Webhook の成功系と主要失敗系</td></tr>
 <tr><td>Startup</td><td>起動時検証順序、終了コード、stderr</td></tr>
 </tbody></table></div>
+<h4 id="13.17.12-実装ファイル構成固定">13.17.12 実装ファイル構成固定</h4>
+<p>Rev.32 の初期実装では、Go 実装ファイルを以下の構成で作成する。</p>
+<pre><code>cmd/asb/main.go
+internal/config/
+internal/server/
+internal/management/
+internal/delivery/
+internal/data/
+internal/system/</code></pre>
+<p><code>cmd/asb/main.go</code> は、設定読み込み、依存関係生成、HTTP サーバー起動、signal 受信、graceful shutdown のみを行う。</p>
+<p><code>internal/config/</code> は設定構造体、設定読み込み、デフォルト適用、未知フィールド拒否、起動時検証を実装する。</p>
+<p><code>internal/server/</code> は <code>net/http</code> ルーティング、middleware、requestId 付与、共通 JSON レスポンス、共通エラーレスポンス、HTTP テスト補助を実装する。</p>
+<p><code>internal/management/</code> は Project、Domain、SSL 管理境界の Entity、Service interface、Service 実装、Handler を実装する。</p>
+<p><code>internal/delivery/</code> は File 管理、静的配信、GitHub Webhook の Entity、Service interface、Service 実装、Handler を実装する。</p>
+<p><code>internal/data/</code> は JSON Repository、StorageService、BackupService、atomic save、tar.gz、restore staging を実装する。</p>
+<p><code>internal/system/</code> は Clock、IDGenerator、LogService、MonitoringService、ログローテーション、監視値取得を実装する。</p>
+<p>Go package 名はディレクトリ名と一致させる。</p>
+<p>外部公開 API 用 package を追加してはならない。</p>
+<p><code>internal/</code> 外へ ASB 本体の実装 package を追加する場合は、先に本仕様を改訂する。</p>
+<h4 id="13.17.13-package-内ファイル役割固定">13.17.13 package 内ファイル役割固定</h4>
+<p>各 package 内のファイル役割は以下を基本とする。</p>
+<div class="tbl-wrap"><table><thead>
+<tr><th>package</th><th>ファイル</th><th>役割</th></tr>
+</thead><tbody>
+<tr><td><code>config</code></td><td><code>config.go</code></td><td>設定構造体とデフォルト値</td></tr>
+<tr><td><code>config</code></td><td><code>loader.go</code></td><td>JSON 読み込み、未知フィールド拒否、デフォルト適用</td></tr>
+<tr><td><code>config</code></td><td><code>validate.go</code></td><td>起動時設定検証</td></tr>
+<tr><td><code>server</code></td><td><code>router.go</code></td><td>API と静的配信の振り分け</td></tr>
+<tr><td><code>server</code></td><td><code>response.go</code></td><td>成功 JSON とエラー JSON</td></tr>
+<tr><td><code>server</code></td><td><code>middleware.go</code></td><td>requestId、アクセスログ、panic 抑止</td></tr>
+<tr><td><code>management</code></td><td><code>project.go</code></td><td>Project Entity と ProjectService</td></tr>
+<tr><td><code>management</code></td><td><code>domain.go</code></td><td>Domain Entity と DomainService</td></tr>
+<tr><td><code>management</code></td><td><code>ssl.go</code></td><td>SSL Entity と SSLService</td></tr>
+<tr><td><code>management</code></td><td><code>handler.go</code></td><td>Management API Handler</td></tr>
+<tr><td><code>delivery</code></td><td><code>file.go</code></td><td>File Entity と FileService</td></tr>
+<tr><td><code>delivery</code></td><td><code>static.go</code></td><td>StaticService</td></tr>
+<tr><td><code>delivery</code></td><td><code>webhook.go</code></td><td>Webhook Entity と WebhookService</td></tr>
+<tr><td><code>delivery</code></td><td><code>handler.go</code></td><td>File API と Webhook API Handler</td></tr>
+<tr><td><code>data</code></td><td><code>json_repository.go</code></td><td>JSON 読み込み、検証、atomic save</td></tr>
+<tr><td><code>data</code></td><td><code>storage.go</code></td><td><code>storage.basePath</code> 配下の実体ファイル操作</td></tr>
+<tr><td><code>data</code></td><td><code>backup.go</code></td><td>Backup 作成と復旧</td></tr>
+<tr><td><code>system</code></td><td><code>clock.go</code></td><td>UTC RFC3339 秒精度時刻</td></tr>
+<tr><td><code>system</code></td><td><code>id.go</code></td><td>UUID 形式 ID 生成</td></tr>
+<tr><td><code>system</code></td><td><code>log.go</code></td><td>JSON Lines ログとローテーション</td></tr>
+<tr><td><code>system</code></td><td><code>monitoring.go</code></td><td>監視値取得</td></tr>
+</tbody></table></div>
+<p>上記ファイル分割は実装開始時の固定構成とする。</p>
+<p>責務が増えてファイル分割が必要な場合でも、package 境界と公開 interface を変更してはならない。</p>
+<h4 id="13.17.14-エラーコード固定表">13.17.14 エラーコード固定表</h4>
+<p>Rev.32 の実装では、API と起動時検証が返すエラーコードを以下に固定する。</p>
+<div class="tbl-wrap"><table><thead>
+<tr><th>code</th><th>HTTP</th><th>用途</th></tr>
+</thead><tbody>
+<tr><td><code>ERR_INVALID_JSON</code></td><td>400</td><td>リクエスト JSON または保存 JSON の構文不正</td></tr>
+<tr><td><code>ERR_UNKNOWN_FIELD</code></td><td>400</td><td>リクエスト JSON、設定 JSON、保存 JSON の未知フィールド</td></tr>
+<tr><td><code>ERR_INVALID_REQUEST</code></td><td>400</td><td>Content-Type、Body、query、path parameter の不正</td></tr>
+<tr><td><code>ERR_PROJECT_NOT_FOUND</code></td><td>404</td><td>Project が存在しない</td></tr>
+<tr><td><code>ERR_PROJECT_ALREADY_EXISTS</code></td><td>409</td><td>Project 名が重複している</td></tr>
+<tr><td><code>ERR_PROJECT_QUOTA_EXCEEDED</code></td><td>413</td><td>Project quota を超過する</td></tr>
+<tr><td><code>ERR_DOMAIN_NOT_FOUND</code></td><td>404</td><td>Domain が存在しない</td></tr>
+<tr><td><code>ERR_DOMAIN_ALREADY_ASSIGNED</code></td><td>409</td><td>Domain が別 Project または同一 Project に割り当て済み</td></tr>
+<tr><td><code>ERR_FILE_NOT_FOUND</code></td><td>404</td><td>File メタデータまたは実体が存在しない</td></tr>
+<tr><td><code>ERR_FILE_UPLOAD_FAILED</code></td><td>500</td><td>File upload の永続化または実体保存に失敗</td></tr>
+<tr><td><code>ERR_STORAGE_VALIDATION_FAILED</code></td><td>500</td><td><code>storage.basePath</code>、必須ディレクトリ、必須 JSON の検証失敗</td></tr>
+<tr><td><code>ERR_BACKUP_NOT_FOUND</code></td><td>404</td><td>Backup 履歴またはファイルが存在しない</td></tr>
+<tr><td><code>ERR_BACKUP_RESTORE_CONFLICT</code></td><td>409</td><td>復旧対象の状態が復旧条件を満たさない</td></tr>
+<tr><td><code>ERR_BACKUP_RESTORE_FAILED</code></td><td>500</td><td>Backup 復旧またはロールバックに失敗</td></tr>
+<tr><td><code>ERR_WEBHOOK_SIGNATURE_INVALID</code></td><td>401</td><td>GitHub Webhook 署名が不正</td></tr>
+<tr><td><code>ERR_WEBHOOK_PROJECT_NOT_CONFIGURED</code></td><td>500</td><td><code>deploy.projectId</code> が未設定</td></tr>
+<tr><td><code>ERR_WEBHOOK_SOURCE_INVALID</code></td><td>500</td><td><code>deploy.sourcePath</code> または <code>after</code> commit が不正</td></tr>
+<tr><td><code>ERR_WEBHOOK_PROCESSING_FAILED</code></td><td>500</td><td>Webhook デプロイ処理に失敗</td></tr>
+<tr><td><code>ERR_SSL_CERT_GENERATION_FAILED</code></td><td>500</td><td>SSL 証明書管理境界で証明書状態検証に失敗</td></tr>
+<tr><td><code>ERR_LOG_READ_FAILED</code></td><td>500</td><td>ログ API の読み込みまたは JSON Lines 検証に失敗</td></tr>
+<tr><td><code>ERR_INTERNAL</code></td><td>500</td><td>上記に分類できない内部エラー</td></tr>
+</tbody></table></div>
+<p><code>code</code> は上記表のいずれかでなければならない。</p>
+<p>HTTP ステータスは上記表と <code>13.15.1 API エンドポイント固定表</code> の範囲で決定する。</p>
+<p>保存JSONの起動時検証失敗では、構文不正を <code>ERR_INVALID_JSON</code>、未知フィールドを <code>ERR_UNKNOWN_FIELD</code>、ディレクトリ・権限・必須ファイル不備を <code>ERR_STORAGE_VALIDATION_FAILED</code> とする。</p>
+<h4 id="13.17.15-テストファイル配置固定">13.17.15 テストファイル配置固定</h4>
+<p>Rev.32 の実装では、最低限以下のテストファイルを作成する。</p>
+<div class="tbl-wrap"><table><thead>
+<tr><th>フェーズ</th><th>テストファイル</th></tr>
+</thead><tbody>
+<tr><td>P0</td><td><code>internal/system/id_test.go</code>, <code>internal/system/clock_test.go</code></td></tr>
+<tr><td>P1</td><td><code>internal/config/loader_test.go</code>, <code>internal/config/validate_test.go</code>, <code>internal/server/response_test.go</code>, <code>internal/data/json_repository_test.go</code></td></tr>
+<tr><td>P2</td><td><code>internal/delivery/file_test.go</code>, <code>internal/delivery/static_test.go</code>, <code>internal/data/storage_test.go</code></td></tr>
+<tr><td>P3</td><td><code>internal/management/domain_test.go</code>, <code>internal/management/ssl_test.go</code></td></tr>
+<tr><td>P4</td><td><code>internal/delivery/webhook_test.go</code></td></tr>
+<tr><td>P5</td><td><code>internal/data/backup_test.go</code></td></tr>
+<tr><td>P6</td><td><code>internal/system/log_test.go</code>, <code>internal/system/monitoring_test.go</code></td></tr>
+<tr><td>P7</td><td><code>internal/data/migration_test.go</code></td></tr>
+<tr><td>P8</td><td><code>scripts/install_test.sh</code>, <code>scripts/update_test.sh</code></td></tr>
+<tr><td>P9</td><td><code>internal/asb_forbidden_test.go</code></td></tr>
+</tbody></table></div>
+<p>テストは開発リポジトリ内に実行時データ、ログ、一時ファイル、ビルド成果物を残してはならない。</p>
+<p>テストで実行時データ領域が必要な場合は、テストごとに OS の一時ディレクトリを作成し、テスト終了時に削除する。</p>
+<p>テスト用 fixture をリポジトリ内に追加する場合は、静的な入力データのみ許可する。</p>
+<p>テスト fixture は実行結果、ログ、バックアップ、ビルド成果物、coverage 出力を含んではならない。</p>
+<h4 id="13.17.16-フェーズ完了判定固定">13.17.16 フェーズ完了判定固定</h4>
+<p>各実装フェーズは、以下の全条件を満たすまで完了として扱ってはならない。</p>
+<ol>
+<li>該当フェーズの実装タスクがすべて完了している</li>
+<li>該当フェーズの完了条件テストが成功している</li>
+<li><code>go test ./...</code> が成功している</li>
+<li><code>git diff --check</code> が成功している</li>
+<li><code>.gitignore</code> が存在しない</li>
+<li>開発リポジトリ内に実行時データ、ログ、一時ファイル、ビルド成果物、coverage 出力が残っていない</li>
+<li><code>ASB-spec.md</code>、<code>ASB-spec.html</code>、<code>IMPLEMENTATION_TASKS.md</code> の参照バージョンが一致している</li>
+</ol>
+<p>フェーズ完了時の開発版バージョンは、<code>11.9.2.5 実装フェーズバージョン</code> の対応表に従う。</p>
+<p>フェーズ途中の commit は許可するが、完了版として扱えるのは上記条件をすべて満たす commit のみとする。</p>
+<hr>
 <h3 id="13.18-apiキー管理認証固定仕様">13.18 APIキー管理・認証固定仕様</h3>
-<p>Rev.31 時点では、ASB 本体の管理 API に認証機能を実装しない。</p>
+<p>Rev.32 時点では、ASB 本体の管理 API に認証機能を実装しない。</p>
 <p>管理 API とは <code>/api/</code> で始まる全 HTTP JSON API を指す。</p>
 <p>管理 API は、ASB の標準構成では <code>server.host=localhost</code> で待ち受け、外部公開を前提としない。</p>
 <p>本番環境で管理 API を外部ネットワークから利用可能にする場合は、ASB 外部のリバースプロキシ、ファイアウォール、VPN、SSH tunnel、IP制限等で保護する。</p>
-<p>ASB 本体は Rev.31 時点では以下を実装してはならない。</p>
+<p>ASB 本体は Rev.32 時点では以下を実装してはならない。</p>
 <ul>
 <li>APIキー発行</li>
 <li>APIキー保存</li>
@@ -2545,7 +2720,7 @@ $ sudo systemctl stop asb</code></pre>
 <li>認証 middleware</li>
 </ul>
 <p><code>Authorization</code> ヘッダーまたは <code>X-API-Key</code> ヘッダーを受信しても、ASB は認証判断に使用してはならない。</p>
-<p>Rev.31 時点では、<code>Authorization</code> ヘッダーまたは <code>X-API-Key</code> ヘッダーの有無により、成功・失敗・レスポンス内容を変えてはならない。</p>
+<p>Rev.32 時点では、<code>Authorization</code> ヘッダーまたは <code>X-API-Key</code> ヘッダーの有無により、成功・失敗・レスポンス内容を変えてはならない。</p>
 <p>ASB は APIキー管理のために以下の JSON ファイル、ディレクトリ、設定項目を作成してはならない。</p>
 <ul>
 <li><code>config/api_keys.json</code></li>
@@ -2569,11 +2744,12 @@ $ sudo systemctl stop asb</code></pre>
 <li>監査ログ</li>
 <li>既存の認証なし管理 API からの移行手順</li>
 </ul>
-<p>SDK 認証仕様は Rev.31 の対象外とし、実装対象へ昇格する場合は事前に <code>ASB-spec.md</code> を改訂する。</p>
+<p>SDK 認証仕様は Rev.32 の対象外とし、実装対象へ昇格する場合は事前に <code>ASB-spec.md</code> を改訂する。</p>
+<hr>
 <h3 id="13.19-rate-limiting-固定仕様">13.19 Rate limiting 固定仕様</h3>
-<p>Rev.31 時点では、ASB 本体に Rate limiting を実装しない。</p>
+<p>Rev.32 時点では、ASB 本体に Rate limiting を実装しない。</p>
 <p>Rate limiting とは、送信元IP、Host、Domain、Project、APIキー、ユーザー、HTTPメソッド、URL path、リクエスト数、転送量、同時接続数、時間窓等に基づき、HTTP リクエストの受理、拒否、遅延、または優先度を制御する機能を指す。</p>
-<p>ASB 本体は Rev.31 時点では以下を実装してはならない。</p>
+<p>ASB 本体は Rev.32 時点では以下を実装してはならない。</p>
 <ul>
 <li>Rate limiting middleware</li>
 <li>IP別リクエスト制限</li>
@@ -2623,11 +2799,12 @@ $ sudo systemctl stop asb</code></pre>
 <li>ログ、監査、メトリクス</li>
 <li>既存の Rate limiting なし構成からの移行手順</li>
 </ul>
+<hr>
 <h3 id="13.20-brotli-圧縮固定仕様">13.20 Brotli 圧縮固定仕様</h3>
-<p>Rev.31 時点では、ASB 本体に Brotli 圧縮を実装しない。</p>
+<p>Rev.32 時点では、ASB 本体に Brotli 圧縮を実装しない。</p>
 <p>ASB の標準圧縮機能は、Go 標準ライブラリ <code>compress/gzip</code> で実装できる Gzip に限定する。</p>
-<p>Brotli 圧縮は Go 標準ライブラリに含まれないため、Rev.31 時点では外部ライブラリ例外採用を行わない。</p>
-<p>ASB 本体は Rev.31 時点では以下を実装してはならない。</p>
+<p>Brotli 圧縮は Go 標準ライブラリに含まれないため、Rev.32 時点では外部ライブラリ例外採用を行わない。</p>
+<p>ASB 本体は Rev.32 時点では以下を実装してはならない。</p>
 <ul>
 <li>Brotli 圧縮</li>
 <li>Brotli 展開</li>
@@ -2673,10 +2850,11 @@ $ sudo systemctl stop asb</code></pre>
 <li>開発リポジトリ非生成の保証方法</li>
 <li>既存 Gzip 仕様からの移行手順</li>
 </ul>
+<hr>
 <h3 id="13.21-sdk-通信規格固定仕様">13.21 SDK 通信規格固定仕様</h3>
-<p>Rev.31 時点では、SDK 本体を実装しない。</p>
-<p>Rev.31 時点では、SDK 配布方針を確定しない。</p>
-<p>Rev.31 時点では、SDK 認証仕様を確定しない。</p>
+<p>Rev.32 時点では、SDK 本体を実装しない。</p>
+<p>Rev.32 時点では、SDK 配布方針を確定しない。</p>
+<p>Rev.32 時点では、SDK 認証仕様を確定しない。</p>
 <p>ただし、将来 SDK が ASB と通信する場合の通信規格は、ASB 本体が提供する HTTP JSON API と同一に固定する。</p>
 <p>SDK 通信は、以下の ASB 管理 API 規約に従う。</p>
 <ul>
@@ -2694,7 +2872,7 @@ $ sudo systemctl stop asb</code></pre>
 <li>pagination</li>
 <li>static file upload 規約</li>
 </ul>
-<p>SDK 通信のために、ASB 本体は Rev.31 時点では以下を実装してはならない。</p>
+<p>SDK 通信のために、ASB 本体は Rev.32 時点では以下を実装してはならない。</p>
 <ul>
 <li>SDK 専用 HTTP API</li>
 <li>SDK 専用 URL prefix</li>
@@ -2710,7 +2888,7 @@ $ sudo systemctl stop asb</code></pre>
 <li>SDK 専用 protocol negotiation</li>
 <li>SDK 専用 version negotiation</li>
 </ul>
-<p>ASB 本体は Rev.31 時点では以下の通信方式を SDK 通信として実装してはならない。</p>
+<p>ASB 本体は Rev.32 時点では以下の通信方式を SDK 通信として実装してはならない。</p>
 <ul>
 <li>WebSocket</li>
 <li>gRPC</li>
@@ -2734,7 +2912,7 @@ $ sudo systemctl stop asb</code></pre>
 </ul>
 <p>開発リポジトリ内にも、<code>storage.basePath</code> 配下にも、SDK 通信用のセッション、キャッシュ、handshake 状態、protocol negotiation 状態、client registration 状態を表す実行時データを生成してはならない。</p>
 <p><code>config/config.json</code> に SDK 通信関連フィールドが存在する場合は、未知フィールドとして起動失敗とする。</p>
-<p>SDK から ASB 管理 API を呼び出す場合でも、Rev.31 時点では <code>Authorization</code> ヘッダー、<code>X-API-Key</code> ヘッダー、cookie、セッションIDを認証判断に使用してはならない。</p>
+<p>SDK から ASB 管理 API を呼び出す場合でも、Rev.32 時点では <code>Authorization</code> ヘッダー、<code>X-API-Key</code> ヘッダー、cookie、セッションIDを認証判断に使用してはならない。</p>
 <p>SDK 認証仕様を将来実装する場合は、実装前に <code>ASB-spec.md</code> を改訂し、APIキー管理、ユーザー認証、SDK配布方針との関係を最低限確定する。</p>
 <p>SDK 本体を将来実装する場合は、実装前に <code>ASB-spec.md</code> を改訂し、以下を最低限確定する。</p>
 <ul>
@@ -2751,10 +2929,11 @@ $ sudo systemctl stop asb</code></pre>
 <li>generated client の採用可否</li>
 <li>テスト方法</li>
 </ul>
+<hr>
 <h3 id="13.22-acme-実通信固定仕様">13.22 ACME 実通信固定仕様</h3>
-<p>Rev.31 時点では、ASB 本体に ACME 実通信を実装しない。</p>
+<p>Rev.32 時点では、ASB 本体に ACME 実通信を実装しない。</p>
 <p>ACME 実通信とは、ACME protocol を用いて CA と通信し、account 登録、order 作成、authorization 取得、challenge 応答、証明書発行、証明書更新、失効、nonce 管理を行う機能を指す。</p>
-<p>Rev.31 時点では、SSL 管理は以下に限定する。</p>
+<p>Rev.32 時点では、SSL 管理は以下に限定する。</p>
 <ul>
 <li>証明書IDの管理</li>
 <li>証明書メタデータの管理</li>
@@ -2766,8 +2945,8 @@ $ sudo systemctl stop asb</code></pre>
 <li>証明書検証失敗時のエラー記録</li>
 </ul>
 <p>証明書ファイルそのものは、手動配置または ASB 外部の運用で配置する。</p>
-<p>ASB 本体は Rev.31 時点では証明書ファイルを生成、取得、更新、削除、失効してはならない。</p>
-<p>ASB 本体は Rev.31 時点では以下を実装してはならない。</p>
+<p>ASB 本体は Rev.32 時点では証明書ファイルを生成、取得、更新、削除、失効してはならない。</p>
+<p>ASB 本体は Rev.32 時点では以下を実装してはならない。</p>
 <ul>
 <li>ACME client</li>
 <li>ACME account 登録</li>
@@ -2837,10 +3016,10 @@ $ sudo systemctl stop asb</code></pre>
 </ul>
 <hr>
 <h3 id="13.23-asb互換目標固定仕様">13.23 ASB互換目標固定仕様</h3>
-<p>Rev.31 時点では、ASB互換目標は将来の到達目標であり、実装対象ではない。</p>
+<p>Rev.32 時点では、ASB互換目標は将来の到達目標であり、実装対象ではない。</p>
 <p>ASB互換目標は、XServer Static 等の静的コンテンツ専用ホスティングの利用体験を参考にした ASB 独自の目標である。</p>
 <p>ASB互換目標は、外部サービスとの完全互換、API互換、管理画面互換、内部実装互換を意味しない。</p>
-<p>Rev.31 時点で ASB互換目標に含める対象は以下とする。</p>
+<p>Rev.32 時点で ASB互換目標に含める対象は以下とする。</p>
 <ul>
 <li>静的コンテンツ専用ホスティング</li>
 <li>HTML、CSS、JavaScript、画像等の静的ファイル配信</li>
@@ -2857,7 +3036,7 @@ $ sudo systemctl stop asb</code></pre>
 <li>フォルダ階層を保持したファイル管理</li>
 <li>SSL更新状態、デプロイ状態、ログの確認</li>
 </ul>
-<p>Rev.31 時点で ASB互換目標に含めない対象は以下とする。</p>
+<p>Rev.32 時点で ASB互換目標に含めない対象は以下とする。</p>
 <ul>
 <li>XServer Static との完全互換</li>
 <li>XServer Static の管理画面再現</li>
@@ -2868,7 +3047,7 @@ $ sudo systemctl stop asb</code></pre>
 <li>外部サービスの課金、契約、アカウント管理</li>
 <li>外部サービスの SLA / サポート体制</li>
 </ul>
-<p>ASB互換目標に含まれる機能であっても、以下は Rev.31 時点では実装対象ではない。</p>
+<p>ASB互換目標に含まれる機能であっても、以下は Rev.32 時点では実装対象ではない。</p>
 <ul>
 <li>ACME 実通信</li>
 <li>CA 選定</li>
@@ -2912,9 +3091,9 @@ $ sudo systemctl stop asb</code></pre>
 </ul>
 <hr>
 <h3 id="13.24-将来計画機能固定仕様">13.24 将来計画機能固定仕様</h3>
-<p>Rev.31 時点では、将来計画、保留事項、検討・調査中事項は実装対象ではない。</p>
+<p>Rev.32 時点では、将来計画、保留事項、検討・調査中事項は実装対象ではない。</p>
 <p>本節は、将来計画に含まれる機能を実装対象外として固定する。</p>
-<p>ASB 本体は Rev.31 時点では以下を実装してはならない。</p>
+<p>ASB 本体は Rev.32 時点では以下を実装してはならない。</p>
 <ul>
 <li>GUI</li>
 <li>Web UI</li>
@@ -2936,7 +3115,7 @@ $ sudo systemctl stop asb</code></pre>
 <li>ログファイル暗号化</li>
 <li>HTTP/2 実装詳細</li>
 </ul>
-<p>将来計画機能を理由に、ASB 本体は Rev.31 時点では以下を追加、変更、生成してはならない。</p>
+<p>将来計画機能を理由に、ASB 本体は Rev.32 時点では以下を追加、変更、生成してはならない。</p>
 <ul>
 <li>UI 用 API</li>
 <li>モバイル専用 API</li>
@@ -3051,24 +3230,28 @@ $ sudo systemctl stop asb</code></pre>
 <ul>
 <li>対象：API エンドポイント単位（全エンドポイント）</li>
 <li>検証項目：</li>
-<li>リクエスト/レスポンス仕様</li>
-<li>トランザクション・ロールバック</li>
-<li>データ整合性</li>
+</ul>
+<p>  - リクエスト/レスポンス仕様</p>
+<p>  - トランザクション・ロールバック</p>
+<p>  - データ整合性</p>
+<ul>
 <li>ツール：Go testing パッケージ + テスト用 HTTP クライアント</li>
 </ul>
 <p><strong>E2E テスト</strong></p>
 <ul>
 <li>対象：ワークフロー全体</li>
 <li>検証シナリオ：</li>
-<li>プロジェクト作成 → ファイルアップロード → 削除</li>
-<li>ドメイン割り当て → SSL管理データ確認</li>
-<li>バックアップ → 復旧</li>
+</ul>
+<p>  - プロジェクト作成 → ファイルアップロード → 削除</p>
+<p>  - ドメイン割り当て → SSL管理データ確認</p>
+<p>  - バックアップ → 復旧</p>
+<ul>
 <li>ツール：bash スクリプト + curl</li>
 </ul>
 <h3 id="15.2-テスト対象外">15.2 テスト対象外</h3>
 <p>以下はモック・スタブで対応：</p>
 <ul>
-<li>ACME 実通信および CA 連携（Rev.31 時点では実通信を実装対象外とし、SSL管理境界のみ検証）</li>
+<li>ACME 実通信および CA 連携（Rev.32 時点では実通信を実装対象外とし、SSL管理境界のみ検証）</li>
 <li>GitHub Webhook（テスト用ペイロード）</li>
 <li>実際のファイルストレージ大容量テスト（テスト時は最大100MB）</li>
 </ul>
@@ -3104,13 +3287,14 @@ $ ./tests/e2e.sh</code></pre>
 <tr><td><code>config/webhooks.json</code></td><td>Webhook 冪等キー履歴スキーマ</td></tr>
 <tr><td><code>storage/projects/:projectId/files.json</code></td><td>File メタデータスキーマ</td></tr>
 </tbody></table></div>
-<p>静的コンテンツ実体、ログファイル、証明書ファイル、ビルド済みバイナリは、Rev.31 時点のマイグレーション対象外とする。</p>
+<p>静的コンテンツ実体、ログファイル、証明書ファイル、ビルド済みバイナリは、Rev.32 時点のマイグレーション対象外とする。</p>
 <h3 id="16.3-schemaversion-固定">16.3 schemaVersion 固定</h3>
 <p>各実行時 JSON ファイルはトップレベルに <code>schemaVersion</code> を持つ。</p>
-<p>Rev.31 時点の <code>schemaVersion</code> は <code>1</code> とする。</p>
+<p>Rev.32 時点の <code>schemaVersion</code> は <code>1</code> とする。</p>
+<p>例：</p>
 <pre><code>{
-  "schemaVersion": 1,
-  "projects": []
+  &quot;schemaVersion&quot;: 1,
+  &quot;projects&quot;: []
 }</code></pre>
 <p><code>schemaVersion</code> が存在しない JSON ファイルは、<code>schemaVersion: 0</code> として扱う。</p>
 <p>ASB 起動時に現在のASBが対応しない <code>schemaVersion</code> を検出した場合は起動失敗とする。</p>
@@ -3118,6 +3302,7 @@ $ ./tests/e2e.sh</code></pre>
 <h3 id="16.4-実行方式">16.4 実行方式</h3>
 <p>マイグレーションは ASB 本体バイナリの管理コマンドとして提供する。</p>
 <p>外部スクリプトを正本実行方式として扱ってはならない。</p>
+<p>管理コマンドは以下を固定する。</p>
 <pre><code>asb migrate --storage /var/asb --from-schema 0 --to-schema 1 --dry-run
 asb migrate --storage /var/asb --from-schema 0 --to-schema 1 --apply</code></pre>
 <p><code>--storage</code> は <code>storage.basePath</code> を指定する。</p>
@@ -3144,17 +3329,18 @@ asb migrate --storage /var/asb --from-schema 0 --to-schema 1 --apply</code></pre
 <p>マイグレーション履歴は <code>config/migrations.json</code> に保存する。</p>
 <p><code>config/migrations.json</code> は起動時必須 JSON ファイルではなく、初回マイグレーション実行時に <code>storage.basePath/config/</code> 配下へ作成できる。</p>
 <p>作成場所は実行時データ領域に限定し、開発リポジトリ内へ作成してはならない。</p>
+<p>保存形式は以下とする。</p>
 <pre><code>{
-  "schemaVersion": 1,
-  "migrations": [
+  &quot;schemaVersion&quot;: 1,
+  &quot;migrations&quot;: [
     {
-      "id": "string(UUID)",
-      "fromSchema": 0,
-      "toSchema": 1,
-      "startedAt": "2026-09-08T00:00:00Z",
-      "finishedAt": "2026-09-08T00:00:00Z",
-      "status": "applied",
-      "backupPath": "backups/migrations/migration-id.tar.gz"
+      &quot;id&quot;: &quot;string(UUID)&quot;,
+      &quot;fromSchema&quot;: 0,
+      &quot;toSchema&quot;: 1,
+      &quot;startedAt&quot;: &quot;2026-09-08T00:00:00Z&quot;,
+      &quot;finishedAt&quot;: &quot;2026-09-08T00:00:00Z&quot;,
+      &quot;status&quot;: &quot;applied&quot;,
+      &quot;backupPath&quot;: &quot;backups/migrations/migration-id.tar.gz&quot;
     }
   ]
 }</code></pre>
@@ -3165,7 +3351,7 @@ asb migrate --storage /var/asb --from-schema 0 --to-schema 1 --apply</code></pre
 <p>ロールバックに失敗した場合は、標準エラー、エラーログ、<code>config/migrations.json</code> に <code>failed</code> として記録する。</p>
 <p>ロールバック失敗時に成功扱いとしてはならない。</p>
 <h3 id="16.8-禁止事項">16.8 禁止事項</h3>
-<p>Rev.31 時点では以下を禁止する。</p>
+<p>Rev.32 時点では以下を禁止する。</p>
 <ul>
 <li>起動時の自動マイグレーション</li>
 <li>開発リポジトリ内でのマイグレーション作業ファイル作成</li>
@@ -3175,6 +3361,7 @@ asb migrate --storage /var/asb --from-schema 0 --to-schema 1 --apply</code></pre
 <li><code>.gitignore</code> を必要とする移行生成物設計</li>
 </ul>
 <h3 id="16.9-テスト固定項目">16.9 テスト固定項目</h3>
+<p>マイグレーション実装では以下のテストを必須とする。</p>
 <ul>
 <li><code>schemaVersion</code> なしを <code>0</code> として扱うテスト</li>
 <li>未対応 <code>schemaVersion</code> の起動失敗テスト</li>
@@ -3191,6 +3378,7 @@ asb migrate --storage /var/asb --from-schema 0 --to-schema 1 --apply</code></pre
 <div class="tbl-wrap"><table><thead>
 <tr><th>バージョン</th><th>日付</th><th>内容</th></tr>
 </thead><tbody>
+<tr><td>Rev.32</td><td>2026-09-08</td><td>実装ファイル構成、package 内ファイル役割、エラーコード固定表、テストファイル配置、フェーズ完了判定を追加し、仕様を実装直前の契約粒度へ具体化</td></tr>
 <tr><td>Rev.31</td><td>2026-09-08</td><td>実装フェーズ単位の開発版バージョン管理を追加し、IMPLEMENTATION_TASKS.md を P0/v0.1 から P9/v0.10 までの優先度別フェーズ構成へ再編する方針を固定</td></tr>
 <tr><td>Rev.30</td><td>2026-09-08</td><td>将来計画、保留事項、検討・調査中事項を Rev.30 時点の実装対象外として固定し、GUI/Web UI/モバイル/クラウド/複数インスタンス/外部ストレージ/ログ暗号化/ウイルススキャン等のAPI・設定・JSON・ディレクトリ・外部依存追加禁止を実装レベルで固定</td></tr>
 <tr><td>Rev.29</td><td>2026-09-08</td><td>ASB互換目標を将来到達目標として実装対象から分離し、XServer Static 相当仕様との関係、含む対象、含めない対象、互換目標を理由にした未確定機能実装禁止を実装レベルで固定</td></tr>
@@ -3223,48 +3411,19 @@ asb migrate --storage /var/asb --from-schema 0 --to-schema 1 --apply</code></pre
 <tr><td>Rev.2</td><td>2025-01-15</td><td>仕様改良（データモデル説明追加、JSON構造拡張、エラーハンドリング定義、Phase詳細化）</td></tr>
 <tr><td>Rev.1</td><td>2025-01-15</td><td>ゼロベース仕様策定（責務駆動設計アーキテクチャ採用）</td></tr>
 </tbody></table></div>
-    </div>
+    </article>
   </main>
 </div>
 <script>
-(function () {
-  var shell = document.querySelector(".portal-shell");
-  var toggle = document.querySelector(".sidebar-toggle");
-  if (!shell || !toggle) {
-    return;
-  }
-
-  function setCollapsed(collapsed) {
-    shell.classList.toggle("sidebar-collapsed", collapsed);
-    toggle.setAttribute("aria-expanded", String(!collapsed));
-    toggle.setAttribute("aria-label", collapsed ? "目次を表示する" : "目次を折りたたむ");
-  }
-
-  function getSavedState() {
-    try {
-      return window.localStorage.getItem("asb-sidebar-collapsed");
-    } catch (error) {
-      return null;
-    }
-  }
-
-  function saveState(collapsed) {
-    try {
-      window.localStorage.setItem("asb-sidebar-collapsed", String(collapsed));
-    } catch (error) {
-      return;
-    }
-  }
-
-  var saved = getSavedState();
-  setCollapsed(saved === "true");
-
-  toggle.addEventListener("click", function () {
-    var collapsed = !shell.classList.contains("sidebar-collapsed");
-    setCollapsed(collapsed);
-    saveState(collapsed);
-  });
-})();
+const shell = document.querySelector('.portal-shell');
+const toggle = document.querySelector('.sidebar-toggle');
+const saved = localStorage.getItem('asb-sidebar-collapsed') === 'true';
+if (saved) { shell.classList.add('sidebar-collapsed'); toggle.setAttribute('aria-expanded', 'false'); }
+toggle.addEventListener('click', () => {
+  const collapsed = shell.classList.toggle('sidebar-collapsed');
+  toggle.setAttribute('aria-expanded', String(!collapsed));
+  localStorage.setItem('asb-sidebar-collapsed', String(collapsed));
+});
 </script>
 </body>
 </html>

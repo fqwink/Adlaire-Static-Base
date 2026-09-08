@@ -6,7 +6,7 @@
 
 本ファイルは、`ASB-spec.md` に基づいて実装タスクを管理する。
 
-参照仕様バージョン: `ASB-spec.md Rev.31`
+参照仕様バージョン: `ASB-spec.md Rev.32`
 
 `ASB-spec.md` で仕様確定済みの事項のみを実装タスクとして扱う。
 
@@ -48,9 +48,11 @@
 ### 実装タスク
 
 - Go 1.21 以上による ASB 本体の単一バイナリ基盤を構築する。
-- `go.mod`、`main.go` を作成する。
-- `main.go` は設定読み込み、依存関係生成、HTTPサーバー起動、graceful shutdown のみに限定する。
+- `go.mod` を作成する。
+- `cmd/asb/main.go` を作成する。
+- `cmd/asb/main.go` は設定読み込み、依存関係生成、HTTPサーバー起動、signal受信、graceful shutdown のみに限定する。
 - `config`、`server`、`management`、`delivery`、`data`、`system` の package 境界を作成する。
+- `internal/config/`、`internal/server/`、`internal/management/`、`internal/delivery/`、`internal/data/`、`internal/system/` を作成する。
 - Management Domain、Delivery Domain、Data Domain、System Domain の基本ディレクトリ構成を作成する。
 - Handler、Service、Entity の層構造を実装する。
 - Handler が Service interface のみに依存する構造にする。
@@ -58,11 +60,13 @@
 - Service が Repository、Storage、Clock、IDGenerator、LogService interface に依存する構造にする。
 - Entity がファイル入出力、HTTP 入出力、時刻取得、ID生成を行わない構造にする。
 - Entity は保存形式とレスポンス形式の型定義のみを持つ構造にする。
-- ドメイン間の接続を `main.go` で一元管理する。
+- ドメイン間の接続を `cmd/asb/main.go` で一元管理する。
 - 責務間の循環依存を禁止する。
 - `config.Loader`、`server.Router`、`server.Responder`、`management.ProjectService`、`management.DomainService`、`management.SSLService`、`delivery.FileService`、`delivery.StaticService`、`delivery.WebhookService`、`data.JSONRepository`、`data.StorageService`、`data.BackupService`、`system.LogService`、`system.MonitoringService`、`system.Clock`、`system.IDGenerator` の公開 interface 境界を整備する。
 - Project、File、Backup の UUID 形式 ID 生成を `crypto/rand` で実装する。
 - 外部ルーターライブラリを使わず、Go標準 `net/http` でルーティングする。
+- `internal/system/id_test.go` を作成する。
+- `internal/system/clock_test.go` を作成する。
 
 ### 完了条件
 
@@ -90,6 +94,9 @@
 ### 実装タスク
 
 - `config/config.json` の読み込み、デフォルト値適用、起動時バリデーションを実装する。
+- `internal/config/config.go`、`internal/config/loader.go`、`internal/config/validate.go` を実装する。
+- `internal/server/router.go`、`internal/server/response.go`、`internal/server/middleware.go` を実装する。
+- `internal/data/json_repository.go` を実装する。
 - `server.port`、`server.host`、`server.shutdownTimeout`、`storage.basePath`、`storage.maxProjectSize`、`ssl.email`、`ssl.renewBefore`、`log.level`、`log.format`、`log.maxSize` の起動時バリデーションを実装する。
 - 設定未知フィールド検出時の起動失敗を実装する。
 - 起動時に設定済み実行時データ領域の存在確認と権限検証を実装する。
@@ -127,9 +134,9 @@
 - 保存失敗時に成功レスポンスを返さない。
 - 複数JSON更新では最終JSONの保存完了まで成功レスポンスを返さない。
 - 複数JSON更新の途中失敗時に更新済みJSON名、未更新JSON名、操作名、requestId をエラーログへ記録する。
-- Rev.31 時点では複数JSON更新に外部トランザクション機構を導入しない。
-- Rev.31 時点の API エンドポイント固定表に記載されたメソッド、パス、成功ステータス、失敗コードを実装する。
-- Rev.31 API 成功レスポンス固定表に記載された JSON キーと型を実装する。
+- Rev.32 時点では複数JSON更新に外部トランザクション機構を導入しない。
+- Rev.32 時点の API エンドポイント固定表に記載されたメソッド、パス、成功ステータス、失敗コードを実装する。
+- Rev.32 API 成功レスポンス固定表に記載された JSON キーと型を実装する。
 - プロジェクト作成 API `POST /api/projects` を実装する。
 - プロジェクト一覧 API `GET /api/projects` を実装する。
 - プロジェクト削除 API `DELETE /api/projects/:id` を実装する。
@@ -140,6 +147,7 @@
 - Project削除を best effort 成功扱いにしない。
 - プロジェクト名重複を `ERR_PROJECT_ALREADY_EXISTS` として扱う。
 - 存在しないプロジェクト参照を `ERR_PROJECT_NOT_FOUND` として扱う。
+- `internal/config/loader_test.go`、`internal/config/validate_test.go`、`internal/server/response_test.go`、`internal/data/json_repository_test.go` を作成する。
 
 ### 完了条件
 
@@ -170,6 +178,8 @@
 ### 実装タスク
 
 - ファイルアップロード API `POST /api/projects/:id/files/upload` を実装する。
+- `internal/delivery/file.go`、`internal/delivery/static.go`、`internal/delivery/handler.go` を実装する。
+- `internal/data/storage.go` を実装する。
 - ファイル一覧 API `GET /api/projects/:id/files` を実装する。
 - ファイル削除 API `DELETE /api/projects/:id/files/:name` を実装する。
 - `storage/projects/:projectId/files.json` によるファイルメタデータ管理を実装する。
@@ -198,11 +208,12 @@
 - `Last-Modified` を HTTP-date 形式で返す。
 - `Cache-Control` を既定で `public, max-age=60` とする。
 - `If-None-Match` と `If-Modified-Since` による `304 Not Modified` を実装する。
-- Range request は Rev.31 時点では実装せず、`Range` ヘッダーを無視して `206 Partial Content` を返さない。
+- Range request は Rev.32 時点では実装せず、`Range` ヘッダーを無視して `206 Partial Content` を返さない。
 - `Accept-Encoding: br` では Brotli 応答を返さない。
 - Brotli 用の `.br`、キャッシュ、一時ファイル、メタデータを開発リポジトリ内にも `storage.basePath` 配下にも生成しない。
 - 静的配信でディレクトリ一覧を返さない。
 - 静的配信で開発リポジトリ内に配信用一時ファイル、キャッシュファイル、実行時データを作成しない。
+- `internal/delivery/file_test.go`、`internal/delivery/static_test.go`、`internal/data/storage_test.go` を作成する。
 
 ### 完了条件
 
@@ -229,6 +240,7 @@
 ### 実装タスク
 
 - ドメイン追加 API `POST /api/projects/:id/domains` を実装する。
+- `internal/management/domain.go`、`internal/management/ssl.go`、`internal/management/handler.go` を実装する。
 - ドメイン一覧 API `GET /api/projects/:id/domains` を実装する。
 - ドメイン削除 API `DELETE /api/projects/:id/domains/:domain` を実装する。
 - `config/domains.json` によるドメイン情報の永続化を実装する。
@@ -240,7 +252,7 @@
 - 設定済み証明書保存先 `certs/` の検証と管理を実装する。
 - SSL証明書ID、証明書メタデータ、証明書ファイルパス検証、有効期限監視モデル、失敗エラー `ERR_SSL_CERT_GENERATION_FAILED` を実装する。
 - SSL更新状態は手動配置または ASB 外部運用の結果として確認できる管理モデルに限定する。
-- ACME による証明書取得・更新を ASB互換目標として扱うが、Rev.31 時点では実通信を実装しない。
+- ACME による証明書取得・更新を ASB互換目標として扱うが、Rev.32 時点では実通信を実装しない。
 - 証明書ファイルそのものを ASB 本体で生成、取得、更新、削除、失効しない。
 - ACME client、ACME account 登録、ACME account key 生成/保存、ACME directory 取得、ACME nonce 取得、ACME order 作成、ACME authorization 取得、ACME challenge 応答、ACME finalize、ACME certificate download、ACME revoke を実装しない。
 - DNS-01 challenge、HTTP-01 challenge、TLS-ALPN-01 challenge、wildcard 証明書自動取得、複数 CA 連携、CA 選定、証明書自動更新、証明書更新スケジューラー、challenge 状態管理、ACME retry、ACME rate limit 回避を実装しない。
@@ -248,6 +260,7 @@
 - `storage/acme/`、`storage/acme/accounts/`、`storage/acme/orders/`、`storage/acme/challenges/`、`storage/certs/acme/` を作成しない。
 - `acme.*`、`ca.*`、`ssl.acme.*` 設定項目を定義しない。
 - `config/config.json` に ACME 関連フィールドまたは CA 選定関連フィールドが存在する場合は、未知フィールドとして起動失敗させる。
+- `internal/management/domain_test.go`、`internal/management/ssl_test.go` を作成する。
 
 ### 完了条件
 
@@ -275,6 +288,7 @@
 ### 実装タスク
 
 - GitHub Webhook API `POST /api/webhook/github` を実装する。
+- `internal/delivery/webhook.go` を実装する。
 - GitHub Push イベントの検出を実装する。
 - `X-GitHub-Event` が `push` 以外の場合は `200 OK` と `{"status":"ignored"}` を返す。
 - 対象ブランチ設定と対象外ブランチの成功扱い無視を実装する。
@@ -303,6 +317,7 @@
 - `config/webhooks.json` の `events[]` スキーマ、`status`、`completedAt`、`errorCode`、`receivedAt` 降順、同一時刻時 `key` 昇順を実装する。
 - Webhook失敗時は `failed` と `errorCode` を `config/webhooks.json` に保存する。
 - Webhook失敗時の自動リトライスケジューラーを実装しない。
+- `internal/delivery/webhook_test.go` を作成する。
 
 ### 完了条件
 
@@ -329,6 +344,7 @@
 ### 実装タスク
 
 - バックアップ一覧 API `GET /api/backups` を実装する。
+- `internal/data/backup.go` を実装する。
 - バックアップ復旧 API `POST /api/backups/restore/:id` を実装する。
 - `config/backups.json` によるバックアップ履歴管理を実装する。
 - `config/backups.json` の `backups[]` スキーマ、`createdAt` 降順、同一時刻時 `id` 昇順を実装する。
@@ -348,7 +364,7 @@
 - バックアップ作成用一時tarを `storage.basePath/backups/.tmp/` 配下に限定する。
 - atomic rename 後に履歴保存へ失敗した場合は、作成済みtar.gzを削除する。
 - バックアップ保存先を別障害領域へ複製する作業をASB外の運用責務として扱う。
-- 外部ストレージ連携を Rev.31 時点では実装対象外として扱う。
+- 外部ストレージ連携を Rev.32 時点では実装対象外として扱う。
 - Backup復旧前退避先を `storage.basePath/backups/restore-staging/{restoreId}/previous/` に固定する。
 - Backup復旧用展開先を `storage.basePath/backups/restore-staging/{restoreId}/next/` に固定する。
 - Backup履歴の `status` が `completed` でない場合は復旧を拒否する。
@@ -356,6 +372,7 @@
 - 復旧途中失敗時は `previous/` から復元する。
 - `restore-staging/{restoreId}/` 削除失敗は WARN ログに記録する。
 - 開発リポジトリ内にバックアップ、一時tar、checksum、復旧用一時ファイル、退避データ、展開データを作成しない。
+- `internal/data/backup_test.go` を作成する。
 
 ### 完了条件
 
@@ -381,6 +398,7 @@
 ### 実装タスク
 
 - ログ保存先を `storage.basePath/logs/` に固定する。
+- `internal/system/log.go`、`internal/system/monitoring.go` を実装する。
 - アクセスログを `storage.basePath/logs/access.log` に保存する。
 - エラーログを `storage.basePath/logs/error.log` に保存する。
 - アクセスログとエラーログを UTF-8 JSON Lines で出力する。
@@ -405,6 +423,7 @@
 - CPU、メモリ、ディスク、接続数、リクエスト数の監視値取得を実装する。
 - OS 依存で取得できない監視値は `null` として成功レスポンスに含める。
 - 開発リポジトリ内にログファイルを作成しない。
+- `internal/system/log_test.go`、`internal/system/monitoring_test.go` を作成する。
 
 ### 完了条件
 
@@ -430,6 +449,7 @@
 ### 実装タスク
 
 - マイグレーション対象を `config/projects.json`、`config/domains.json`、`config/backups.json`、`config/webhooks.json`、`storage/projects/:projectId/files.json` に限定する。
+- `internal/data/migration_test.go` を作成する。
 - 各実行時 JSON ファイルのトップレベル `schemaVersion` を実装する。
 - `schemaVersion` 未指定の JSON ファイルを `0` として扱う。
 - 未対応 `schemaVersion` 検出時の起動失敗を実装する。
@@ -479,6 +499,7 @@
 - ビルド成果物を開発リポジトリへ残さないリリース手順を実装する。
 - `install.sh --version vX.Y --arch amd64|arm64` を実装する。
 - `update.sh --version vX.Y --arch amd64|arm64` を実装する。
+- `scripts/install_test.sh`、`scripts/update_test.sh` を作成する。
 - `latest` 指定、自動最新版選択、未指定バージョンでの install/update 実行を拒否する。
 - install/update でダウンロード失敗、checksum不一致、`--version` 不一致、systemd操作失敗を成功扱いしない。
 - `update.sh` の起動失敗時に `/usr/local/bin/asb.previous` から復旧を試行する。
@@ -504,15 +525,16 @@
 
 優先度: 低
 
-目的: Rev.31 時点で実装対象外の機能が混入していないことを確認する。
+目的: Rev.32 時点で実装対象外の機能が混入していないことを確認する。
 
 ### 実装タスク
 
-- ASB互換目標を将来の到達目標として扱い、Rev.31 時点の実装対象として扱わない。
+- ASB互換目標を将来の到達目標として扱い、Rev.32 時点の実装対象として扱わない。
+- `internal/asb_forbidden_test.go` を作成する。
 - ASB互換目標に含まれることを、未確定機能の実装根拠として扱わない。
 - ASB互換目標を理由に `.gitignore`、外部DB、未承認外部ライブラリ、未承認外部サービス連携、開発リポジトリ内実行時データ、起動時自動生成、ビルド成果物自動生成を追加しない。
 - ASB互換目標を理由に APIキー管理、ユーザー認証、Rate limiting、Brotli圧縮、ACME実通信、CA選定、SDK本体、SDK専用通信を実装しない。
-- 将来計画、保留事項、検討・調査中事項を Rev.31 時点の実装対象として扱わない。
+- 将来計画、保留事項、検討・調査中事項を Rev.32 時点の実装対象として扱わない。
 - GUI、Web UI、デスクトップアプリ、モバイルアプリ、クラウドサービス化、SaaS基盤、ユーザー管理、マルチテナント、課金管理、契約管理、複数インスタンス管理、クラスタ管理、分散ロック、NFS専用連携、分散ストレージ専用連携、外部ストレージサービス連携、ウイルススキャン、ログファイル暗号化、HTTP/2実装詳細を実装しない。
 - 将来計画機能を理由に UI用API、モバイル専用API、クラウド用API、テナント用API、課金用API、契約用API、外部ストレージ用API、ウイルススキャン用API、ログ暗号化用APIを追加しない。
 - 将来計画機能を理由に `ui.*`、`webui.*`、`desktop.*`、`mobile.*`、`cloud.*`、`tenant.*`、`billing.*`、`nfs.*`、`cluster.*`、`distributedStorage.*`、`externalStorage.*`、`virusScan.*`、`logEncryption.*` 設定項目を追加しない。
@@ -550,7 +572,7 @@
 
 ## 14. 実装フェーズ外の仕様未確定タスク
 
-以下は Rev.31 時点では実装フェーズに含めない。
+以下は Rev.32 時点では実装フェーズに含めない。
 
 - ACME protocol 対応範囲、CA選定、複数CA、challenge方式、account key 保護、DNS provider連携、retry、rate limit、テスト方法、失敗時挙動を確定する。
 - SDK 本体、SDK 配布方針、SDK 認証仕様を確定する。
