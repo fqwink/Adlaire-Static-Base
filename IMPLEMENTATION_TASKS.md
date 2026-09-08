@@ -6,7 +6,7 @@
 
 本ファイルは、`ASB-spec.md` に基づいて実装タスクを管理する。
 
-参照仕様バージョン: `ASB-spec.md Rev.40`
+参照仕様バージョン: `ASB-spec.md Rev.41`
 
 `ASB-spec.md` で仕様確定済みの事項のみを実装タスクとして扱う。
 
@@ -39,7 +39,7 @@
 | 最高 | P0 | v0.1 | 基盤 | 未着手 |
 | 最高 | P1 | v0.2 | API・JSON・起動検証 | 未着手 |
 | 高 | P2 | v0.3 | 静的配信・ファイル管理 | 未着手 |
-| 高 | P3 | v0.4 | ドメイン・SSL管理境界 | 未着手 |
+| 高 | P3 | v0.4 | ドメイン・無料独自SSL | 未着手 |
 | 高 | P4 | v0.5 | GitHub Webhook デプロイ | 未着手 |
 | 中 | P5 | v0.6 | バックアップ・復旧 | 未着手 |
 | 中 | P6 | v0.7 | ログ・監視 | 未着手 |
@@ -107,7 +107,7 @@
 - `internal/config/config.go`、`internal/config/loader.go`、`internal/config/validate.go` を実装する。
 - `internal/server/router.go`、`internal/server/response.go`、`internal/server/middleware.go` を実装する。
 - `internal/data/json_repository.go` を実装する。
-- `server.port`、`server.host`、`server.shutdownTimeout`、`storage.basePath`、`storage.maxProjectSize`、`ssl.email`、`ssl.renewBefore`、`log.level`、`log.format`、`log.maxSize` の起動時バリデーションを実装する。
+- `server.port`、`server.host`、`server.shutdownTimeout`、`storage.basePath`、`storage.maxProjectSize`、`ssl.email`、`ssl.renewBefore`、`ssl.renewCheckInterval`、`log.level`、`log.format`、`log.maxSize` の起動時バリデーションを実装する。
 - 任意設定項目の未指定時、親 object 未指定時、空文字、型不一致、数値の小数・指数表記・負数・`null` 拒否を仕様通り実装する。
 - `storage.basePath` と `deploy.sourcePath` の絶対パス正規化、開発リポジトリ配下判定、Git worktree 判定を実装する。
 - 設定未知フィールド検出時の起動失敗を実装する。
@@ -139,7 +139,7 @@
 - `204 No Content` を使用しない。
 - 配列レスポンスは対象データが空でも空配列を返す。
 - URL パラメータ `:id`、`:domain`、`:name` の URL decode、正規化、バリデーションを実装する。
-- `:id` は Rev.40 の UUID 正規表現に一致する値のみ許可する。
+- `:id` は Rev.41 の UUID 正規表現に一致する値のみ許可する。
 - `:domain` は小文字正規化後、label数、全体長、label正規表現、末尾 `.` 除去を仕様通り検証する。
 - `:name` は長さ、NUL、パス区切り、`.`、`..`、先頭 `.`、空白のみを仕様通り拒否する。
 - JSON ファイル更新時の読み込み検証、保存前再検証、同一ファイル排他書き込みを実装する。
@@ -155,9 +155,9 @@
 - 複数JSON更新の途中失敗時に更新済みJSON名、未更新JSON名、操作名、requestId をエラーログへ記録する。
 - 複数ファイル更新の途中失敗時に、更新予定JSON、更新済みJSON、`files.json` path、実ファイル、`projects.used` の整合性検証を実装する。
 - 整合性検証失敗時は `ERR_STORAGE_VALIDATION_FAILED` を error log へ記録する。
-- Rev.40 時点では複数JSON更新に外部トランザクション機構を導入しない。
-- Rev.40 時点の API エンドポイント固定表に記載されたメソッド、パス、成功ステータス、失敗コードを実装する。
-- Rev.40 API 成功レスポンス固定表に記載された JSON キーと型を実装する。
+- Rev.41 時点では複数JSON更新に外部トランザクション機構を導入しない。
+- Rev.41 時点の API エンドポイント固定表に記載されたメソッド、パス、成功ステータス、失敗コードを実装する。
+- Rev.41 API 成功レスポンス固定表に記載された JSON キーと型を実装する。
 - プロジェクト作成 API `POST /api/projects` を実装する。
 - プロジェクト一覧 API `GET /api/projects` を実装する。
 - プロジェクト削除 API `DELETE /api/projects/:id` を実装する。
@@ -186,7 +186,7 @@
 - ファイルアップロード
 - 静的配信
 - ドメインAPI
-- SSL証明書実通信
+- 無料独自SSL
 - Webhook
 - バックアップ
 
@@ -236,7 +236,7 @@
 - `Last-Modified` を HTTP-date 形式で返す。
 - `Cache-Control` を既定で `public, max-age=60` とする。
 - `If-None-Match` と `If-Modified-Since` による `304 Not Modified` を実装する。
-- Range request は Rev.40 時点では実装せず、`Range` ヘッダーを無視して `206 Partial Content` を返さない。
+- Range request は Rev.41 時点では実装せず、`Range` ヘッダーを無視して `206 Partial Content` を返さない。
 - `Accept-Encoding: br` では Brotli 応答を返さない。
 - Brotli 用の `.br`、キャッシュ、一時ファイル、メタデータを開発リポジトリ内にも `storage.basePath` 配下にも生成しない。
 - 静的配信でディレクトリ一覧を返さない。
@@ -258,11 +258,11 @@
 - Range request
 - 外部CDN連携
 
-## 6. P3 / v0.4 / ドメイン・SSL管理境界
+## 6. P3 / v0.4 / ドメイン・無料独自SSL
 
 優先度: 高
 
-目的: ドメイン管理とSSL証明書管理境界を、ACME実通信なしで実装する。
+目的: ドメイン管理とXServer Static互換目標の無料独自SSLを実装する。
 
 ### 実装タスク
 
@@ -275,35 +275,44 @@
 - RFC 1035 準拠のドメインバリデーションを実装する。
 - ドメインの小文字正規化、253文字以下、最大3階層制限を実装する。
 - ドメイン重複割り当てを `ERR_DOMAIN_ALREADY_ASSIGNED` として扱う。
-- SSL証明書管理境界を実装する。
+- 無料独自SSLを実装する。
+- 無料独自SSL 有効化 API `POST /api/projects/:id/domains/:domain/ssl/enable` を実装する。
+- 無料独自SSL 状態確認 API `GET /api/projects/:id/domains/:domain/ssl` を実装する。
+- 無料独自SSL 更新 API `POST /api/projects/:id/domains/:domain/ssl/renew` を実装する。
+- 無料独自SSL 無効化 API `POST /api/projects/:id/domains/:domain/ssl/disable` を実装する。
 - 設定済み証明書保存先 `certs/` の検証と管理を実装する。
 - SSL証明書ID、証明書メタデータ、証明書ファイルパス検証、有効期限監視モデル、失敗エラー `ERR_SSL_CERT_GENERATION_FAILED` を実装する。
-- SSL更新状態は手動配置または ASB 外部運用の結果として確認できる管理モデルに限定する。
-- ACME による証明書取得・更新を ASB互換目標として扱うが、Rev.40 時点では実通信を実装しない。
-- 証明書ファイルそのものを ASB 本体で生成、取得、更新、削除、失効しない。
-- ACME client、ACME account 登録、ACME account key 生成/保存、ACME directory 取得、ACME nonce 取得、ACME order 作成、ACME authorization 取得、ACME challenge 応答、ACME finalize、ACME certificate download、ACME revoke を実装しない。
-- DNS-01 challenge、HTTP-01 challenge、TLS-ALPN-01 challenge、wildcard 証明書自動取得、複数 CA 連携、CA 選定、証明書自動更新、証明書更新スケジューラー、challenge 状態管理、ACME retry、ACME rate limit 回避を実装しない。
-- `config/acme.json`、`config/ca.json`、`config/acme_accounts.json`、`config/acme_orders.json`、`config/acme_authorizations.json`、`config/acme_challenges.json` を作成しない。
-- `storage/acme/`、`storage/acme/accounts/`、`storage/acme/orders/`、`storage/acme/challenges/`、`storage/certs/acme/` を作成しない。
-- `acme.*`、`ca.*`、`ssl.acme.*` 設定項目を定義しない。
-- `config/config.json` に ACME 関連フィールドまたは CA 選定関連フィールドが存在する場合は、未知フィールドとして起動失敗させる。
+- 無料独自SSLの有効化、無効化、状態確認、証明書取得、証明書自動更新を実装する。
+- Let’s Encrypt ACME v2 client を実装する。
+- ACME account 登録、account key 生成・保存、directory 取得、nonce 管理、order 作成、authorization 取得、HTTP-01 challenge 応答、finalize、certificate download を実装する。
+- HTTP-01 challenge 応答を通常の静的ファイル配信より優先する。
+- `/.well-known/acme-challenge/{token}` を ASB の challenge handler で応答する。
+- ASB 前段にリバースプロキシを置く場合、`/.well-known/acme-challenge/` が ASB へ転送される構成を前提として検証する。
+- 証明書ファイルを `storage.basePath/certs/{domain}/fullchain.pem` と `storage.basePath/certs/{domain}/privkey.pem` に保存する。
+- ACME 内部状態を `config/acme_accounts.json`、`config/acme_orders.json`、`config/acme_authorizations.json`、`config/acme_challenges.json`、`config/acme_renewals.json` に保存する。
+- 証明書自動更新スケジューラー、`ssl.renewBefore`、`ssl.renewCheckInterval`、retry / backoff、Let’s Encrypt rate limit 配慮を実装する。
+- 複数 CA、CA 選定、CA failover、任意 ACME directory URL を実装しない。
+- DNS-01 challenge、TLS-ALPN-01 challenge、wildcard 証明書、DNS provider API 連携、手動 TXT 登録、EAB、ARI、OCSP stapling を実装しない。
 - `internal/management/domain_test.go`、`internal/management/ssl_test.go` を作成する。
 
 ### 完了条件
 
 - Domain API の追加、一覧、削除、重複、存在なし参照のテストが成功する。
-- 証明書ファイルが手動配置または ASB 外部運用で配置された前提で、ASB が存在、パス、有効期限のみを検証するテストが成功する。
-- ACME client、challenge、CA連携、証明書自動更新、ACME 関連 JSON ファイルまたはディレクトリを生成しないテストが成功する。
-- `config/config.json` に ACME 関連フィールドまたは CA 選定関連フィールドが存在する場合に未知フィールドとして起動失敗するテストが成功する。
+- 無料独自SSLの有効化、無効化、状態確認、証明書取得、証明書自動更新のテストが成功する。
+- Let’s Encrypt ACME v2 のHTTP-01 challengeフローをテスト用ACMEサーバーまたはモックで検証する。
+- DNS-01、TLS-ALPN-01、wildcard、DNS provider API、複数CA、CA選定、CA failoverが実装されていないことを確認する。
 - `go test ./...` が成功する。
 - `.gitignore` が存在しない。
 
 ### 非対象
 
-- ACME 実通信
+- DNS-01 challenge
+- TLS-ALPN-01 challenge
+- wildcard 証明書
+- DNS provider API 連携
+- 複数 CA
 - CA 選定
-- ワイルドカード証明書自動取得
-- 証明書自動更新
+- CA failover
 - TLS 終端
 
 ## 7. P4 / v0.5 / GitHub Webhook デプロイ
@@ -401,7 +410,7 @@
 - バックアップ作成用一時tarを `storage.basePath/backups/.tmp/` 配下に限定する。
 - atomic rename 後に履歴保存へ失敗した場合は、作成済みtar.gzを削除する。
 - バックアップ保存先を別障害領域へ複製する作業をASB外の運用責務として扱う。
-- 外部ストレージ連携を Rev.40 時点では実装対象外として扱う。
+- 外部ストレージ連携を Rev.41 時点では実装対象外として扱う。
 - Backup復旧前退避先を `storage.basePath/backups/restore-staging/{restoreId}/previous/` に固定する。
 - Backup復旧用展開先を `storage.basePath/backups/restore-staging/{restoreId}/next/` に固定する。
 - Backup履歴の `status` が `completed` でない場合は復旧を拒否する。
@@ -576,16 +585,16 @@
 
 優先度: 低
 
-目的: Rev.40 時点で実装対象外の機能が混入していないことを確認する。
+目的: Rev.41 時点で実装対象外の機能が混入していないことを確認する。
 
 ### 実装タスク
 
-- ASB互換目標を将来の到達目標として扱い、Rev.40 時点の実装対象として扱わない。
+- ASB互換目標を将来の到達目標として扱い、Rev.41 時点の実装対象として扱わない。
 - `internal/asb_forbidden_test.go` を作成する。
 - ASB互換目標に含まれることを、未確定機能の実装根拠として扱わない。
 - ASB互換目標を理由に `.gitignore`、外部DB、未承認外部ライブラリ、未承認外部サービス連携、開発リポジトリ内実行時データ、起動時自動生成、ビルド成果物自動生成を追加しない。
-- ASB互換目標を理由に APIキー管理、ユーザー認証、Rate limiting、Brotli圧縮、ACME実通信、CA選定、SDK本体、SDK専用通信を実装しない。
-- 将来計画、保留事項、検討・調査中事項を Rev.40 時点の実装対象として扱わない。
+- ASB互換目標を理由に APIキー管理、ユーザー認証、Rate limiting、Brotli圧縮、CA選定、SDK本体、SDK専用通信を実装しない。
+- 将来計画、保留事項、検討・調査中事項を Rev.41 時点の実装対象として扱わない。
 - GUI、Web UI、デスクトップアプリ、モバイルアプリ、ユーザー管理、マルチテナント、課金管理、契約管理、複数インスタンス管理、クラスタ管理、分散ロック、NFS専用連携、分散ストレージ専用連携、外部ストレージサービス連携、ログファイル暗号化、HTTP/2実装詳細を実装しない。
 - 将来計画機能を理由に UI用API、モバイル専用API、テナント用API、課金用API、契約用API、外部ストレージ用API、ログ暗号化用APIを追加しない。
 - 将来計画機能を理由に `ui.*`、`webui.*`、`desktop.*`、`mobile.*`、`tenant.*`、`billing.*`、`nfs.*`、`cluster.*`、`distributedStorage.*`、`externalStorage.*`、`logEncryption.*` 設定項目を追加しない。
@@ -606,7 +615,7 @@
 ### 完了条件
 
 - 禁止機能の非生成テストまたはレビューが完了する。
-- 認証、Rate limiting、SDK、ACME、Brotli、将来計画機能が実装されていないことを確認する。
+- 認証、Rate limiting、SDK、Brotli、将来計画機能が実装されていないことを確認する。
 - `.gitignore` が存在しない。
 - 開発リポジトリ内に実行時データ、ログ、一時ファイル、ビルド成果物が残っていない。
 - `go test ./...` が成功する。
@@ -623,11 +632,9 @@
 
 ## 14. 実装フェーズ外の仕様未確定タスク
 
-以下は Rev.40 時点では実装フェーズに含めない。
+以下は Rev.41 時点では実装フェーズに含めない。
 
-- ACME protocol 対応範囲、CA選定、複数CA、challenge方式、account key 保護、DNS provider連携、retry、rate limit、テスト方法、失敗時挙動を確定する。
 - SDK 本体、SDK 配布方針、SDK 認証仕様を確定する。
-- SSL証明書自動更新の実通信とスケジューリング仕様を確定する。
 - HTTP/2 実装詳細を実装対象へ昇格する場合の API、設定項目、テスト条件を仕様改訂で確定する。
 - GUI、デスクトップアプリ、Web UI を実装対象へ昇格する場合のリポジトリ境界、API、設定項目、外部依存、生成物を仕様改訂で確定する。
 - モバイルアプリを実装対象へ昇格する場合の API、認証、配布、設定項目、外部依存を仕様改訂で確定する。
