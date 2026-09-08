@@ -76,6 +76,12 @@ Pull Request の merge はユーザーが行う。
 
 Pull Request が merge された場合、作業ブランチは自動削除する。
 
+作業ブランチ削除前には、対象 Pull Request の merge 状態を GitHub 上で確認し、`MERGED` であることを確定する。
+
+merge 済みが確定した場合は、`main` を最新の `origin/main` に同期した上で、対象のローカル作業ブランチおよびリモート作業ブランチを削除する。リモート作業ブランチが既に削除済みの場合は、その状態を確認して完了扱いとする。
+
+作業ブランチ削除後は、現在ブランチ、残存ブランチ、作業ツリー状態を確認する。
+
 SSH URL は `origin` に設定し、HTTPS URL はバックアップ remote として保持する。
 
 `.gitignore` は作成・使用しない。
