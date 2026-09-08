@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ASB 仕様書 Rev.16</title>
+<title>ASB 仕様書 Rev.22</title>
 <style>
 :root { color-scheme: light; --bg: #f4f7f9; --panel: #ffffff; --panel-2: #f8fafc; --panel-3: #edf6f3; --line: #d8e1e7; --line-strong: #b7c6cf; --text: #162126; --muted: #5b6d76; --subtle: #83919a; --brand: #0f766e; --brand-2: #14532d; --ok: #16845f; --code-bg: #111827; --code-text: #e8eef4; --toc-w: 310px; --radius: 8px; }
 @media (prefers-color-scheme: dark) { :root { color-scheme: dark; --bg: #0e1416; --panel: #141d20; --panel-2: #101719; --panel-3: #16312d; --line: #27363b; --line-strong: #3d5057; --text: #e6eef0; --muted: #a7b6bb; --subtle: #7e8e94; --brand: #5eead4; --brand-2: #99f6e4; --ok: #6ee7b7; --code-bg: #080d10; --code-text: #edf7f8; } }
@@ -71,7 +71,7 @@ pre code { background: transparent; border: 0; color: inherit; padding: 0; }
     <div class="sidebar-header">
       <span class="logo">Adlaire-Static-Base</span>
       <h1 class="sidebar-title">ASB Developer Docs</h1>
-      <span class="version-pill">Rev.16</span>
+      <span class="version-pill">Rev.22</span>
     </div>
     <nav class="toc" id="asb-toc">
       <a class="toc-l1" href="#セルフホスト型静的コンテンツ配信ホスティングシステム仕様書">セルフホスト型静的コンテンツ配信ホスティングシステム仕様書</a>
@@ -122,6 +122,7 @@ pre code { background: transparent; border: 0; color: inherit; padding: 0; }
 <a class="toc-l3" href="#10.4-configdomains.json">10.4 config/domains.json</a>
 <a class="toc-l3" href="#10.5-storageprojectsprojectidfiles.json">10.5 storage/projects/:projectId/files.json</a>
 <a class="toc-l3" href="#10.6-configwebhooks.json">10.6 config/webhooks.json</a>
+<a class="toc-l3" href="#10.7-configmigrations.json">10.7 config/migrations.json</a>
 <a class="toc-l2" href="#11-ポリシー">11 ポリシー</a>
 <a class="toc-l3" href="#11.1-management-domain-ポリシー">11.1 Management Domain ポリシー</a>
 <a class="toc-l3" href="#11.2-delivery-domain-ポリシー">11.2 Delivery Domain ポリシー</a>
@@ -156,6 +157,7 @@ pre code { background: transparent; border: 0; color: inherit; padding: 0; }
 <a class="toc-l3" href="#13.14-実装契約">13.14 実装契約</a>
 <a class="toc-l3" href="#13.15-実装詳細固定仕様">13.15 実装詳細固定仕様</a>
 <a class="toc-l3" href="#13.16-入出力契約固定仕様">13.16 入出力契約固定仕様</a>
+<a class="toc-l3" href="#13.17-実装境界とファイル操作固定仕様">13.17 実装境界とファイル操作固定仕様</a>
 <a class="toc-l2" href="#14-パフォーマンス要件">14 パフォーマンス要件</a>
 <a class="toc-l3" href="#14.1-推奨リソース">14.1 推奨リソース</a>
 <a class="toc-l3" href="#14.2-スケーリング基準">14.2 スケーリング基準</a>
@@ -165,20 +167,26 @@ pre code { background: transparent; border: 0; color: inherit; padding: 0; }
 <a class="toc-l3" href="#15.2-テスト対象外">15.2 テスト対象外</a>
 <a class="toc-l3" href="#15.3-テスト実行">15.3 テスト実行</a>
 <a class="toc-l2" href="#16-マイグレーション戦略">16 マイグレーション戦略</a>
-<a class="toc-l3" href="#16.1-バージョン互換性">16.1 バージョン互換性</a>
-<a class="toc-l3" href="#16.2-マイグレーション手順">16.2 マイグレーション手順</a>
-<a class="toc-l3" href="#16.3-データ互換性の考慮">16.3 データ互換性の考慮</a>
+<a class="toc-l3" href="#16.1-基本方針">16.1 基本方針</a>
+<a class="toc-l3" href="#16.2-マイグレーション対象">16.2 マイグレーション対象</a>
+<a class="toc-l3" href="#16.3-schemaversion-固定">16.3 schemaVersion 固定</a>
+<a class="toc-l3" href="#16.4-実行方式">16.4 実行方式</a>
+<a class="toc-l3" href="#16.5-実行順序">16.5 実行順序</a>
+<a class="toc-l3" href="#16.6-migrationhistory-保存形式">16.6 migrationHistory 保存形式</a>
+<a class="toc-l3" href="#16.7-ロールバック">16.7 ロールバック</a>
+<a class="toc-l3" href="#16.8-禁止事項">16.8 禁止事項</a>
+<a class="toc-l3" href="#16.9-テスト固定項目">16.9 テスト固定項目</a>
 <a class="toc-l2" href="#17-変更履歴">17 変更履歴</a>
     </nav>
   </aside>
   <main class="portal-main">
-    <div class="topbar"><div class="topbar-left"><button class="sidebar-toggle" type="button" aria-label="目次を折りたたむ" aria-expanded="true" aria-controls="asb-toc">☰</button><span class="topbar-title">ASB Specification</span></div><span class="version-pill">Rev.16</span></div>
+    <div class="topbar"><div class="topbar-left"><button class="sidebar-toggle" type="button" aria-label="目次を折りたたむ" aria-expanded="true" aria-controls="asb-toc">☰</button><span class="topbar-title">ASB Specification</span></div><span class="version-pill">Rev.22</span></div>
     <div class="content">
       <section class="doc-hero">
         <p class="eyebrow">Adlaire-Static-Base</p>
         <h1>セルフホスト型静的コンテンツ配信ホスティングシステム仕様書</h1>
         <p class="subtitle">ASBの仕様正本 <code>ASB-spec.md</code> に基づくHTML版仕様書。</p>
-        <div class="hero-meta"><span class="meta-chip">Rev.16</span><span class="meta-chip">Generated from ASB-spec.md</span></div>
+        <div class="hero-meta"><span class="meta-chip">Rev.22</span><span class="meta-chip">Generated from ASB-spec.md</span></div>
       </section>
       <h1 id="セルフホスト型静的コンテンツ配信ホスティングシステム仕様書">セルフホスト型静的コンテンツ配信ホスティングシステム仕様書</h1>
 <h2 id="1-本書の位置づけ">1 本書の位置づけ</h2>
@@ -215,7 +223,7 @@ pre code { background: transparent; border: 0; color: inherit; padding: 0; }
 <tr><td>提供形態</td><td>HTTP サーバー（単一バイナリ）</td></tr>
 <tr><td>データ保存</td><td>JSON ファイルベース（外部DB不使用）</td></tr>
 <tr><td>ライセンス</td><td>クローズドライセンス</td></tr>
-<tr><td>本書バージョン</td><td>Rev.16</td></tr>
+<tr><td>本書バージョン</td><td>Rev.22</td></tr>
 </tbody></table></div>
 <hr>
 <h2 id="3-asb-の責務範囲">3 ASB の責務範囲</h2>
@@ -682,8 +690,8 @@ CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -o asb-linux-arm64 ./main.go</cod
 <tr><th>項目</th><th>内容</th></tr>
 </thead><tbody>
 <tr><td>リクエスト</td><td>GitHub Webhook ペイロード</td></tr>
-<tr><td>レスポンス</td><td><code>{ &quot;status&quot;: &quot;received&quot; }</code></td></tr>
-<tr><td>ステータス</td><td>200 OK, 400 Bad Request</td></tr>
+<tr><td>レスポンス</td><td><code>{ &quot;status&quot;: &quot;deployed&quot; }</code>、<code>{ &quot;status&quot;: &quot;ignored&quot; }</code>、<code>{ &quot;status&quot;: &quot;duplicate&quot; }</code></td></tr>
+<tr><td>ステータス</td><td>200 OK, 400 Bad Request, 401 Unauthorized, 500 Internal Server Error</td></tr>
 </tbody></table></div>
 <h3 id="8.7-エラーハンドリング">8.7 エラーハンドリング</h3>
 <p><strong>共通エラーレスポンス形式</strong></p>
@@ -699,6 +707,7 @@ CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -o asb-linux-arm64 ./main.go</cod
 <tr><td>200</td><td>OK</td><td>リクエスト成功</td></tr>
 <tr><td>201</td><td>Created</td><td>リソース作成成功</td></tr>
 <tr><td>400</td><td>Bad Request</td><td>リクエスト形式エラー（バリデーション失敗等）</td></tr>
+<tr><td>401</td><td>Unauthorized</td><td>Webhook署名検証失敗</td></tr>
 <tr><td>404</td><td>Not Found</td><td>リソース未検出</td></tr>
 <tr><td>409</td><td>Conflict</td><td>リソース競合（既存データの重複等）</td></tr>
 <tr><td>413</td><td>Payload Too Large</td><td>ファイルサイズ超過</td></tr>
@@ -722,6 +731,9 @@ CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -o asb-linux-arm64 ./main.go</cod
 <tr><td>ERR_BACKUP_NOT_FOUND</td><td>404</td><td>Backup not found</td><td>バックアップが存在しない</td></tr>
 <tr><td>ERR_BACKUP_RESTORE_FAILED</td><td>500</td><td>Backup restore failed</td><td>バックアップ復旧失敗</td></tr>
 <tr><td>ERR_SSL_CERT_GENERATION_FAILED</td><td>500</td><td>SSL certificate generation failed</td><td>SSL証明書生成失敗</td></tr>
+<tr><td>ERR_WEBHOOK_SIGNATURE_INVALID</td><td>401</td><td>Invalid webhook signature</td><td>Webhook署名が不正</td></tr>
+<tr><td>ERR_WEBHOOK_SOURCE_INVALID</td><td>500</td><td>Webhook source invalid</td><td>Webhookデプロイ元が不正</td></tr>
+<tr><td>ERR_WEBHOOK_PROJECT_NOT_CONFIGURED</td><td>500</td><td>Webhook project not configured</td><td>Webhookデプロイ先Projectが未設定</td></tr>
 <tr><td>ERR_WEBHOOK_PROCESSING_FAILED</td><td>500</td><td>Webhook processing failed</td><td>Webhook処理失敗</td></tr>
 <tr><td>ERR_INVALID_JSON</td><td>400</td><td>Invalid JSON</td><td>JSON構文不正</td></tr>
 <tr><td>ERR_UNKNOWN_FIELD</td><td>400</td><td>Unknown field</td><td>未知フィールド</td></tr>
@@ -813,7 +825,9 @@ CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -o asb-linux-arm64 ./main.go</cod
   &quot;projectId&quot;: &quot;string&quot;,
   &quot;createdAt&quot;: &quot;string (ISO 8601)&quot;,
   &quot;size&quot;: &quot;number&quot;,
-  &quot;path&quot;: &quot;string&quot;
+  &quot;path&quot;: &quot;string&quot;,
+  &quot;sha256&quot;: &quot;string&quot;,
+  &quot;status&quot;: &quot;string&quot;
 }</code></pre>
 <p><strong>フィールド説明</strong></p>
 <ul>
@@ -821,7 +835,9 @@ CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -o asb-linux-arm64 ./main.go</cod
 <li><code>projectId</code>：バックアップ対象プロジェクトID</li>
 <li><code>createdAt</code>：バックアップ作成日時（ISO 8601形式）</li>
 <li><code>size</code>：バックアップサイズ（バイト）</li>
-<li><code>path</code>：ストレージ内のバックアップファイルパス</li>
+<li><code>path</code>：<code>storage.basePath</code> からの相対バックアップファイルパス</li>
+<li><code>sha256</code>：バックアップ tar.gz の SHA-256 ハッシュ</li>
+<li><code>status</code>：<code>completed</code> または <code>failed</code></li>
 </ul>
 <hr>
 <h2 id="10-json-ファイル構造">10 JSON ファイル構造</h2>
@@ -846,7 +862,9 @@ CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -o asb-linux-arm64 ./main.go</cod
       &quot;projectId&quot;: &quot;proj-001&quot;,
       &quot;createdAt&quot;: &quot;2025-01-15T10:00:00Z&quot;,
       &quot;size&quot;: 536870912,
-      &quot;path&quot;: &quot;/storage/backups/backup-001.tar.gz&quot;
+      &quot;path&quot;: &quot;backups/backup-001.tar.gz&quot;,
+      &quot;sha256&quot;: &quot;string&quot;,
+      &quot;status&quot;: &quot;completed&quot;
     }
   ]
 }</code></pre>
@@ -869,6 +887,14 @@ CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -o asb-linux-arm64 ./main.go</cod
     &quot;level&quot;: &quot;info&quot;,
     &quot;format&quot;: &quot;json&quot;,
     &quot;maxSize&quot;: 104857600
+  },
+  &quot;deploy&quot;: {
+    &quot;projectId&quot;: &quot;&quot;,
+    &quot;sourcePath&quot;: &quot;/srv/asb/source&quot;,
+    &quot;branch&quot;: &quot;main&quot;
+  },
+  &quot;webhook&quot;: {
+    &quot;githubSecret&quot;: &quot;&quot;
   }
 }</code></pre>
 <p><strong>フィールド説明</strong></p>
@@ -885,6 +911,10 @@ CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -o asb-linux-arm64 ./main.go</cod
 <tr><td>log</td><td>level</td><td>string</td><td>info</td><td>ログレベル（debug/info/warn/error）</td></tr>
 <tr><td>log</td><td>format</td><td>string</td><td>json</td><td>ログ形式（JSON Lines）</td></tr>
 <tr><td>log</td><td>maxSize</td><td>number</td><td>104857600</td><td>ログファイル最大サイズ（バイト、デフォルト100MB）</td></tr>
+<tr><td>deploy</td><td>projectId</td><td>string</td><td>空文字</td><td>Webhookデプロイ先Project ID。空文字の場合、Webhookデプロイは失敗扱い</td></tr>
+<tr><td>deploy</td><td>sourcePath</td><td>string</td><td>/srv/asb/source</td><td>Webhookデプロイ元ローカルcheckout絶対パス</td></tr>
+<tr><td>deploy</td><td>branch</td><td>string</td><td>main</td><td>Webhookデプロイ対象ブランチ</td></tr>
+<tr><td>webhook</td><td>githubSecret</td><td>string</td><td>空文字</td><td>GitHub Webhook署名検証用secret。空文字の場合は署名検証を行わない</td></tr>
 </tbody></table></div>
 <h3 id="10.4-configdomains.json">10.4 config/domains.json</h3>
 <pre><code>{
@@ -918,7 +948,10 @@ CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -o asb-linux-arm64 ./main.go</cod
       &quot;key&quot;: &quot;main:abcdef1234567890&quot;,
       &quot;branch&quot;: &quot;main&quot;,
       &quot;after&quot;: &quot;abcdef1234567890&quot;,
-      &quot;receivedAt&quot;: &quot;2026-09-08T00:00:00Z&quot;
+      &quot;status&quot;: &quot;deployed&quot;,
+      &quot;receivedAt&quot;: &quot;2026-09-08T00:00:00Z&quot;,
+      &quot;completedAt&quot;: &quot;2026-09-08T00:00:05Z&quot;,
+      &quot;errorCode&quot;: &quot;&quot;
     }
   ]
 }</code></pre>
@@ -927,7 +960,32 @@ CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -o asb-linux-arm64 ./main.go</cod
 <li><code>key</code>：Webhook 冪等キー（branch + &quot;:&quot; + after）</li>
 <li><code>branch</code>：GitHub Push イベントの対象ブランチ</li>
 <li><code>after</code>：GitHub Push イベントの after commit hash</li>
-<li><code>receivedAt</code>：Webhook 処理成功日時（ISO 8601形式）</li>
+<li><code>status</code>：<code>deployed</code>、<code>failed</code>、<code>duplicate</code>、<code>ignored</code> のいずれか</li>
+<li><code>receivedAt</code>：Webhook 受信日時（ISO 8601形式）</li>
+<li><code>completedAt</code>：Webhook 処理完了日時（ISO 8601形式）</li>
+<li><code>errorCode</code>：失敗時のエラーコード。成功時は空文字</li>
+</ul>
+<h3 id="10.7-configmigrations.json">10.7 config/migrations.json</h3>
+<pre><code>{
+  &quot;schemaVersion&quot;: 1,
+  &quot;migrations&quot;: [
+    {
+      &quot;id&quot;: &quot;string(UUID)&quot;,
+      &quot;fromSchema&quot;: 0,
+      &quot;toSchema&quot;: 1,
+      &quot;startedAt&quot;: &quot;2026-09-08T00:00:00Z&quot;,
+      &quot;finishedAt&quot;: &quot;2026-09-08T00:00:00Z&quot;,
+      &quot;status&quot;: &quot;applied&quot;,
+      &quot;backupPath&quot;: &quot;backups/migrations/migration-id.tar.gz&quot;
+    }
+  ]
+}</code></pre>
+<p><strong>フィールド説明</strong></p>
+<ul>
+<li><code>schemaVersion</code>：マイグレーション履歴ファイルのスキーマバージョン</li>
+<li><code>migrations</code>：実行済みまたは失敗したマイグレーション履歴</li>
+<li><code>status</code>：<code>applied</code> または <code>failed</code></li>
+<li><code>backupPath</code>：<code>storage.basePath</code> からの相対バックアップパス</li>
 </ul>
 <hr>
 <h2 id="11-ポリシー">11 ポリシー</h2>
@@ -949,7 +1007,8 @@ CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -o asb-linux-arm64 ./main.go</cod
 <li>Webhook：指定ブランチの変更を検出し自動デプロイ</li>
 <li>エラー時の通知とログ記録</li>
 </ul>
-<p>Webhook 処理失敗は、システムログへ記録し、自動リトライスケジュールの仕様を備える。</p>
+<p>Webhook 処理失敗は、システムログおよび <code>config/webhooks.json</code> へ記録する。</p>
+<p>Rev.22 時点では、Webhook失敗時の自動リトライスケジュールを実装しない。</p>
 <h3 id="11.3-data-domain-ポリシー">11.3 Data Domain ポリシー</h3>
 <p>Data Domain は、バックアップ・ストレージの責務を担う。</p>
 <p><strong>責務優先順位</strong></p>
@@ -962,8 +1021,10 @@ CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -o asb-linux-arm64 ./main.go</cod
 <p><strong>バックアップ・復旧方針</strong></p>
 <ul>
 <li>バックアップ取得後はハッシュ検証を実施</li>
-<li>バックアップ保存先は別個の障害領域へ配置</li>
-<li>復旧は隔離環境で検証後、運用者承認を経て実施</li>
+<li>ASB標準バックアップ保存先は <code>storage.basePath/backups/</code> とする</li>
+<li>バックアップ保存先を別障害領域へ複製する作業は Rev.22 時点ではASB外の運用責務とする</li>
+<li>外部ストレージ連携は Rev.22 時点では実装対象外とする</li>
+<li>復旧は対象バックアップの存在、SHA-256、JSON構文、スキーマ検証後に実施</li>
 <li>バックアップ・復旧・検証失敗・復旧操作は監査ログへ記録</li>
 </ul>
 <h3 id="11.4-system-domain-ポリシー">11.4 System Domain ポリシー</h3>
@@ -992,7 +1053,7 @@ CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -o asb-linux-arm64 ./main.go</cod
 </ul>
 <h3 id="11.5-api-sdk-ポリシー">11.5 API/SDK ポリシー</h3>
 <p>ASB はヘッドレスアーキテクチャを採用し、UI層に依存しない。</p>
-<p>Rev.16 時点の確定対象は、ASB 本体が提供する HTTP JSON API である。</p>
+<p>Rev.22 時点の確定対象は、ASB 本体が提供する HTTP JSON API である。</p>
 <p>SDK は実装対象外とし、通信仕様および配布方針が確定した後に実装対象へ昇格する。</p>
 <p><strong>API 設計原則</strong></p>
 <ul>
@@ -1008,10 +1069,11 @@ CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -o asb-linux-arm64 ./main.go</cod
   &quot;timestamp&quot;: &quot;string (ISO 8601)&quot;,
   &quot;httpStatus&quot;: 400
 }</code></pre>
-<p><strong>API 互換性</strong></p>
+<p><strong>API / スキーマ互換性</strong></p>
 <ul>
-<li>マイナーバージョン：完全互換</li>
-<li>メジャーバージョン：後方互換性なし、マイグレーション仕様を提供</li>
+<li>API互換性は仕様書RevとASB本体バージョンの組み合わせで判断する</li>
+<li>実行時JSON互換性は <code>schemaVersion</code> で判断する</li>
+<li><code>schemaVersion</code> 変更時は §16 マイグレーション戦略に従う</li>
 </ul>
 <h3 id="11.6-技術依存ポリシー">11.6 技術・依存ポリシー</h3>
 <ul>
@@ -1065,7 +1127,7 @@ CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -o asb-linux-arm64 ./main.go</cod
 </ul>
 <p><strong>レート制限</strong></p>
 <ul>
-<li>IP単位：100 requests/min（推奨値、設定で変更可）</li>
+<li>Rev.22 時点では実装対象外とし、保留事項として扱う</li>
 </ul>
 <p><strong>タイムアウト</strong></p>
 <ul>
@@ -1123,13 +1185,13 @@ CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -o asb-linux-arm64 ./main.go</cod
 <h5 id="11.9.2.2-開発版バージョンv0.n">11.9.2.2 開発版バージョン（v0.N）</h5>
 <p>ASB製品（ソフトウェア）の開発版バージョン。</p>
 <ul>
-<li>表記は<code>v0.N</code>（Nは1から始まる連番）。先頭の0は固定とする（将来1への切り替えを検討する余地は残すが、基準は未策定。切り替えてもNはリセットしない）</li>
+<li>表記は<code>v0.N</code>（Nは1から始まる連番）。先頭の0は固定とする</li>
 <li>本仕様書の変更を伴うすべての変更に付与する</li>
 <li>Nは変更のたびに1ずつ増加する。桁揃えは行わない（v0.1, v0.2, … v0.9, v0.10, …）</li>
 <li>いかなる理由があってもリセット（巻き戻し・1からの数え直し）はしない</li>
 </ul>
 <h5 id="11.9.2.3-安定版バージョンvx.y">11.9.2.3 安定版バージョン（vX.Y）</h5>
-<p>リリース（外部への公開・配布）は安定版のみを対象とする。開発版バージョンの全エントリがリリースされるわけではなく、安定していると判断された時点の開発版を選んで安定版として切り出す。「安定している」の具体的な判断基準は未策定であり、別途策定するリリースポリシーで定める。</p>
+<p>リリース（外部への公開・配布）は安定版のみを対象とする。開発版バージョンの全エントリがリリースされるわけではなく、以下の判定基準をすべて満たした開発版を安定版として切り出す。</p>
 <ul>
 <li>表記は<code>vX.Y</code>（例: v1.9, v3.20, v12.35）</li>
 <li>X = 安定版リリースの通し番号（1件目を1、2件目を2、…）。メジャー/マイナーのような重大度の意味は持たない</li>
@@ -1138,6 +1200,20 @@ CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -o asb-linux-arm64 ./main.go</cod
 <li>同一の安定版リリースの中でX・Yが指す時点がずれることはない（Yは常にそのリリース時点の開発版Nと一致する）</li>
 <li>現時点ではまだ安定版リリースを1件も出していない</li>
 </ul>
+<p>安定版切り出し判定基準は以下とする。</p>
+<ol>
+<li><code>ASB-spec.md</code>、<code>ASB-spec.html</code>、<code>IMPLEMENTATION_TASKS.md</code> の参照Revが一致している</li>
+<li><code>go test ./...</code> が成功している</li>
+<li><code>git diff --check</code> が成功している</li>
+<li>Linux amd64 と Linux arm64 のビルドが成功している</li>
+<li>リリース対象バイナリの <code>--version</code> 出力が安定版バージョンと一致している</li>
+<li><code>checksums.txt</code> に全リリース成果物のSHA-256が記録されている</li>
+<li><code>.gitignore</code> が存在しない</li>
+<li>開発リポジトリ内に実行時データ、ビルド成果物、一時ファイル、ログファイル、移行作業ファイルが残っていない</li>
+<li>Pull Request 経由で <code>main</code> に反映済みである</li>
+<li>対象 commit hash をリリース記録へ残している</li>
+</ol>
+<p>上記のいずれかを満たさない場合、安定版として配布してはならない。</p>
 <h5 id="11.9.2.4-互換性対応表">11.9.2.4 互換性対応表</h5>
 <p><strong>現行互換性対応表</strong></p>
 <div class="tbl-wrap"><table><thead>
@@ -1173,112 +1249,146 @@ CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -o asb-linux-arm64 ./main.go</cod
 <li>権限設定のみで実行可能</li>
 <li>ローリングアップデートが可能</li>
 </ul>
-<h4 id="11.11.3-インストール手順">11.11.3 インストール手順</h4>
+<h4 id="11.11.3-配布成果物固定仕様">11.11.3 配布成果物固定仕様</h4>
+<p>ASB の標準配布先は GitHub Releases とする。</p>
+<p>リリースタグは安定版バージョンと同一文字列にする。</p>
+<p>例：</p>
+<pre><code>v1.19</code></pre>
+<p>標準配布成果物は以下に固定する。</p>
+<div class="tbl-wrap"><table><thead>
+<tr><th>ファイル</th><th>内容</th><th>必須</th></tr>
+</thead><tbody>
+<tr><td><code>asb-linux-amd64-vX.Y</code></td><td>Linux amd64 向けASB本体バイナリ</td><td>必須</td></tr>
+<tr><td><code>asb-linux-arm64-vX.Y</code></td><td>Linux arm64 向けASB本体バイナリ</td><td>必須</td></tr>
+<tr><td><code>checksums.txt</code></td><td>SHA-256 checksum 一覧</td><td>必須</td></tr>
+</tbody></table></div>
+<p>配布成果物をGit管理対象として開発リポジトリ内へ保存してはならない。</p>
+<p><code>checksums.txt</code> は以下の形式とする。</p>
+<pre><code>&lt;sha256&gt;  asb-linux-amd64-vX.Y
+&lt;sha256&gt;  asb-linux-arm64-vX.Y</code></pre>
+<p><code>checksums.txt</code> に記載するファイル名は、GitHub Releases 上の配布ファイル名と完全一致させる。</p>
+<h4 id="11.11.4-ビルド固定仕様">11.11.4 ビルド固定仕様</h4>
+<p>標準ビルドコマンドは以下に固定する。</p>
+<pre><code>CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -trimpath -ldflags &quot;-s -w&quot; -o dist/asb-linux-amd64-vX.Y ./main.go
+CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -trimpath -ldflags &quot;-s -w&quot; -o dist/asb-linux-arm64-vX.Y ./main.go</code></pre>
+<p><code>dist/</code> はリリース作業用の一時出力先であり、開発リポジトリへ残してはならない。</p>
+<p>ビルド成果物は、GitHub Releases へアップロードした後に開発リポジトリから削除する。</p>
+<h4 id="11.11.5-インストール手順">11.11.5 インストール手順</h4>
 <p><strong>前提</strong></p>
 <ul>
 <li>Linux amd64 または arm64 環境</li>
 <li>SSH アクセス可能</li>
+<li>GitHub Releases から対象バージョンの配布成果物を取得可能</li>
+<li><code>sha256sum</code> または <code>shasum -a 256</code> を利用可能</li>
 </ul>
 <p><strong>手順</strong></p>
-<pre><code># 1. バイナリをダウンロード
-$ wget https://releases.example.com/asb-linux-amd64
+<pre><code># 1. バイナリと checksums.txt をダウンロード
+$ curl -fL -O https://github.com/fqwink/Adlaire-Static-Base/releases/download/vX.Y/asb-linux-amd64-vX.Y
+$ curl -fL -O https://github.com/fqwink/Adlaire-Static-Base/releases/download/vX.Y/checksums.txt
 
-# 2. 実行権限を付与
-$ chmod +x asb-linux-amd64
+# 2. checksum を検証
+$ sha256sum -c checksums.txt --ignore-missing
 
-# 3. 起動テスト
-$ ./asb-linux-amd64 --version
+# 3. 実行権限を付与
+$ chmod +x asb-linux-amd64-vX.Y
 
-# 4. バックグラウンド起動
-$ ./asb-linux-amd64 &amp;
+# 4. 起動テスト
+$ ./asb-linux-amd64-vX.Y --version
 
-# または systemd での管理（オプション）
-$ sudo mv asb-linux-amd64 /usr/local/bin/asb
+# 5. systemd で管理
+$ sudo install -o root -g root -m 0755 asb-linux-amd64-vX.Y /usr/local/bin/asb
 $ sudo systemctl enable asb
 $ sudo systemctl start asb</code></pre>
-<h4 id="11.11.4-アップデート手順">11.11.4 アップデート手順</h4>
+<p><code>--version</code> の出力が対象安定版バージョンと一致しない場合、インストールしてはならない。</p>
+<h4 id="11.11.6-アップデート手順">11.11.6 アップデート手順</h4>
 <p><strong>既存バイナリの置き換え</strong></p>
-<pre><code># 1. 新しいバイナリをダウンロード
-$ wget https://releases.example.com/asb-linux-amd64-v1.1
+<pre><code># 1. 新しいバイナリと checksums.txt をダウンロード
+$ curl -fL -O https://github.com/fqwink/Adlaire-Static-Base/releases/download/vX.Y/asb-linux-amd64-vX.Y
+$ curl -fL -O https://github.com/fqwink/Adlaire-Static-Base/releases/download/vX.Y/checksums.txt
 
-# 2. 既存バイナリを停止
-$ pkill asb
-# または
+# 2. checksum を検証
+$ sha256sum -c checksums.txt --ignore-missing
+
+# 3. バージョンを確認
+$ ./asb-linux-amd64-vX.Y --version
+
+# 4. 既存サービスを停止
 $ sudo systemctl stop asb
 
-# 3. バイナリを置き換え
-$ mv asb-linux-amd64-v1.1 asb-linux-amd64
-$ chmod +x asb-linux-amd64
+# 5. 既存バイナリを退避して置き換え
+$ sudo cp /usr/local/bin/asb /usr/local/bin/asb.previous
+$ sudo install -o root -g root -m 0755 asb-linux-amd64-vX.Y /usr/local/bin/asb
 
-# 4. 起動
-$ ./asb-linux-amd64 &amp;
-# または
+# 6. 起動
 $ sudo systemctl start asb</code></pre>
-<h4 id="11.11.5-ダウンロードリリース管理">11.11.5 ダウンロード・リリース管理</h4>
-<ul>
-<li>リリース形式：<code>asb-linux-{architecture}-v{version}</code></li>
-<li>例：<code>asb-linux-amd64-v1.0</code>, <code>asb-linux-arm64-v1.0</code></li>
-<li>リリースページ：GitHub Releases 等で公開予定</li>
-<li>チェックサム検証：SHA-256 ハッシュを提供（整合性確認用）</li>
-</ul>
-<h4 id="11.11.6-インストールアップデート自動化">11.11.6 インストール・アップデート自動化</h4>
-<p>ASB の初回インストールとアップデートを自動化するためのスクリプトを提供する。</p>
+<pre><code># 7. 起動状態を確認
+$ sudo systemctl is-active --quiet asb</code></pre>
+<p>アップデート後に起動確認が失敗した場合、<code>/usr/local/bin/asb.previous</code> を <code>/usr/local/bin/asb</code> へ戻し、<code>systemctl start asb</code> を再実行する。</p>
+<h4 id="11.11.7-install.sh-update.sh-固定仕様">11.11.7 install.sh / update.sh 固定仕様</h4>
+<p>ASB の初回インストールとアップデートを自動化するため、<code>install.sh</code> と <code>update.sh</code> を提供する。</p>
+<p>両スクリプトはPOSIX sh互換で実装する。</p>
 <p><strong>提供ファイル</strong></p>
 <div class="tbl-wrap"><table><thead>
 <tr><th>ファイル</th><th>用途</th><th>説明</th></tr>
 </thead><tbody>
-<tr><td>install.sh</td><td>初回インストール</td><td>バイナリダウンロード、権限設定、systemd登録を自動実行</td></tr>
-<tr><td>update.sh</td><td>アップデート</td><td>最新バイナリダウンロード、サービス再起動を自動実行</td></tr>
+<tr><td>install.sh</td><td>初回インストール</td><td>指定バージョンのダウンロード、checksum検証、権限設定、systemd登録を実行</td></tr>
+<tr><td>update.sh</td><td>アップデート</td><td>指定バージョンのダウンロード、checksum検証、サービス停止、置換、再起動、失敗時復旧を実行</td></tr>
 <tr><td>asb.service</td><td>systemd ユニット</td><td>systemctl での自動起動・停止・再起動・ログ管理</td></tr>
 </tbody></table></div>
-<p><strong>install.sh 実行例</strong></p>
-<pre><code>$ chmod +x install.sh
-$ ./install.sh
-# または
-$ sudo ./install.sh  # systemd 登録時は sudo 必要</code></pre>
-<p>実行内容：</p>
+<p><strong>install.sh 引数</strong></p>
+<pre><code>./install.sh --version vX.Y --arch amd64
+./install.sh --version vX.Y --arch arm64</code></pre>
+<div class="tbl-wrap"><table><thead>
+<tr><th>引数</th><th>必須</th><th>内容</th></tr>
+</thead><tbody>
+<tr><td><code>--version</code></td><td>必須</td><td>インストール対象の安定版バージョン</td></tr>
+<tr><td><code>--arch</code></td><td>任意</td><td><code>amd64</code> または <code>arm64</code>。未指定時は <code>uname -m</code> から判定</td></tr>
+</tbody></table></div>
+<p><strong>update.sh 引数</strong></p>
+<pre><code>./update.sh --version vX.Y --arch amd64
+./update.sh --version vX.Y --arch arm64</code></pre>
+<div class="tbl-wrap"><table><thead>
+<tr><th>引数</th><th>必須</th><th>内容</th></tr>
+</thead><tbody>
+<tr><td><code>--version</code></td><td>必須</td><td>更新対象の安定版バージョン</td></tr>
+<tr><td><code>--arch</code></td><td>任意</td><td><code>amd64</code> または <code>arm64</code>。未指定時は <code>uname -m</code> から判定</td></tr>
+</tbody></table></div>
+<p><code>latest</code> 指定、自動最新版選択、未指定バージョンでの実行は Rev.22 時点では禁止する。</p>
+<p>スクリプトは以下を満たす。</p>
 <ol>
-<li>環境（amd64/arm64）を自動判定</li>
-<li>最新バイナリをダウンロード</li>
-<li>実行権限を付与</li>
-<li><code>/usr/local/bin/asb</code> にコピー</li>
-<li>asb.service を systemd に登録</li>
-<li>サービス自動起動を有効化</li>
-<li>サービス起動</li>
+<li><code>set -eu</code> で実行する</li>
+<li>一時作業ディレクトリは <code>mktemp -d</code> で作成する</li>
+<li>一時作業ディレクトリは終了時に削除する</li>
+<li>開発リポジトリ内にビルド成果物、一時ファイル、ログファイルを作成しない</li>
+<li>ダウンロード失敗時は終了コード <code>1</code> で失敗する</li>
+<li>checksum不一致時は終了コード <code>1</code> で失敗する</li>
+<li><code>--version</code> 出力不一致時は終了コード <code>1</code> で失敗する</li>
+<li>systemd 操作失敗時は終了コード <code>1</code> で失敗する</li>
+<li><code>update.sh</code> は起動失敗時に <code>/usr/local/bin/asb.previous</code> から復旧を試行する</li>
+<li>復旧に失敗した場合も成功扱いしてはならない</li>
 </ol>
-<p><strong>update.sh 実行例</strong></p>
-<pre><code>$ chmod +x update.sh
-$ ./update.sh</code></pre>
-<p>実行内容：</p>
-<ol>
-<li>最新バージョンをチェック</li>
-<li>アップデート必要な場合：</li>
-</ol>
-<ul>
-<li>新しいバイナリをダウンロード</li>
-<li>サービスを停止</li>
-<li>バイナリを置き換え</li>
-<li>サービスを再起動</li>
-</ul>
-<p><strong>asb.service（systemd ユニット）</strong></p>
+<h4 id="11.11.8-asb.service-固定仕様">11.11.8 asb.service 固定仕様</h4>
 <pre><code>[Unit]
 Description=Adlaire-Static-Base HTTP Server
-After=network.target
+After=network-online.target
 Wants=network-online.target
 
 [Service]
 Type=simple
 User=asb
 Group=asb
-ExecStart=/usr/local/bin/asb
-Restart=always
+ExecStart=/usr/local/bin/asb --config /etc/asb/config.json
+Restart=on-failure
 RestartSec=5
 StandardOutput=journal
 StandardError=journal
 SyslogIdentifier=asb
+NoNewPrivileges=true
 
 [Install]
 WantedBy=multi-user.target</code></pre>
+<p><code>asb.service</code> は <code>/etc/systemd/system/asb.service</code> へ配置する。</p>
+<p><code>asb</code> ユーザーおよび <code>asb</code> グループが存在しない場合、<code>install.sh</code> は system user として作成する。</p>
 <p><strong>systemctl での管理</strong></p>
 <pre><code># サービス状態確認
 $ sudo systemctl status asb
@@ -1341,7 +1451,7 @@ $ sudo systemctl stop asb</code></pre>
 <hr>
 <h2 id="13-実装詳細仕様">13 実装詳細仕様</h2>
 <h3 id="13.1-実装対象の基準">13.1 実装対象の基準</h3>
-<p>Rev.16 時点の実装対象は、ASB のセルフホスト型静的コンテンツ配信ホスティングに必要なバックエンド機能に限定する。</p>
+<p>Rev.22 時点の実装対象は、ASB のセルフホスト型静的コンテンツ配信ホスティングに必要なバックエンド機能に限定する。</p>
 <p>実装は以下の順序で進める：</p>
 <ol>
 <li>起動設定、実行時データ検証、HTTP サーバー、共通レスポンス</li>
@@ -1483,7 +1593,7 @@ $ sudo systemctl stop asb</code></pre>
 <li>プロジェクト削除時は関連ドメインを削除する</li>
 </ul>
 <h3 id="13.9-ssl-管理詳細">13.9 SSL 管理詳細</h3>
-<p>Rev.16 時点では、SSL 管理は管理境界とデータモデルを実装対象とし、ACME は ASB互換目標に含める。ACME 実通信、CA選定、ワイルドカード証明書対応は詳細仕様確定後に実装対象へ昇格する。</p>
+<p>Rev.22 時点では、SSL 管理は管理境界とデータモデルを実装対象とし、ACME は ASB互換目標に含める。ACME 実通信、CA選定、ワイルドカード証明書対応は詳細仕様確定後に実装対象へ昇格する。</p>
 <p>実装対象：</p>
 <ul>
 <li>SSL 証明書IDの管理</li>
@@ -1502,29 +1612,50 @@ $ sudo systemctl stop asb</code></pre>
 <p>GitHub Webhook は Push イベントのみを対象とする。</p>
 <ul>
 <li><code>POST /api/webhook/github</code> は GitHub Webhook ペイロードを受け取る</li>
-<li>対象ブランチは設定ファイルで指定する</li>
+<li>対象ブランチは <code>deploy.branch</code> で指定する</li>
 <li>対象外ブランチのイベントは成功扱いで無視する</li>
+<li>Webhook 署名検証は <code>webhook.githubSecret</code> が空文字でない場合のみ実行する</li>
+<li><code>webhook.githubSecret</code> が空文字でない場合、<code>X-Hub-Signature-256</code> ヘッダーを必須とする</li>
+<li>署名検証は Go 標準ライブラリの <code>crypto/hmac</code> と <code>crypto/sha256</code> で行う</li>
+<li>署名値比較は <code>hmac.Equal</code> で行う</li>
+<li>GitHub Push payload の <code>repository.clone_url</code> および <code>repository.ssh_url</code> をデプロイ元として使用してはならない</li>
+<li>デプロイ先Projectは <code>deploy.projectId</code> で指定する</li>
+<li><code>deploy.projectId</code> が空文字の場合は <code>ERR_WEBHOOK_PROJECT_NOT_CONFIGURED</code> を返す</li>
+<li>デプロイ元は <code>deploy.sourcePath</code> に指定されたローカルcheckoutに限定する</li>
+<li>Webhook受信時は <code>deploy.sourcePath</code> が存在し、Git worktreeであり、対象 <code>after</code> commit を参照可能であることを検証する</li>
 <li>ペイロード形式が不正な場合は <code>400 Bad Request</code> を返す</li>
 <li>デプロイ処理に失敗した場合は <code>ERR_WEBHOOK_PROCESSING_FAILED</code> を返す</li>
 <li>同一 GitHub Push イベントを重複受信した場合は、同一 commit hash と対象ブランチの組み合わせを冪等キーとして扱い、二重デプロイを避ける</li>
 <li>冪等キーの保存方式は JSON ファイルベースとし、保存先は <code>storage.basePath</code> 配下に限定する</li>
-<li>Webhook 署名検証の必須化は詳細仕様確定後に実装する</li>
+<li>Webhook失敗時の自動リトライは Rev.22 時点では実装しない</li>
+<li>GitHub側からの再送は通常のWebhook受信として扱い、冪等キーで重複判定する</li>
 </ul>
 <h3 id="13.11-バックアップ復旧詳細">13.11 バックアップ・復旧詳細</h3>
 <p><strong>バックアップ</strong></p>
 <ul>
-<li>バックアップ対象は <code>config/</code> と <code>storage/</code> とする</li>
+<li>バックアップ対象は対象 Project の <code>storage/projects/:projectId/files.json</code> と <code>storage/projects/:projectId/contents/</code> とする</li>
 <li>バックアップ形式は tar.gz とする</li>
+<li>バックアップ保存先は <code>storage.basePath/backups/</code> とする</li>
+<li>バックアップファイル名は <code>backup-{backupId}.tar.gz</code> とする</li>
+<li>バックアップパスは <code>config/backups.json</code> に <code>storage.basePath</code> からの相対パスとして保存する</li>
 <li>バックアップ作成後に SHA-256 ハッシュを計算する</li>
-<li>バックアップ履歴は <code>backups.json</code> に記録する</li>
+<li>バックアップ履歴は <code>config/backups.json</code> に記録する</li>
+<li>バックアップ成功時の <code>status</code> は <code>completed</code> とする</li>
 <li>バックアップ失敗時は成功履歴を作成してはならない</li>
+<li>バックアップ作成中の一時tarは <code>storage.basePath/backups/.tmp/</code> 配下に限定する</li>
+<li>開発リポジトリ内にバックアップtar、一時tar、checksumファイル、復旧用ステージングデータを作成してはならない</li>
 </ul>
 <p><strong>復旧</strong></p>
 <ul>
 <li>復旧前にバックアップファイルの存在と SHA-256 ハッシュを検証する</li>
+<li>復旧前退避先は <code>storage.basePath/backups/restore-staging/{restoreId}/previous/</code> とする</li>
+<li>復旧展開先は <code>storage.basePath/backups/restore-staging/{restoreId}/next/</code> とする</li>
 <li>既存データを退避してから復旧する</li>
 <li>復旧後に JSON ファイル構文と必須フィールドを検証する</li>
 <li>復旧失敗時は <code>ERR_BACKUP_RESTORE_FAILED</code> を返す</li>
+<li>復旧失敗時は退避済み <code>previous/</code> から可能な限り復元する</li>
+<li><code>previous/</code> からの復元に失敗した場合も成功レスポンスを返してはならない</li>
+<li>復旧完了後または失敗処理後、<code>restore-staging/{restoreId}/</code> は best effort で削除し、削除失敗時は WARN ログに記録する</li>
 </ul>
 <h3 id="13.12-監視ログ詳細">13.12 監視・ログ詳細</h3>
 <p><strong>監視</strong></p>
@@ -1553,7 +1684,7 @@ $ sudo systemctl stop asb</code></pre>
 <li>仕様上保留の機能が実装されていないことを確認する</li>
 </ul>
 <h3 id="13.14-実装契約">13.14 実装契約</h3>
-<p>本節は Rev.16 時点の実装契約である。実装者は本節に反する判断をコード側で独自に行ってはならない。</p>
+<p>本節は Rev.22 時点の実装契約である。実装者は本節に反する判断をコード側で独自に行ってはならない。</p>
 <h4 id="13.14.1-パッケージ境界">13.14.1 パッケージ境界</h4>
 <div class="tbl-wrap"><table><thead>
 <tr><th>パッケージ</th><th>責務</th><th>外部副作用</th></tr>
@@ -1632,27 +1763,28 @@ $ sudo systemctl stop asb</code></pre>
 <tr><td>Domain 追加</td><td>projects/domains JSON</td><td><code>config/domains.json</code></td><td>なし</td></tr>
 <tr><td>SSL 管理</td><td>domains/certs</td><td>SSL メタデータ</td><td>なし</td></tr>
 <tr><td>Webhook</td><td>config/projects/files</td><td>contents、files JSON、deploy log</td><td>置換対象ファイル</td></tr>
-<tr><td>Backup 作成</td><td>config/storage</td><td>backup tar.gz、backups JSON</td><td>なし</td></tr>
-<tr><td>Backup 復旧</td><td>backup tar.gz、config/storage</td><td>config/storage</td><td>復旧対象の既存データ退避</td></tr>
+<tr><td>Backup 作成</td><td>対象Project files/contents</td><td>backup tar.gz、backups JSON</td><td>なし</td></tr>
+<tr><td>Backup 復旧</td><td>backup tar.gz、対象Project files/contents</td><td>対象Project files/contents</td><td>復旧対象の既存データ退避</td></tr>
 <tr><td>Log API</td><td>logs</td><td>なし</td><td>なし</td></tr>
 </tbody></table></div>
 <p>複数ファイルにまたがる操作では、途中失敗時に成功レスポンスを返してはならない。</p>
 <h4 id="13.14.9-保留機能の実装禁止契約">13.14.9 保留機能の実装禁止契約</h4>
-<p>Rev.16 時点では以下を実装してはならない。</p>
+<p>Rev.22 時点では以下を実装してはならない。</p>
 <ul>
 <li>SDK</li>
 <li>APIキー管理</li>
 <li>Rate limiting</li>
 <li>ACME 実通信</li>
 <li>CA 選定固定</li>
-<li>Webhook 署名検証の必須化</li>
+<li><code>webhook.githubSecret</code> 未設定時のWebhook署名検証必須化</li>
+<li>Webhook失敗時の自動リトライスケジューラー</li>
 <li>外部DB</li>
 <li>外部ストレージ連携</li>
 <li><code>.gitignore</code> を必要とする生成物設計</li>
 </ul>
 <p>上記を実装する場合は、先に <code>ASB-spec.md</code> を改訂し、確定仕様として昇格させる。</p>
 <h3 id="13.15-実装詳細固定仕様">13.15 実装詳細固定仕様</h3>
-<p>本節は Rev.16 時点で実装時に固定する詳細仕様である。</p>
+<p>本節は Rev.22 時点で実装時に固定する詳細仕様である。</p>
 <h4 id="13.15.1-api-エンドポイント固定表">13.15.1 API エンドポイント固定表</h4>
 <div class="tbl-wrap"><table><thead>
 <tr><th>機能</th><th>Method</th><th>Path</th><th>Body</th><th>Query</th><th>成功</th><th>主な失敗</th></tr>
@@ -1667,11 +1799,11 @@ $ sudo systemctl stop asb</code></pre>
 <tr><td>File 一覧</td><td>GET</td><td><code>/api/projects/:id/files</code></td><td>なし</td><td>なし</td><td>200</td><td>400, 404, 500</td></tr>
 <tr><td>File 削除</td><td>DELETE</td><td><code>/api/projects/:id/files/:name</code></td><td>なし</td><td>なし</td><td>200</td><td>400, 404, 500</td></tr>
 <tr><td>Backup 一覧</td><td>GET</td><td><code>/api/backups</code></td><td>なし</td><td>なし</td><td>200</td><td>500</td></tr>
-<tr><td>Backup 復旧</td><td>POST</td><td><code>/api/backups/restore/:id</code></td><td>なし</td><td>なし</td><td>200</td><td>400, 404, 500</td></tr>
+<tr><td>Backup 復旧</td><td>POST</td><td><code>/api/backups/restore/:id</code></td><td>なし</td><td>なし</td><td>200</td><td>404, 409, 500</td></tr>
 <tr><td>Monitoring</td><td>GET</td><td><code>/api/monitoring/stats</code></td><td>なし</td><td>なし</td><td>200</td><td>500</td></tr>
 <tr><td>Access Log</td><td>GET</td><td><code>/api/logs/access</code></td><td>なし</td><td><code>limit</code>, <code>offset</code></td><td>200</td><td>400, 500</td></tr>
 <tr><td>Error Log</td><td>GET</td><td><code>/api/logs/error</code></td><td>なし</td><td><code>limit</code>, <code>offset</code></td><td>200</td><td>400, 500</td></tr>
-<tr><td>GitHub Webhook</td><td>POST</td><td><code>/api/webhook/github</code></td><td>GitHub Push payload</td><td>なし</td><td>200</td><td>400, 500</td></tr>
+<tr><td>GitHub Webhook</td><td>POST</td><td><code>/api/webhook/github</code></td><td>GitHub Push payload</td><td>なし</td><td>200</td><td>400, 401, 500</td></tr>
 </tbody></table></div>
 <ul>
 <li><code>:id</code> は UUID 形式のみ許可する</li>
@@ -1694,6 +1826,10 @@ $ sudo systemctl stop asb</code></pre>
 <tr><td><code>log.level</code></td><td>string</td><td>info</td><td>debug/info/warn/error</td><td>No</td></tr>
 <tr><td><code>log.format</code></td><td>string</td><td>json</td><td>json 固定</td><td>No</td></tr>
 <tr><td><code>log.maxSize</code></td><td>number</td><td>104857600</td><td>1048576-1073741824</td><td>No</td></tr>
+<tr><td><code>deploy.projectId</code></td><td>string</td><td>空文字</td><td>UUID形式または空文字</td><td>No</td></tr>
+<tr><td><code>deploy.sourcePath</code></td><td>string</td><td>/srv/asb/source</td><td>絶対パス、Git worktree</td><td>No</td></tr>
+<tr><td><code>deploy.branch</code></td><td>string</td><td>main</td><td>空文字、空白、<code>..</code> 禁止</td><td>No</td></tr>
+<tr><td><code>webhook.githubSecret</code></td><td>string</td><td>空文字</td><td>文字列</td><td>No</td></tr>
 </tbody></table></div>
 <p>未知フィールドが存在する場合は起動失敗とする。省略可能項目はデフォルト値を適用してから検証する。</p>
 <h4 id="13.15.3-json-ファイル固定仕様">13.15.3 JSON ファイル固定仕様</h4>
@@ -1702,33 +1838,129 @@ $ sudo systemctl stop asb</code></pre>
 </thead><tbody>
 <tr><td><code>config/projects.json</code></td><td><code>{"projects":[]}</code></td><td><code>projects</code></td><td>Project Service</td><td>プロジェクト一覧</td></tr>
 <tr><td><code>config/domains.json</code></td><td><code>{"domains":[]}</code></td><td><code>domains</code></td><td>Domain Service</td><td>ドメイン割当</td></tr>
-<tr><td><code>config/backups.json</code></td><td><code>{"backups":[]}</code></td><td><code>backups</code></td><td>Backup Service</td><td>バックアップ履歴</td></tr>
+<tr><td><code>config/backups.json</code></td><td><code>{"backups":[]}</code></td><td><code>backups</code></td><td>Backup Service</td><td><code>createdAt</code> 降順で保存。<code>path</code> は <code>storage.basePath</code> からの相対パス</td></tr>
 <tr><td><code>storage/projects/:projectId/files.json</code></td><td><code>{"files":[]}</code></td><td><code>files</code></td><td>File Service</td><td>ファイルメタデータ</td></tr>
-<tr><td><code>config/webhooks.json</code></td><td><code>{"events":[]}</code></td><td><code>events</code></td><td>Webhook Service</td><td>冪等キー履歴</td></tr>
+<tr><td><code>config/webhooks.json</code></td><td><code>{"events":[]}</code></td><td><code>events</code></td><td>Webhook Service</td><td>冪等キー、処理状態、失敗コード</td></tr>
 </tbody></table></div>
 <p>上記ファイルは起動時に存在していなければならない。ASB は起動時に自動生成しない。実行時データはすべて JSON ファイルベースとし、外部DBを使用しない。</p>
 <h4 id="13.15.4-静的配信固定仕様">13.15.4 静的配信固定仕様</h4>
+<p>静的配信は API パスに一致しない HTTP リクエストのうち、<code>GET</code> または <code>HEAD</code> のみ対象とする。</p>
+<p>API パスとは <code>/api/</code> で始まるパスを指す。</p>
+<p><code>GET</code> または <code>HEAD</code> 以外のメソッドで静的配信対象パスへアクセスした場合は <code>405 Method Not Allowed</code> とし、<code>Allow: GET, HEAD</code> を返す。</p>
+<p>対象 Project は以下の順序で決定する。</p>
+<ol>
+<li><code>Host</code> ヘッダーを取得する</li>
+<li><code>Host</code> の port 部分を除去する</li>
+<li>末尾の <code>.</code> を除去する</li>
+<li>小文字へ正規化する</li>
+<li>空文字、空白文字、<code>/</code>、<code>\</code> を含む Host は不正として扱う</li>
+<li><code>config/domains.json</code> の <code>domain</code> と完全一致する Domain を検索する</li>
+<li>Domain に紐づく <code>projectId</code> を配信対象 Project とする</li>
+</ol>
+<p><code>Host</code> ヘッダーが存在しない、不正、または割り当て済み Domain に一致しない場合は <code>404 Not Found</code> とする。</p>
+<p>Domain が存在しても対象 Project が存在しない場合は整合性エラーとして <code>500 Internal Server Error</code> とし、<code>ERR_STORAGE_VALIDATION_FAILED</code> をエラーログへ記録する。</p>
+<p>リクエストパスは以下の順序で正規化する。</p>
+<ol>
+<li>query string と fragment を除外し、URL path のみを対象とする</li>
+<li>percent encoding を URL decode する</li>
+<li>decode に失敗した場合は <code>404 Not Found</code> とする</li>
+<li><code>/</code> の連続は単一 <code>/</code> として扱う</li>
+<li>先頭 <code>/</code> を除去し、相対パスへ変換する</li>
+<li>空パスまたは <code>/</code> は <code>index.html</code> として扱う</li>
+<li>パスが <code>/</code> で終わる場合は末尾に <code>index.html</code> を補う</li>
+<li><code>path.Clean</code> 相当の正規化後も配信ルート外へ出ないことを検証する</li>
+</ol>
+<p>以下のパスは <code>404 Not Found</code> とする。</p>
 <ul>
-<li>静的配信は <code>GET</code> と <code>HEAD</code> のみ許可する</li>
-<li>Host ヘッダーを <code>config/domains.json</code> の <code>domain</code> に照合し、対応する <code>projectId</code> を配信対象とする</li>
-<li>一致するドメインがない場合は <code>404 Not Found</code> とする</li>
-<li>パス <code>/</code> は <code>index.html</code> として解決する</li>
-<li>配信ルートは <code>storage/projects/:projectId/contents/</code> に限定する</li>
-<li><code>..</code>、絶対パス、URL decode 後に配信ルート外へ出るパスは拒否する</li>
-<li>ファイルが存在しない場合は <code>404 Not Found</code> とする</li>
-<li><code>Content-Type</code> は Go 標準ライブラリで判定し、不明時は <code>application/octet-stream</code> とする</li>
-<li>Gzip 圧縮を適用した場合は <code>Content-Encoding: gzip</code> を設定する</li>
+<li><code>..</code> セグメントを含む</li>
+<li>絶対パスである</li>
+<li>URL decode 後に <code>/</code> または <code>\</code> による配信ルート外脱出を試みる</li>
+<li>NUL 文字を含む</li>
+<li>空白のみのセグメントを含む</li>
+<li><code>.</code> で始まるセグメントを含む</li>
 </ul>
+<p>ファイル探索は <code>storage.basePath/storage/projects/{projectId}/contents/</code> 配下に限定する。</p>
+<p>正規化後の相対パスを <code>contents/</code> に結合した結果が、<code>contents/</code> 配下に収まらない場合は <code>404 Not Found</code> とする。</p>
+<p>ディレクトリ自体は配信しない。正規化後の対象がディレクトリの場合、末尾 <code>/</code> の有無にかかわらず <code>index.html</code> を探索する。</p>
+<p>存在しない静的ファイルは <code>404 Not Found</code> とする。</p>
+<p>読み込み権限不足、ファイル情報取得失敗、読み込み途中失敗は <code>500 Internal Server Error</code> とする。</p>
+<p>静的配信レスポンスの <code>Content-Type</code> は、Go 標準ライブラリの拡張子判定を優先し、判定不能な場合は先頭512 bytesによる判定を行う。なお判定不能な場合は <code>application/octet-stream</code> とする。</p>
+<p><code>HEAD</code> は <code>GET</code> と同じヘッダーを返し、レスポンスボディを返してはならない。</p>
+<p><code>ETag</code> は <code>"{size}-{unixModifiedTime}"</code> 形式の弱い validator とし、レスポンスでは <code>W/"{size}-{unixModifiedTime}"</code> として返す。</p>
+<p><code>Last-Modified</code> は対象ファイルの更新時刻を HTTP-date 形式で返す。</p>
+<p><code>Cache-Control</code> は既定で <code>public, max-age=60</code> とする。</p>
+<p><code>If-None-Match</code> が <code>ETag</code> と一致する場合は <code>304 Not Modified</code> を返す。</p>
+<p><code>If-Modified-Since</code> が <code>Last-Modified</code> 以降の場合は <code>304 Not Modified</code> を返す。</p>
+<p><code>304 Not Modified</code> ではレスポンスボディを返してはならない。</p>
+<p>Range request は Rev.22 時点では実装しない。</p>
+<p><code>Range</code> ヘッダーを受信した場合も無視し、通常の <code>200 OK</code> または <code>304 Not Modified</code> 判定を行う。</p>
+<p>Gzip 圧縮済みファイルを返す場合は <code>Content-Encoding: gzip</code> を設定する。</p>
+<p>静的配信処理は開発リポジトリ内に配信用一時ファイル、キャッシュファイル、ログ以外の実行時データを作成してはならない。</p>
 <h4 id="13.15.5-webhook-固定仕様">13.15.5 Webhook 固定仕様</h4>
 <ul>
 <li>GitHub Webhook は Push イベントのみ処理する</li>
 <li><code>X-GitHub-Event</code> が <code>push</code> 以外の場合は <code>200 OK</code> とし、<code>{"status":"ignored"}</code> を返す</li>
-<li>対象ブランチは設定ファイルで指定する</li>
+<li>対象ブランチは <code>deploy.branch</code> で指定する</li>
 <li>対象外ブランチの場合は <code>200 OK</code> とし、<code>{"status":"ignored"}</code> を返す</li>
+<li><code>webhook.githubSecret</code> が空文字でない場合は、<code>X-Hub-Signature-256</code> を必須とする</li>
+<li>署名ヘッダーは <code>sha256=&lt;hex&gt;</code> 形式のみ許可する</li>
+<li>署名検証はリクエストBodyの生バイト列に対してHMAC-SHA256を計算し、<code>hmac.Equal</code> で比較する</li>
+<li>署名ヘッダーが存在しない、形式不正、または署名不一致の場合は <code>401 Unauthorized</code> とし、<code>ERR_WEBHOOK_SIGNATURE_INVALID</code> を返す</li>
+<li><code>webhook.githubSecret</code> が空文字の場合、署名ヘッダーの有無にかかわらず署名検証を行わない</li>
+<li>デプロイ元は <code>deploy.sourcePath</code> のローカルcheckoutに限定する</li>
+<li>デプロイ先Projectは <code>deploy.projectId</code> で指定する</li>
+<li><code>deploy.projectId</code> が空文字の場合は <code>ERR_WEBHOOK_PROJECT_NOT_CONFIGURED</code> を返す</li>
+<li>GitHub Push payload の <code>repository.clone_url</code>、<code>repository.ssh_url</code>、<code>repository.html_url</code> から clone、fetch、pull してはならない</li>
+<li>Webhook処理はネットワーク越しにGit操作を行ってはならない</li>
+<li><code>deploy.sourcePath</code> が存在しない、Git worktreeでない、または <code>after</code> commit を参照できない場合は <code>ERR_WEBHOOK_SOURCE_INVALID</code> を返す</li>
+<li>静的コンテンツ反映元は <code>deploy.sourcePath</code> の <code>after</code> commit 時点のファイルツリーとする</li>
+<li>Rev.22 時点では、Webhookデプロイ時の対象ファイルパスはリポジトリルート配下の全静的ファイルとする</li>
+<li><code>.git/</code>、<code>.github/</code>、<code>AGENTS.md</code>、<code>ASB-spec.md</code>、<code>ASB-spec.html</code>、<code>IMPLEMENTATION_TASKS.md</code>、<code>DOCUMENT_INDEX.md</code>、<code>README.md</code> は配信対象から除外する</li>
+<li>デプロイ先は対象Projectの <code>storage/projects/:projectId/contents/</code> 配下に限定する</li>
+<li>Webhookデプロイは開発リポジトリ内へ実行時データ、一時ファイル、ログファイルを作成してはならない</li>
 <li>冪等キーは <code>branch + ":" + after</code> とする</li>
 <li>同一冪等キーが <code>config/webhooks.json</code> に存在する場合は <code>200 OK</code> とし、<code>{"status":"duplicate"}</code> を返す</li>
-<li>Webhook 処理成功後に冪等キーを <code>config/webhooks.json</code> へ保存する</li>
-<li>Webhook 署名検証は Rev.16 時点では必須化しない</li>
+<li>Webhook 処理完了後に処理状態を <code>config/webhooks.json</code> へ保存する</li>
+<li>成功時の <code>status</code> は <code>deployed</code> とする</li>
+<li>失敗時の <code>status</code> は <code>failed</code> とし、<code>errorCode</code> を保存する</li>
+<li>Webhook失敗時の自動リトライは Rev.22 時点では実装しない</li>
+<li>GitHub側から同一イベントが再送された場合は、<code>config/webhooks.json</code> の既存イベントにより重複判定する</li>
+</ul>
+<p>Webhookデプロイ処理順序は以下に固定する。</p>
+<ol>
+<li><code>X-GitHub-Event</code> を確認する</li>
+<li>必要な場合のみ <code>X-Hub-Signature-256</code> を検証する</li>
+<li>GitHub Push payload をJSONとして解析する</li>
+<li><code>ref</code> から対象ブランチを取得する</li>
+<li>対象外ブランチの場合は <code>ignored</code> として終了する</li>
+<li><code>after</code> と <code>deploy.branch</code> から冪等キーを生成する</li>
+<li>同一冪等キーが存在する場合は <code>duplicate</code> として終了する</li>
+<li><code>deploy.sourcePath</code> の存在、Git worktree、<code>after</code> commit 参照可否を検証する</li>
+<li><code>deploy.projectId</code> の対象Project存在を検証する</li>
+<li><code>after</code> commit の静的ファイルツリーを列挙する</li>
+<li>配信対象外ファイルを除外する</li>
+<li>対象Projectの <code>contents/</code> へ一時ディレクトリを作成する</li>
+<li>静的ファイルを一時ディレクトリへコピーする</li>
+<li><code>fsync</code> 後に atomic rename で <code>contents/</code> を置き換える</li>
+<li><code>storage/projects/:projectId/files.json</code> を更新する</li>
+<li><code>config/webhooks.json</code> に <code>deployed</code> を保存する</li>
+<li>成功レスポンスを返す</li>
+</ol>
+<p>8-15 の途中で失敗した場合は <code>failed</code> を <code>config/webhooks.json</code> に保存し、<code>ERR_WEBHOOK_PROCESSING_FAILED</code> または具体的なエラーコードを返す。</p>
+<p>Webhook固定仕様のテスト項目は以下とする。</p>
+<ul>
+<li>secret未設定時に署名なしリクエストを受け付ける</li>
+<li>secret設定時に署名なしリクエストを <code>401</code> で拒否する</li>
+<li>secret設定時に不正署名を <code>401</code> で拒否する</li>
+<li>secret設定時に正しい <code>X-Hub-Signature-256</code> を受け付ける</li>
+<li><code>push</code> 以外のイベントを <code>ignored</code> とする</li>
+<li>対象外ブランチを <code>ignored</code> とする</li>
+<li>同一冪等キーを <code>duplicate</code> とする</li>
+<li>payload の remote URL をデプロイ元として使わない</li>
+<li><code>deploy.sourcePath</code> が存在しない場合に失敗する</li>
+<li><code>after</code> commit を参照できない場合に失敗する</li>
+<li>Webhook失敗時に自動リトライを作成しない</li>
+<li>開発リポジトリ内に実行時データ、一時ファイル、ログファイルを作成しない</li>
 </ul>
 <h4 id="13.15.6-実装順序固定">13.15.6 実装順序固定</h4>
 <ol>
@@ -1745,7 +1977,7 @@ $ sudo systemctl stop asb</code></pre>
 </ol>
 <p>各段階は <code>go test ./...</code> が通る単位で完了させる。</p>
 <h3 id="13.16-入出力契約固定仕様">13.16 入出力契約固定仕様</h3>
-<p>本節は Rev.16 時点で API、JSON保存、ログ、起動時検証の入出力を固定する仕様である。</p>
+<p>本節は Rev.22 時点で API、JSON保存、ログ、起動時検証の入出力を固定する仕様である。</p>
 <h4 id="13.16.1-共通成功レスポンス契約">13.16.1 共通成功レスポンス契約</h4>
 <ul>
 <li>成功レスポンスは常に JSON object とする</li>
@@ -1772,7 +2004,7 @@ $ sudo systemctl stop asb</code></pre>
 <tr><td>Monitoring</td><td>200</td><td><code>{"cpu":number|null,"memory":number|null,"disk":number|null,"connections":number|null,"requests":number|null,"checkedAt":string}</code></td></tr>
 <tr><td>Access log</td><td>200</td><td><code>{"logs":[AccessLog...],"limit":number,"offset":number}</code></td></tr>
 <tr><td>Error log</td><td>200</td><td><code>{"logs":[ErrorLog...],"limit":number,"offset":number}</code></td></tr>
-<tr><td>GitHub Webhook 処理</td><td>200</td><td><code>{"status":"received","branch":string,"after":string,"processedAt":string}</code></td></tr>
+<tr><td>GitHub Webhook 処理</td><td>200</td><td><code>{"status":"deployed","branch":string,"after":string,"processedAt":string}</code></td></tr>
 <tr><td>GitHub Webhook 無視</td><td>200</td><td><code>{"status":"ignored","reason":string}</code></td></tr>
 <tr><td>GitHub Webhook 重複</td><td>200</td><td><code>{"status":"duplicate","key":string}</code></td></tr>
 </tbody></table></div>
@@ -1825,14 +2057,18 @@ $ sudo systemctl stop asb</code></pre>
   "createdAt": "2026-09-08T00:00:00Z",
   "size": 536870912,
   "path": "backups/backup-id.tar.gz",
-  "sha256": "string"
+  "sha256": "string",
+  "status": "completed"
 }</code></pre>
 <p><code>config/webhooks.json</code> の <code>events[]</code> は以下の形式とする。</p>
 <pre><code>{
   "key": "main:abcdef1234567890",
   "branch": "main",
   "after": "abcdef1234567890",
-  "receivedAt": "2026-09-08T00:00:00Z"
+  "status": "deployed",
+  "receivedAt": "2026-09-08T00:00:00Z",
+  "completedAt": "2026-09-08T00:00:05Z",
+  "errorCode": ""
 }</code></pre>
 <ul>
 <li>保存JSON内のパスは <code>storage.basePath</code> からの相対パスとし、絶対パスを保存してはならない</li>
@@ -1899,6 +2135,174 @@ $ sudo systemctl stop asb</code></pre>
 <li>起動時検証の順序、終了コード、標準エラー形式検証</li>
 <li>アクセスログとエラーログのJSON Linesフィールド検証</li>
 </ul>
+<h3 id="13.17-実装境界とファイル操作固定仕様">13.17 実装境界とファイル操作固定仕様</h3>
+<p>本節は Rev.22 時点で package 境界、公開 interface、Repository、Storage、複数ファイル更新の実装契約を固定する仕様である。</p>
+<h4 id="13.17.1-package-公開-interface-固定">13.17.1 package 公開 interface 固定</h4>
+<div class="tbl-wrap"><table><thead>
+<tr><th>package</th><th>公開 interface</th><th>主な責務</th></tr>
+</thead><tbody>
+<tr><td><code>config</code></td><td><code>Loader</code></td><td>設定読み込み、デフォルト適用、起動時検証</td></tr>
+<tr><td><code>server</code></td><td><code>Router</code>, <code>Responder</code></td><td>HTTPルーティング、成功/エラーJSON応答</td></tr>
+<tr><td><code>management</code></td><td><code>ProjectService</code>, <code>DomainService</code>, <code>SSLService</code></td><td>Project、Domain、SSL管理境界</td></tr>
+<tr><td><code>delivery</code></td><td><code>FileService</code>, <code>StaticService</code>, <code>WebhookService</code></td><td>ファイル管理、静的配信、Webhook</td></tr>
+<tr><td><code>data</code></td><td><code>JSONRepository</code>, <code>StorageService</code>, <code>BackupService</code></td><td>JSON永続化、ストレージ、バックアップ/復旧</td></tr>
+<tr><td><code>system</code></td><td><code>LogService</code>, <code>MonitoringService</code>, <code>Clock</code>, <code>IDGenerator</code></td><td>ログ、監視、時刻、ID生成</td></tr>
+</tbody></table></div>
+<ul>
+<li>Handler は Service interface のみに依存する</li>
+<li>Service は Repository、Storage、Clock、IDGenerator、LogService interface に依存できる</li>
+<li>Entity は interface を定義せず、保存形式とレスポンス形式の型定義のみを持つ</li>
+<li>他 package の具象型を直接生成してよい場所は <code>main.go</code> の依存関係生成処理のみとする</li>
+</ul>
+<h4 id="13.17.2-repository-storage-責務固定">13.17.2 Repository / Storage 責務固定</h4>
+<ul>
+<li><code>JSONRepository</code> は JSON ファイルの読み込み、スキーマ検証、排他、atomic save のみを担当する</li>
+<li><code>JSONRepository</code> は HTTP ステータス、HTTP リクエスト、HTTP レスポンスを扱ってはならない</li>
+<li><code>StorageService</code> は <code>storage.basePath</code> 配下のファイル実体操作のみを担当する</li>
+<li><code>StorageService</code> は Project、Domain、Webhook の業務判断を行ってはならない</li>
+<li>Service は業務判断、整合性判断、複数Repository/Storage操作の順序制御を担当する</li>
+<li>複数JSONまたはJSONとファイル実体をまたぐ操作では、Service が処理全体の成功/失敗を決定する</li>
+</ul>
+<h4 id="13.17.3-静的配信処理順序固定">13.17.3 静的配信処理順序固定</h4>
+<p>Static delivery は以下の順序で実行する。</p>
+<ol>
+<li>リクエストパスが <code>/api/</code> で始まる場合は API ルーティングへ渡す</li>
+<li>HTTP method が <code>GET</code> または <code>HEAD</code> であることを検証する</li>
+<li><code>GET</code> または <code>HEAD</code> 以外の場合は <code>405 Method Not Allowed</code> と <code>Allow: GET, HEAD</code> を返す</li>
+<li><code>Host</code> ヘッダーを取得する</li>
+<li><code>Host</code> の port、末尾 <code>.</code>, 大文字小文字を正規化する</li>
+<li>正規化後 Host を <code>config/domains.json</code> の <code>domain</code> と完全一致で照合する</li>
+<li>Domain が存在しない場合は <code>404 Not Found</code> を返す</li>
+<li>Domain の <code>projectId</code> に対応する Project の存在を検証する</li>
+<li>Project が存在しない場合は <code>ERR_STORAGE_VALIDATION_FAILED</code> をログに記録し、<code>500 Internal Server Error</code> を返す</li>
+<li>URL path を decode し、静的配信用相対パスへ正規化する</li>
+<li>不正パスまたは配信ルート外脱出は <code>404 Not Found</code> を返す</li>
+<li>空パス、<code>/</code>、ディレクトリパスは <code>index.html</code> を探索対象とする</li>
+<li><code>storage.basePath/storage/projects/{projectId}/contents/</code> と相対パスを結合する</li>
+<li>結合後パスが <code>contents/</code> 配下に収まることを検証する</li>
+<li>対象ファイルの存在と通常ファイルであることを検証する</li>
+<li>存在しない場合は <code>404 Not Found</code> を返す</li>
+<li><code>Content-Type</code>、<code>ETag</code>、<code>Last-Modified</code>、<code>Cache-Control</code> を決定する</li>
+<li><code>If-None-Match</code> または <code>If-Modified-Since</code> により未変更と判定できる場合は <code>304 Not Modified</code> を返す</li>
+<li><code>HEAD</code> の場合はヘッダーのみを返す</li>
+<li><code>GET</code> の場合はファイル内容をレスポンスボディとして返す</li>
+</ol>
+<p>静的配信では <code>Range</code> ヘッダーを無視し、<code>206 Partial Content</code> を返してはならない。</p>
+<p>静的配信ではディレクトリ一覧を返してはならない。</p>
+<p>静的配信では開発リポジトリ内に配信用一時ファイル、キャッシュファイル、実行時データを作成してはならない。</p>
+<h4 id="13.17.4-ファイルアップロード処理順序固定">13.17.4 ファイルアップロード処理順序固定</h4>
+<ol>
+<li>URL <code>:id</code> を検証する</li>
+<li>Project の存在を検証する</li>
+<li>multipart field <code>file</code> の存在を検証する</li>
+<li>ファイル名、サイズ、quota を検証する</li>
+<li>既存 <code>files.json</code> を読み込み検証する</li>
+<li>保存先相対パスを決定する</li>
+<li>ファイル実体を <code>contents/</code> 配下の一時ファイルへ書き込む</li>
+<li>書き込み内容を <code>fsync</code> する</li>
+<li>一時ファイルを公開先へ atomic rename する</li>
+<li><code>files.json</code> を更新する</li>
+<li><code>projects.json</code> の <code>used</code> を更新する</li>
+<li>成功レスポンスを返す</li>
+</ol>
+<p>7-11 の途中で失敗した場合、成功レスポンスを返してはならない。</p>
+<p>公開先への rename 後に JSON 更新が失敗した場合は、エラーログを記録し、次回起動時検証または整合性検証で検出できる状態にする。</p>
+<h4 id="13.17.5-ファイル上書き処理順序固定">13.17.5 ファイル上書き処理順序固定</h4>
+<ol>
+<li>旧ファイルメタデータを読み込む</li>
+<li>新ファイルを一時ファイルへ書き込む</li>
+<li>新ファイルを <code>fsync</code> する</li>
+<li>新ファイルを公開先へ atomic rename する</li>
+<li><code>files.json</code> の <code>size</code>、<code>uploadedAt</code>、<code>path</code> を更新する</li>
+<li><code>projects.json</code> の <code>used</code> を差分更新する</li>
+</ol>
+<p>旧ファイルは、新ファイルの atomic rename が成功するまで削除してはならない。</p>
+<p>上書き後の <code>used</code> は旧サイズを差し引き、新サイズを加算して計算する。</p>
+<h4 id="13.17.6-ファイル削除処理順序固定">13.17.6 ファイル削除処理順序固定</h4>
+<ol>
+<li>URL <code>:id</code> と <code>:name</code> を検証する</li>
+<li>Project の存在を検証する</li>
+<li><code>files.json</code> から対象ファイルを検出する</li>
+<li>ファイル実体を削除する</li>
+<li><code>files.json</code> から対象メタデータを削除する</li>
+<li><code>projects.json</code> の <code>used</code> を差分更新する</li>
+<li>成功レスポンスを返す</li>
+</ol>
+<p>ファイル実体が存在しないが <code>files.json</code> にメタデータが存在する場合は、整合性エラーとして <code>ERR_FILE_NOT_FOUND</code> を返す。</p>
+<p>JSON 更新失敗時は成功レスポンスを返してはならない。</p>
+<h4 id="13.17.7-project削除処理順序固定">13.17.7 Project削除処理順序固定</h4>
+<ol>
+<li>Project の存在を検証する</li>
+<li>対象 Project に紐づく Domain を列挙する</li>
+<li>対象 Project に紐づく Backup を列挙する</li>
+<li>対象 Project の <code>files.json</code> を読み込み検証する</li>
+<li>対象 Project の <code>contents/</code> 配下を削除する</li>
+<li>対象 Project の <code>files.json</code> を削除する</li>
+<li><code>config/domains.json</code> から関連 Domain を削除する</li>
+<li><code>config/backups.json</code> から関連 Backup 履歴を削除する</li>
+<li><code>config/projects.json</code> から対象 Project を削除する</li>
+<li>成功レスポンスを返す</li>
+</ol>
+<p>5-9 の途中で失敗した場合、成功レスポンスを返してはならない。</p>
+<p>Project削除は best effort 成功扱いにしてはならない。</p>
+<h4 id="13.17.8-backup作成処理順序固定">13.17.8 Backup作成処理順序固定</h4>
+<ol>
+<li>対象 Project の存在を検証する</li>
+<li>対象 Project の JSON と <code>contents/</code> を読み込み可能であることを検証する</li>
+<li><code>storage.basePath/backups/</code> が存在し、書き込み可能であることを検証する</li>
+<li><code>storage.basePath/backups/.tmp/backup-{backupId}.tar.gz.tmp</code> を作成する</li>
+<li>対象 Project の <code>files.json</code> と <code>contents/</code> のみを tar.gz に含める</li>
+<li>tar.gz 作成後に SHA-256 を計算する</li>
+<li><code>storage.basePath/backups/backup-{backupId}.tar.gz</code> へ atomic rename する</li>
+<li><code>config/backups.json</code> に <code>status: "completed"</code> の履歴を保存する</li>
+<li>成功レスポンスを返す</li>
+</ol>
+<p>tar.gz には <code>logs/</code>、<code>certs/</code>、他 Project の <code>contents/</code> を含めてはならない。</p>
+<p><code>config/backups.json</code> の <code>path</code> には <code>backups/backup-{backupId}.tar.gz</code> を保存する。</p>
+<p>Backup作成処理は、別障害領域への複製や外部ストレージ連携を行わない。</p>
+<p>tar.gz 作成またはハッシュ計算に失敗した場合、<code>config/backups.json</code> に履歴を追加してはならない。</p>
+<p>atomic rename 後に <code>config/backups.json</code> 保存へ失敗した場合は、作成済みtar.gzを削除し、削除失敗時はエラーログへ記録する。</p>
+<p>処理終了時は一時tarを削除する。一時tar削除に失敗した場合は WARN ログへ記録する。</p>
+<p>開発リポジトリ内にバックアップtar、一時tar、checksumファイル、復旧用ステージングデータを作成してはならない。</p>
+<h4 id="13.17.9-backup復旧処理順序固定">13.17.9 Backup復旧処理順序固定</h4>
+<ol>
+<li>Backup 履歴の存在を検証する</li>
+<li>Backup 履歴の <code>status</code> が <code>completed</code> であることを検証する</li>
+<li>Backup ファイルの存在を検証する</li>
+<li>SHA-256 を検証する</li>
+<li><code>storage.basePath/backups/restore-staging/{restoreId}/previous/</code> を作成する</li>
+<li><code>storage.basePath/backups/restore-staging/{restoreId}/next/</code> を作成する</li>
+<li>対象 Project の現行 <code>files.json</code> と <code>contents/</code> を <code>previous/</code> へ移動する</li>
+<li>Backup を <code>next/</code> へ展開する</li>
+<li>展開後の JSON 構文とスキーマを検証する</li>
+<li><code>next/</code> を復旧対象へ atomic rename する</li>
+<li>成功レスポンスを返す</li>
+</ol>
+<p>対象 Project が存在しない場合は <code>ERR_PROJECT_NOT_FOUND</code> を返す。</p>
+<p>現行データを <code>previous/</code> へ退避できない場合は、復旧を開始してはならない。</p>
+<p>7-10 の途中で失敗した場合、<code>previous/</code> から対象 Project の <code>files.json</code> と <code>contents/</code> を復元する。</p>
+<p><code>previous/</code> からの復元に失敗した場合は <code>ERR_BACKUP_RESTORE_FAILED</code> を返し、成功レスポンスを返してはならない。</p>
+<p>復旧完了後または失敗処理後、<code>storage.basePath/backups/restore-staging/{restoreId}/</code> は best effort で削除し、削除失敗時は WARN ログへ記録する。</p>
+<p>開発リポジトリ内に復旧用ステージングデータ、展開済みデータ、一時ファイルを作成してはならない。</p>
+<h4 id="13.17.10-複数json更新失敗時契約">13.17.10 複数JSON更新失敗時契約</h4>
+<ul>
+<li>複数JSON更新は、操作順序を Service に閉じ込める</li>
+<li>複数JSON更新では、最終JSONの保存が完了するまで成功レスポンスを返してはならない</li>
+<li>途中失敗時は、更新済みJSON名、未更新JSON名、操作名、requestId をエラーログへ記録する</li>
+<li>途中失敗時に自動ロールバックを実装する場合も、ロールバック失敗時は成功扱いにしてはならない</li>
+<li>Rev.22 時点では、複数JSON更新に外部トランザクション機構を導入してはならない</li>
+</ul>
+<h4 id="13.17.11-最低テスト分類固定">13.17.11 最低テスト分類固定</h4>
+<div class="tbl-wrap"><table><thead>
+<tr><th>分類</th><th>対象</th></tr>
+</thead><tbody>
+<tr><td>Unit</td><td>Entity validation、Service validation、Repository validation</td></tr>
+<tr><td>Handler</td><td>ルーティング、Content-Type、Body decode、レスポンスJSON</td></tr>
+<tr><td>Repository</td><td>unknown field、atomic save、sort order、保存失敗</td></tr>
+<tr><td>Storage</td><td>path traversal、relative path、upload、overwrite、delete</td></tr>
+<tr><td>Integration</td><td>Project/File/Domain/Backup/Webhook の成功系と主要失敗系</td></tr>
+<tr><td>Startup</td><td>起動時検証順序、終了コード、stderr</td></tr>
+</tbody></table></div>
 <hr>
 <h2 id="14-パフォーマンス要件">14 パフォーマンス要件</h2>
 <h3 id="14.1-推奨リソース">14.1 推奨リソース</h3>
@@ -1967,7 +2371,7 @@ $ sudo systemctl stop asb</code></pre>
 <h3 id="15.2-テスト対象外">15.2 テスト対象外</h3>
 <p>以下はモック・スタブで対応：</p>
 <ul>
-<li>ACME 実通信および CA 連携（Rev.16 時点では実通信を実装対象外とし、SSL管理境界のみ検証）</li>
+<li>ACME 実通信および CA 連携（Rev.22 時点では実通信を実装対象外とし、SSL管理境界のみ検証）</li>
 <li>GitHub Webhook（テスト用ペイロード）</li>
 <li>実際のファイルストレージ大容量テスト（テスト時は最大100MB）</li>
 </ul>
@@ -1985,73 +2389,117 @@ $ go test -integration ./...
 $ ./tests/e2e.sh</code></pre>
 <hr>
 <h2 id="16-マイグレーション戦略">16 マイグレーション戦略</h2>
-<h3 id="16.1-バージョン互換性">16.1 バージョン互換性</h3>
-<p><strong>マイナーバージョン（v1.0 → v1.1）</strong></p>
+<h3 id="16.1-基本方針">16.1 基本方針</h3>
+<p>ASB のマイグレーションは、実行時 JSON ファイルのスキーマ変更に限定する。</p>
+<p>ASB は外部DBを使用しないため、DBマイグレーション機構、外部トランザクション機構、外部マイグレーションフレームワークを使用しない。</p>
+<p>マイグレーションは <code>storage.basePath</code> 配下の実行時データに対してのみ行う。</p>
+<p>開発リポジトリ内にマイグレーション作業ファイル、一時ファイル、退避ファイル、履歴ファイルを作成してはならない。</p>
+<p>ASB の開発版バージョンは累積連番 <code>v0.N</code> とし、メジャー/マイナー/パッチの意味を持たせない。</p>
+<p>安定版バージョン <code>vX.Y</code> は、安定版リリース番号 <code>X</code> と切り出し元の開発版 <code>v0.Y</code> を示す表示であり、互換性判定には <code>schemaVersion</code> を使用する。</p>
+<h3 id="16.2-マイグレーション対象">16.2 マイグレーション対象</h3>
+<p>マイグレーション対象は以下に限定する。</p>
+<div class="tbl-wrap"><table><thead>
+<tr><th>対象</th><th>説明</th></tr>
+</thead><tbody>
+<tr><td><code>config/projects.json</code></td><td>Project スキーマ</td></tr>
+<tr><td><code>config/domains.json</code></td><td>Domain スキーマ</td></tr>
+<tr><td><code>config/backups.json</code></td><td>Backup スキーマ</td></tr>
+<tr><td><code>config/webhooks.json</code></td><td>Webhook 冪等キー履歴スキーマ</td></tr>
+<tr><td><code>storage/projects/:projectId/files.json</code></td><td>File メタデータスキーマ</td></tr>
+</tbody></table></div>
+<p>静的コンテンツ実体、ログファイル、証明書ファイル、ビルド済みバイナリは、Rev.22 時点のマイグレーション対象外とする。</p>
+<h3 id="16.3-schemaversion-固定">16.3 schemaVersion 固定</h3>
+<p>各実行時 JSON ファイルはトップレベルに <code>schemaVersion</code> を持つ。</p>
+<p>Rev.22 時点の <code>schemaVersion</code> は <code>1</code> とする。</p>
+<pre><code>{
+  "schemaVersion": 1,
+  "projects": []
+}</code></pre>
+<p><code>schemaVersion</code> が存在しない JSON ファイルは、<code>schemaVersion: 0</code> として扱う。</p>
+<p>ASB 起動時に現在のASBが対応しない <code>schemaVersion</code> を検出した場合は起動失敗とする。</p>
+<p>起動時に自動マイグレーションを実行してはならない。</p>
+<h3 id="16.4-実行方式">16.4 実行方式</h3>
+<p>マイグレーションは ASB 本体バイナリの管理コマンドとして提供する。</p>
+<p>外部スクリプトを正本実行方式として扱ってはならない。</p>
+<pre><code>asb migrate --storage /var/asb --from-schema 0 --to-schema 1 --dry-run
+asb migrate --storage /var/asb --from-schema 0 --to-schema 1 --apply</code></pre>
+<p><code>--storage</code> は <code>storage.basePath</code> を指定する。</p>
+<p><code>--dry-run</code> は読み込み、検証、変換後データ生成、書き込み可否検証までを行い、実行時 JSON ファイルを変更してはならない。</p>
+<p><code>--apply</code> は実行時 JSON ファイルを更新する。</p>
+<p><code>--dry-run</code> と <code>--apply</code> は同時指定してはならない。</p>
+<h3 id="16.5-実行順序">16.5 実行順序</h3>
+<p><code>--apply</code> のマイグレーションは以下の順序で実行する。</p>
+<ol>
+<li>ASB サーバープロセスが停止していることを確認する</li>
+<li><code>storage.basePath</code> が開発リポジトリ配下でないことを検証する</li>
+<li>対象 JSON ファイルの存在、構文、現在スキーマを検証する</li>
+<li>対象 JSON ファイルの読み込み権限と書き込み権限を検証する</li>
+<li><code>storage.basePath/backups/migrations/</code> 配下へ事前バックアップを作成する</li>
+<li>変換後 JSON をメモリ上に生成する</li>
+<li>変換後 JSON のスキーマを検証する</li>
+<li>対象 JSON ファイルと同一ディレクトリ内の一時ファイルへ書き込む</li>
+<li><code>fsync</code> 後に atomic rename で置き換える</li>
+<li><code>config/migrations.json</code> に完了履歴を保存する</li>
+<li>完了ログを JSON Lines で記録する</li>
+</ol>
+<p>5-10 の途中で失敗した場合、成功扱いにしてはならない。</p>
+<h3 id="16.6-migrationhistory-保存形式">16.6 migrationHistory 保存形式</h3>
+<p>マイグレーション履歴は <code>config/migrations.json</code> に保存する。</p>
+<p><code>config/migrations.json</code> は起動時必須 JSON ファイルではなく、初回マイグレーション実行時に <code>storage.basePath/config/</code> 配下へ作成できる。</p>
+<p>作成場所は実行時データ領域に限定し、開発リポジトリ内へ作成してはならない。</p>
+<pre><code>{
+  "schemaVersion": 1,
+  "migrations": [
+    {
+      "id": "string(UUID)",
+      "fromSchema": 0,
+      "toSchema": 1,
+      "startedAt": "2026-09-08T00:00:00Z",
+      "finishedAt": "2026-09-08T00:00:00Z",
+      "status": "applied",
+      "backupPath": "backups/migrations/migration-id.tar.gz"
+    }
+  ]
+}</code></pre>
+<p><code>status</code> は <code>applied</code> または <code>failed</code> のみ許可する。</p>
+<h3 id="16.7-ロールバック">16.7 ロールバック</h3>
+<p>マイグレーション失敗時は、事前バックアップが作成済みであればバックアップから復元する。</p>
+<p>ロールバックは <code>storage.basePath</code> 配下の実行時データのみを対象とする。</p>
+<p>ロールバックに失敗した場合は、標準エラー、エラーログ、<code>config/migrations.json</code> に <code>failed</code> として記録する。</p>
+<p>ロールバック失敗時に成功扱いとしてはならない。</p>
+<h3 id="16.8-禁止事項">16.8 禁止事項</h3>
+<p>Rev.22 時点では以下を禁止する。</p>
 <ul>
-<li>JSON スキーマ変更なし</li>
-<li>既存データとの互換性保証</li>
-<li>自動マイグレーション不要</li>
-<li>互換性：完全互換</li>
+<li>起動時の自動マイグレーション</li>
+<li>開発リポジトリ内でのマイグレーション作業ファイル作成</li>
+<li>外部DBマイグレーション</li>
+<li>外部トランザクション機構</li>
+<li>外部マイグレーションフレームワーク</li>
+<li><code>.gitignore</code> を必要とする移行生成物設計</li>
 </ul>
-<p><strong>メジャーバージョン（v1.x → v2.0）</strong></p>
+<h3 id="16.9-テスト固定項目">16.9 テスト固定項目</h3>
 <ul>
-<li>スキーマ変更の可能性</li>
-<li>マイグレーションスクリプト提供予定</li>
-<li>バックアップから復元可能</li>
-<li>互換性：後方互換性なし</li>
-</ul>
-<h3 id="16.2-マイグレーション手順">16.2 マイグレーション手順</h3>
-<p><strong>準備</strong></p>
-<pre><code># 1. バックアップ作成
-$ asb-backup-create --output backup-v1.tar.gz
-
-# 2. バックアップ整合性確認
-$ asb-backup-verify backup-v1.tar.gz</code></pre>
-<p><strong>実行</strong></p>
-<pre><code># 3. 新バイナリ起動（旧バージョンと並行動作テスト）
-$ ./asb-linux-amd64-v2.0 --dry-run
-
-# 4. 旧バイナリ停止
-$ sudo systemctl stop asb
-
-# 5. バイナリ置き換え
-$ cp asb-linux-amd64-v2.0 /usr/local/bin/asb
-$ chmod +x /usr/local/bin/asb
-
-# 6. マイグレーション実行（必要な場合）
-$ asb-migrate --from v1.0 --to v2.0
-
-# 7. サービス起動
-$ sudo systemctl start asb</code></pre>
-<p><strong>検証</strong></p>
-<pre><code># 8. ログ確認
-$ sudo journalctl -u asb -n 50
-
-# 9. API 動作確認
-$ curl http://localhost:3000/api/projects
-
-# 10. データ整合性確認
-$ asb-verify-data</code></pre>
-<p><strong>ロールバック（必要な場合）</strong></p>
-<pre><code># 11. バイナリ置き換え（旧）
-$ cp /usr/local/bin/asb-v1.0 /usr/local/bin/asb
-
-# 12. サービス再起動
-$ sudo systemctl restart asb
-
-# 13. バックアップから復元（必要な場合）
-$ asb-backup-restore backup-v1.tar.gz</code></pre>
-<h3 id="16.3-データ互換性の考慮">16.3 データ互換性の考慮</h3>
-<ul>
-<li>JSON フォーマット：バージョン情報を付与（将来の互換性判定用）</li>
-<li>スキーマ変更時：変更前後のスキーマを記録</li>
-<li>マイグレーション情報：実行したマイグレーション履歴をログ記録</li>
+<li><code>schemaVersion</code> なしを <code>0</code> として扱うテスト</li>
+<li>未対応 <code>schemaVersion</code> の起動失敗テスト</li>
+<li><code>--dry-run</code> が実行時 JSON ファイルを変更しないテスト</li>
+<li><code>--apply</code> が対象 JSON ファイルを atomic rename で更新するテスト</li>
+<li>事前バックアップ作成テスト</li>
+<li>途中失敗時の成功禁止テスト</li>
+<li>ロールバック成功テスト</li>
+<li>ロールバック失敗時の <code>failed</code> 記録テスト</li>
+<li>開発リポジトリ内に移行作業ファイルを作成しないテスト</li>
 </ul>
 <hr>
 <h2 id="17-変更履歴">17 変更履歴</h2>
 <div class="tbl-wrap"><table><thead>
 <tr><th>バージョン</th><th>日付</th><th>内容</th></tr>
 </thead><tbody>
+<tr><td>Rev.22</td><td>2026-09-08</td><td>静的配信のHost解決、パス正規化、HEAD、キャッシュヘッダー、304、Range非対応、開発リポジトリ非生成を実装レベルで固定</td></tr>
+<tr><td>Rev.21</td><td>2026-09-08</td><td>バックアップ保存先、tar.gz構成、checksum、復旧退避先、失敗時復元、開発リポジトリ非生成を実装レベルで固定</td></tr>
+<tr><td>Rev.20</td><td>2026-09-08</td><td>GitHub Webhook署名検証、ローカルcheckoutデプロイ、失敗時リトライ禁止、Webhook処理順序を実装レベルで固定</td></tr>
+<tr><td>Rev.19</td><td>2026-09-08</td><td>安定版リリース判定、GitHub Releases配布、checksum、install/update、systemd仕様を実装レベルで固定</td></tr>
+<tr><td>Rev.18</td><td>2026-09-08</td><td>マイグレーション戦略をASBのJSONファイルベース実行時データ移行契約へ全面置換</td></tr>
+<tr><td>Rev.17</td><td>2026-09-08</td><td>package公開interface、Repository/Storage責務、ファイル操作、Project削除、Backup/Restore、複数JSON更新失敗時契約を固定</td></tr>
 <tr><td>Rev.16</td><td>2026-09-08</td><td>API成功/エラーレスポンス、保存JSONスキーマ、起動時検証出力、ログJSON Linesを固定</td></tr>
 <tr><td>Rev.15</td><td>2026-09-08</td><td>API、設定値、JSONファイル、静的配信、Webhook、実装順序を実装単位で固定</td></tr>
 <tr><td>Rev.14</td><td>2026-09-08</td><td>実装契約を追加し、パッケージ境界、HTTP契約、JSON保存、起動時検証、Handler/Service/Entity責務、副作用、保留機能禁止を具体化</td></tr>

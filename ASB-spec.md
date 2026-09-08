@@ -39,7 +39,7 @@ ASB は仕様駆動システムである。
 | 提供形態 | HTTP サーバー（単一バイナリ） |
 | データ保存 | JSON ファイルベース（外部DB不使用） |
 | ライセンス | クローズドライセンス |
-| 本書バージョン | Rev.16 |
+| 本書バージョン | Rev.22 |
 
 ---
 
@@ -550,8 +550,8 @@ ASB 起動時には、設定された保存先に以下の実行時データ領�
 | 項目 | 内容 |
 |-----|------|
 | リクエスト | GitHub Webhook ペイロード |
-| レスポンス | `{ "status": "received" }` |
-| ステータス | 200 OK, 400 Bad Request |
+| レスポンス | `{ "status": "deployed" }`、`{ "status": "ignored" }`、`{ "status": "duplicate" }` |
+| ステータス | 200 OK, 400 Bad Request, 401 Unauthorized, 500 Internal Server Error |
 
 ### 8.7 エラーハンドリング
 
@@ -572,6 +572,7 @@ ASB 起動時には、設定された保存先に以下の実行時データ領�
 | 200 | OK | リクエスト成功 |
 | 201 | Created | リソース作成成功 |
 | 400 | Bad Request | リクエスト形式エラー（バリデーション失敗等） |
+| 401 | Unauthorized | Webhook署名検証失敗 |
 | 404 | Not Found | リソース未検出 |
 | 409 | Conflict | リソース競合（既存データの重複等） |
 | 413 | Payload Too Large | ファイルサイズ超過 |
@@ -595,6 +596,9 @@ ASB 起動時には、設定された保存先に以下の実行時データ領�
 | ERR_BACKUP_NOT_FOUND | 404 | Backup not found | バックアップが存在しない |
 | ERR_BACKUP_RESTORE_FAILED | 500 | Backup restore failed | バックアップ復旧失敗 |
 | ERR_SSL_CERT_GENERATION_FAILED | 500 | SSL certificate generation failed | SSL証明書生成失敗 |
+| ERR_WEBHOOK_SIGNATURE_INVALID | 401 | Invalid webhook signature | Webhook署名が不正 |
+| ERR_WEBHOOK_SOURCE_INVALID | 500 | Webhook source invalid | Webhookデプロイ元が不正 |
+| ERR_WEBHOOK_PROJECT_NOT_CONFIGURED | 500 | Webhook project not configured | Webhookデプロイ先Projectが未設定 |
 | ERR_WEBHOOK_PROCESSING_FAILED | 500 | Webhook processing failed | Webhook処理失敗 |
 | ERR_INVALID_JSON | 400 | Invalid JSON | JSON構文不正 |
 | ERR_UNKNOWN_FIELD | 400 | Unknown field | 未知フィールド |
@@ -699,7 +703,9 @@ ASB 起動時には、設定された保存先に以下の実行時データ領�
   "projectId": "string",
   "createdAt": "string (ISO 8601)",
   "size": "number",
-  "path": "string"
+  "path": "string",
+  "sha256": "string",
+  "status": "string"
 }
 ```
 
@@ -708,7 +714,9 @@ ASB 起動時には、設定された保存先に以下の実行時データ領�
 - `projectId`：バックアップ対象プロジェクトID
 - `createdAt`：バックアップ作成日時（ISO 8601形式）
 - `size`：バックアップサイズ（バイト）
-- `path`：ストレージ内のバックアップファイルパス
+- `path`：`storage.basePath` からの相対バックアップファイルパス
+- `sha256`：バックアップtar.gzのSHA-256
+- `status`：`completed` または `failed`
 
 ---
 
@@ -741,7 +749,9 @@ ASB 起動時には、設定された保存先に以下の実行時データ領�
       "projectId": "proj-001",
       "createdAt": "2025-01-15T10:00:00Z",
       "size": 536870912,
-      "path": "/storage/backups/backup-001.tar.gz"
+      "path": "backups/backup-001.tar.gz",
+      "sha256": "string",
+      "status": "completed"
     }
   ]
 }
@@ -768,6 +778,14 @@ ASB 起動時には、設定された保存先に以下の実行時データ領�
     "level": "info",
     "format": "json",
     "maxSize": 104857600
+  },
+  "deploy": {
+    "projectId": "",
+    "sourcePath": "/srv/asb/source",
+    "branch": "main"
+  },
+  "webhook": {
+    "githubSecret": ""
   }
 }
 ```
@@ -786,6 +804,10 @@ ASB 起動時には、設定された保存先に以下の実行時データ領�
 | log | level | string | info | ログレベル（debug/info/warn/error） |
 | log | format | string | json | ログ形式（JSON Lines） |
 | log | maxSize | number | 104857600 | ログファイル最大サイズ（バイト、デフォルト100MB） |
+| deploy | projectId | string | 空文字 | Webhookデプロイ先Project ID。空文字の場合、Webhookデプロイは失敗扱い |
+| deploy | sourcePath | string | /srv/asb/source | Webhookデプロイ元ローカルcheckout絶対パス |
+| deploy | branch | string | main | Webhookデプロイ対象ブランチ |
+| webhook | githubSecret | string | 空文字 | GitHub Webhook署名検証用secret。空文字の場合は署名検証を行わない |
 
 ### 10.4 config/domains.json
 
@@ -829,7 +851,10 @@ ASB 起動時には、設定された保存先に以下の実行時データ領�
       "key": "main:abcdef1234567890",
       "branch": "main",
       "after": "abcdef1234567890",
-      "receivedAt": "2026-09-08T00:00:00Z"
+      "status": "deployed",
+      "receivedAt": "2026-09-08T00:00:00Z",
+      "completedAt": "2026-09-08T00:00:05Z",
+      "errorCode": ""
     }
   ]
 }
@@ -839,7 +864,35 @@ ASB 起動時には、設定された保存先に以下の実行時データ領�
 - `key`：Webhook 冪等キー（branch + ":" + after）
 - `branch`：GitHub Push イベントの対象ブランチ
 - `after`：GitHub Push イベントの after commit hash
-- `receivedAt`：Webhook 処理成功日時（ISO 8601形式）
+- `status`：`deployed`、`failed`、`duplicate`、`ignored` のいずれか
+- `receivedAt`：Webhook 受信日時（ISO 8601形式）
+- `completedAt`：Webhook 処理完了日時（ISO 8601形式）
+- `errorCode`：失敗時のエラーコード。成功時は空文字
+
+### 10.7 config/migrations.json
+
+```json
+{
+  "schemaVersion": 1,
+  "migrations": [
+    {
+      "id": "string(UUID)",
+      "fromSchema": 0,
+      "toSchema": 1,
+      "startedAt": "2026-09-08T00:00:00Z",
+      "finishedAt": "2026-09-08T00:00:00Z",
+      "status": "applied",
+      "backupPath": "backups/migrations/migration-id.tar.gz"
+    }
+  ]
+}
+```
+
+**フィールド説明**
+- `schemaVersion`：マイグレーション履歴ファイルのスキーマバージョン
+- `migrations`：実行済みまたは失敗したマイグレーション履歴
+- `status`：`applied` または `failed`
+- `backupPath`：`storage.basePath` からの相対バックアップパス
 
 ---
 
@@ -867,7 +920,9 @@ Delivery Domain は、ファイル管理・GitHub Webhook の責務を担う。
 - Webhook：指定ブランチの変更を検出し自動デプロイ
 - エラー時の通知とログ記録
 
-Webhook 処理失敗は、システムログへ記録し、自動リトライスケジュールの仕様を備える。
+Webhook 処理失敗は、システムログおよび `config/webhooks.json` へ記録する。
+
+Rev.22 時点では、Webhook失敗時の自動リトライスケジュールを実装しない。
 
 ### 11.3 Data Domain ポリシー
 
@@ -882,8 +937,10 @@ Data Domain は、バックアップ・ストレージの責務を担う。
 
 **バックアップ・復旧方針**
 - バックアップ取得後はハッシュ検証を実施
-- バックアップ保存先は別個の障害領域へ配置
-- 復旧は隔離環境で検証後、運用者承認を経て実施
+- ASB標準バックアップ保存先は `storage.basePath/backups/` とする
+- バックアップ保存先を別障害領域へ複製する作業は Rev.22 時点ではASB外の運用責務とする
+- 外部ストレージ連携は Rev.22 時点では実装対象外とする
+- 復旧は対象バックアップの存在、SHA-256、JSON構文、スキーマ検証後に実施
 - バックアップ・復旧・検証失敗・復旧操作は監査ログへ記録
 
 ### 11.4 System Domain ポリシー
@@ -913,7 +970,7 @@ System Domain は、監視・ログ管理の責務を担う。
 
 ASB はヘッドレスアーキテクチャを採用し、UI層に依存しない。
 
-Rev.16 時点の確定対象は、ASB 本体が提供する HTTP JSON API である。
+Rev.22 時点の確定対象は、ASB 本体が提供する HTTP JSON API である。
 
 SDK は実装対象外とし、通信仕様および配布方針が確定した後に実装対象へ昇格する。
 
@@ -933,9 +990,10 @@ SDK は実装対象外とし、通信仕様および配布方針が確定した�
 }
 ```
 
-**API 互換性**
-- マイナーバージョン：完全互換
-- メジャーバージョン：後方互換性なし、マイグレーション仕様を提供
+**API / スキーマ互換性**
+- API互換性は仕様書RevとASB本体バージョンの組み合わせで判断する
+- 実行時JSON互換性は `schemaVersion` で判断する
+- `schemaVersion` 変更時は §16 マイグレーション戦略に従う
 
 ### 11.6 技術・依存ポリシー
 
@@ -987,7 +1045,7 @@ E2E テスト
 - SSL/TLS：本番環境では必須（リバースプロキシで対応）
 
 **レート制限**
-- Rev.16 時点では実装対象外とし、保留事項として扱う
+- Rev.22 時点では実装対象外とし、保留事項として扱う
 
 **タイムアウト**
 - リクエスト読み込み：30秒
@@ -1056,14 +1114,14 @@ Adlaire-Static-Base（ASB）に含まれるソースコード、ドキュメン�
 
 ASB製品（ソフトウェア）の開発版バージョン。
 
-- 表記は`v0.N`（Nは1から始まる連番）。先頭の0は固定とする（将来1への切り替えを検討する余地は残すが、基準は未策定。切り替えてもNはリセットしない）
+- 表記は`v0.N`（Nは1から始まる連番）。先頭の0は固定とする
 - 本仕様書の変更を伴うすべての変更に付与する
 - Nは変更のたびに1ずつ増加する。桁揃えは行わない（v0.1, v0.2, … v0.9, v0.10, …）
 - いかなる理由があってもリセット（巻き戻し・1からの数え直し）はしない
 
 ##### 11.9.2.3 安定版バージョン（vX.Y）
 
-リリース（外部への公開・配布）は安定版のみを対象とする。開発版バージョンの全エントリがリリースされるわけではなく、安定していると判断された時点の開発版を選んで安定版として切り出す。「安定している」の具体的な判断基準は未策定であり、別途策定するリリースポリシーで定める。
+リリース（外部への公開・配布）は安定版のみを対象とする。開発版バージョンの全エントリがリリースされるわけではなく、以下の判定基準をすべて満たした開発版を安定版として切り出す。
 
 - 表記は`vX.Y`（例: v1.9, v3.20, v12.35）
 - X = 安定版リリースの通し番号（1件目を1、2件目を2、…）。メジャー/マイナーのような重大度の意味は持たない
@@ -1071,6 +1129,21 @@ ASB製品（ソフトウェア）の開発版バージョン。
 - X・Yともにいかなる理由でもリセットしない
 - 同一の安定版リリースの中でX・Yが指す時点がずれることはない（Yは常にそのリリース時点の開発版Nと一致する）
 - 現時点ではまだ安定版リリースを1件も出していない
+
+安定版切り出し判定基準は以下とする。
+
+1. `ASB-spec.md`、`ASB-spec.html`、`IMPLEMENTATION_TASKS.md` の参照Revが一致している
+2. `go test ./...` が成功している
+3. `git diff --check` が成功している
+4. Linux amd64 と Linux arm64 のビルドが成功している
+5. リリース対象バイナリの `--version` 出力が安定版バージョンと一致している
+6. `checksums.txt` に全リリース成果物のSHA-256が記録されている
+7. `.gitignore` が存在しない
+8. 開発リポジトリ内に実行時データ、ビルド成果物、一時ファイル、ログファイル、移行作業ファイルが残っていない
+9. Pull Request 経由で `main` に反映済みである
+10. 対象 commit hash をリリース記録へ残している
+
+上記のいずれかを満たさない場合、安定版として配布してはならない。
 
 ##### 11.9.2.4 互換性対応表
 
@@ -1109,130 +1182,193 @@ ASB は単一バイナリとして提供される。この形式により以下�
 - 権限設定のみで実行可能
 - ローリングアップデートが可能
 
-#### 11.11.3 インストール手順
+#### 11.11.3 配布成果物固定仕様
+
+ASB の標準配布先は GitHub Releases とする。
+
+リリースタグは安定版バージョンと同一文字列にする。
+
+例：
+
+```text
+v1.19
+```
+
+標準配布成果物は以下に固定する。
+
+| ファイル | 内容 | 必須 |
+|---------|------|------|
+| `asb-linux-amd64-vX.Y` | Linux amd64 向けASB本体バイナリ | 必須 |
+| `asb-linux-arm64-vX.Y` | Linux arm64 向けASB本体バイナリ | 必須 |
+| `checksums.txt` | SHA-256 checksum 一覧 | 必須 |
+
+配布成果物をGit管理対象として開発リポジトリ内へ保存してはならない。
+
+`checksums.txt` は以下の形式とする。
+
+```text
+<sha256>  asb-linux-amd64-vX.Y
+<sha256>  asb-linux-arm64-vX.Y
+```
+
+`checksums.txt` に記載するファイル名は、GitHub Releases 上の配布ファイル名と完全一致させる。
+
+#### 11.11.4 ビルド固定仕様
+
+標準ビルドコマンドは以下に固定する。
+
+```bash
+CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -trimpath -ldflags "-s -w" -o dist/asb-linux-amd64-vX.Y ./main.go
+CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -trimpath -ldflags "-s -w" -o dist/asb-linux-arm64-vX.Y ./main.go
+```
+
+`dist/` はリリース作業用の一時出力先であり、開発リポジトリへ残してはならない。
+
+ビルド成果物は、GitHub Releases へアップロードした後に開発リポジトリから削除する。
+
+#### 11.11.5 インストール手順
 
 **前提**
 - Linux amd64 または arm64 環境
 - SSH アクセス可能
+- GitHub Releases から対象バージョンの配布成果物を取得可能
+- `sha256sum` または `shasum -a 256` を利用可能
 
 **手順**
 
 ```bash
-# 1. バイナリをダウンロード
-$ wget https://releases.example.com/asb-linux-amd64
+# 1. バイナリと checksums.txt をダウンロード
+$ curl -fL -O https://github.com/fqwink/Adlaire-Static-Base/releases/download/vX.Y/asb-linux-amd64-vX.Y
+$ curl -fL -O https://github.com/fqwink/Adlaire-Static-Base/releases/download/vX.Y/checksums.txt
 
-# 2. 実行権限を付与
-$ chmod +x asb-linux-amd64
+# 2. checksum を検証
+$ sha256sum -c checksums.txt --ignore-missing
 
-# 3. 起動テスト
-$ ./asb-linux-amd64 --version
+# 3. 実行権限を付与
+$ chmod +x asb-linux-amd64-vX.Y
 
-# 4. バックグラウンド起動
-$ ./asb-linux-amd64 &
+# 4. 起動テスト
+$ ./asb-linux-amd64-vX.Y --version
 
-# または systemd での管理（オプション）
-$ sudo mv asb-linux-amd64 /usr/local/bin/asb
+# 5. systemd で管理
+$ sudo install -o root -g root -m 0755 asb-linux-amd64-vX.Y /usr/local/bin/asb
 $ sudo systemctl enable asb
 $ sudo systemctl start asb
 ```
 
-#### 11.11.4 アップデート手順
+`--version` の出力が対象安定版バージョンと一致しない場合、インストールしてはならない。
+
+#### 11.11.6 アップデート手順
 
 **既存バイナリの置き換え**
 
 ```bash
-# 1. 新しいバイナリをダウンロード
-$ wget https://releases.example.com/asb-linux-amd64-v1.1
+# 1. 新しいバイナリと checksums.txt をダウンロード
+$ curl -fL -O https://github.com/fqwink/Adlaire-Static-Base/releases/download/vX.Y/asb-linux-amd64-vX.Y
+$ curl -fL -O https://github.com/fqwink/Adlaire-Static-Base/releases/download/vX.Y/checksums.txt
 
-# 2. 既存バイナリを停止
-$ pkill asb
-# または
+# 2. checksum を検証
+$ sha256sum -c checksums.txt --ignore-missing
+
+# 3. バージョンを確認
+$ ./asb-linux-amd64-vX.Y --version
+
+# 4. 既存サービスを停止
 $ sudo systemctl stop asb
 
-# 3. バイナリを置き換え
-$ mv asb-linux-amd64-v1.1 asb-linux-amd64
-$ chmod +x asb-linux-amd64
+# 5. 既存バイナリを退避して置き換え
+$ sudo cp /usr/local/bin/asb /usr/local/bin/asb.previous
+$ sudo install -o root -g root -m 0755 asb-linux-amd64-vX.Y /usr/local/bin/asb
 
-# 4. 起動
-$ ./asb-linux-amd64 &
-# または
+# 6. 起動
 $ sudo systemctl start asb
+
+# 7. 起動状態を確認
+$ sudo systemctl is-active --quiet asb
 ```
 
-#### 11.11.5 ダウンロード・リリース管理
+アップデート後に起動確認が失敗した場合、`/usr/local/bin/asb.previous` を `/usr/local/bin/asb` へ戻し、`systemctl start asb` を再実行する。
 
-- リリース形式：`asb-linux-{architecture}-v{version}`
-  - 例：`asb-linux-amd64-v1.0`, `asb-linux-arm64-v1.0`
-- リリースページ：GitHub Releases 等で公開予定
-- チェックサム検証：SHA-256 ハッシュを提供（整合性確認用）
+#### 11.11.7 install.sh / update.sh 固定仕様
 
-#### 11.11.6 インストール・アップデート自動化
+ASB の初回インストールとアップデートを自動化するため、`install.sh` と `update.sh` を提供する。
 
-ASB の初回インストールとアップデートを自動化するためのスクリプトを提供する。
+両スクリプトはPOSIX sh互換で実装する。
 
 **提供ファイル**
 
 | ファイル | 用途 | 説明 |
 |---------|------|------|
-| install.sh | 初回インストール | バイナリダウンロード、権限設定、systemd登録を自動実行 |
-| update.sh | アップデート | 最新バイナリダウンロード、サービス再起動を自動実行 |
+| install.sh | 初回インストール | 指定バージョンのダウンロード、checksum検証、権限設定、systemd登録を実行 |
+| update.sh | アップデート | 指定バージョンのダウンロード、checksum検証、サービス停止、置換、再起動、失敗時復旧を実行 |
 | asb.service | systemd ユニット | systemctl での自動起動・停止・再起動・ログ管理 |
 
-**install.sh 実行例**
+**install.sh 引数**
 
 ```bash
-$ chmod +x install.sh
-$ ./install.sh
-# または
-$ sudo ./install.sh  # systemd 登録時は sudo 必要
+./install.sh --version vX.Y --arch amd64
+./install.sh --version vX.Y --arch arm64
 ```
 
-実行内容：
-1. 環境（amd64/arm64）を自動判定
-2. 最新バイナリをダウンロード
-3. 実行権限を付与
-4. `/usr/local/bin/asb` にコピー
-5. asb.service を systemd に登録
-6. サービス自動起動を有効化
-7. サービス起動
+| 引数 | 必須 | 内容 |
+|------|------|------|
+| `--version` | 必須 | インストール対象の安定版バージョン |
+| `--arch` | 任意 | `amd64` または `arm64`。未指定時は `uname -m` から判定 |
 
-**update.sh 実行例**
+**update.sh 引数**
 
 ```bash
-$ chmod +x update.sh
-$ ./update.sh
+./update.sh --version vX.Y --arch amd64
+./update.sh --version vX.Y --arch arm64
 ```
 
-実行内容：
-1. 最新バージョンをチェック
-2. アップデート必要な場合：
-   - 新しいバイナリをダウンロード
-   - サービスを停止
-   - バイナリを置き換え
-   - サービスを再起動
+| 引数 | 必須 | 内容 |
+|------|------|------|
+| `--version` | 必須 | 更新対象の安定版バージョン |
+| `--arch` | 任意 | `amd64` または `arm64`。未指定時は `uname -m` から判定 |
 
-**asb.service（systemd ユニット）**
+`latest` 指定、自動最新版選択、未指定バージョンでの実行は Rev.22 時点では禁止する。
+
+スクリプトは以下を満たす。
+
+1. `set -eu` で実行する
+2. 一時作業ディレクトリは `mktemp -d` で作成する
+3. 一時作業ディレクトリは終了時に削除する
+4. 開発リポジトリ内にビルド成果物、一時ファイル、ログファイルを作成しない
+5. ダウンロード失敗時は終了コード `1` で失敗する
+6. checksum不一致時は終了コード `1` で失敗する
+7. `--version` 出力不一致時は終了コード `1` で失敗する
+8. systemd 操作失敗時は終了コード `1` で失敗する
+9. `update.sh` は起動失敗時に `/usr/local/bin/asb.previous` から復旧を試行する
+10. 復旧に失敗した場合も成功扱いしてはならない
+
+#### 11.11.8 asb.service 固定仕様
 
 ```ini
 [Unit]
 Description=Adlaire-Static-Base HTTP Server
-After=network.target
+After=network-online.target
 Wants=network-online.target
 
 [Service]
 Type=simple
 User=asb
 Group=asb
-ExecStart=/usr/local/bin/asb
-Restart=always
+ExecStart=/usr/local/bin/asb --config /etc/asb/config.json
+Restart=on-failure
 RestartSec=5
 StandardOutput=journal
 StandardError=journal
 SyslogIdentifier=asb
+NoNewPrivileges=true
 
 [Install]
 WantedBy=multi-user.target
 ```
+
+`asb.service` は `/etc/systemd/system/asb.service` へ配置する。
+
+`asb` ユーザーおよび `asb` グループが存在しない場合、`install.sh` は system user として作成する。
 
 **systemctl での管理**
 
@@ -1302,7 +1438,7 @@ $ sudo systemctl stop asb
 
 ### 13.1 実装対象の基準
 
-Rev.16 時点の実装対象は、ASB のセルフホスト型静的コンテンツ配信ホスティングに必要なバックエンド機能に限定する。
+Rev.22 時点の実装対象は、ASB のセルフホスト型静的コンテンツ配信ホスティングに必要なバックエンド機能に限定する。
 
 実装は以下の順序で進める：
 
@@ -1461,7 +1597,7 @@ JSON ファイル更新は以下の方針で行う：
 
 ### 13.9 SSL 管理詳細
 
-Rev.16 時点では、SSL 管理は管理境界とデータモデルを実装対象とし、ACME は ASB互換目標に含める。ACME 実通信、CA選定、ワイルドカード証明書対応は詳細仕様確定後に実装対象へ昇格する。
+Rev.22 時点では、SSL 管理は管理境界とデータモデルを実装対象とし、ACME は ASB互換目標に含める。ACME 実通信、CA選定、ワイルドカード証明書対応は詳細仕様確定後に実装対象へ昇格する。
 
 実装対象：
 
@@ -1482,30 +1618,51 @@ Rev.16 時点では、SSL 管理は管理境界とデータモデルを実装対
 GitHub Webhook は Push イベントのみを対象とする。
 
 - `POST /api/webhook/github` は GitHub Webhook ペイロードを受け取る
-- 対象ブランチは設定ファイルで指定する
+- 対象ブランチは `deploy.branch` で指定する
 - 対象外ブランチのイベントは成功扱いで無視する
+- Webhook 署名検証は `webhook.githubSecret` が空文字でない場合のみ実行する
+- `webhook.githubSecret` が空文字でない場合、`X-Hub-Signature-256` ヘッダーを必須とする
+- 署名検証は Go 標準ライブラリの `crypto/hmac` と `crypto/sha256` で行う
+- 署名値比較は `hmac.Equal` で行う
+- GitHub Push payload の `repository.clone_url` および `repository.ssh_url` をデプロイ元として使用してはならない
+- デプロイ先Projectは `deploy.projectId` で指定する
+- `deploy.projectId` が空文字の場合は `ERR_WEBHOOK_PROJECT_NOT_CONFIGURED` を返す
+- デプロイ元は `deploy.sourcePath` に指定されたローカルcheckoutに限定する
+- Webhook受信時は `deploy.sourcePath` が存在し、Git worktreeであり、対象 `after` commit を参照可能であることを検証する
 - ペイロード形式が不正な場合は `400 Bad Request` を返す
 - デプロイ処理に失敗した場合は `ERR_WEBHOOK_PROCESSING_FAILED` を返す
 - 同一 GitHub Push イベントを重複受信した場合は、同一 commit hash と対象ブランチの組み合わせを冪等キーとして扱い、二重デプロイを避ける
 - 冪等キーの保存方式は JSON ファイルベースとし、保存先は `storage.basePath` 配下に限定する
-- Webhook 署名検証の必須化は詳細仕様確定後に実装する
+- Webhook失敗時の自動リトライは Rev.22 時点では実装しない
+- GitHub側からの再送は通常のWebhook受信として扱い、冪等キーで重複判定する
 
 ### 13.11 バックアップ・復旧詳細
 
 **バックアップ**
 
-- バックアップ対象は `config/` と `storage/` とする
+- バックアップ対象は対象 Project の `storage/projects/:projectId/files.json` と `storage/projects/:projectId/contents/` とする
 - バックアップ形式は tar.gz とする
+- バックアップ保存先は `storage.basePath/backups/` とする
+- バックアップファイル名は `backup-{backupId}.tar.gz` とする
+- バックアップパスは `config/backups.json` に `storage.basePath` からの相対パスとして保存する
 - バックアップ作成後に SHA-256 ハッシュを計算する
-- バックアップ履歴は `backups.json` に記録する
-- バックアップ失敗時は成功履歴を作成してはならない
+- バックアップ履歴は `config/backups.json` に記録する
+- バックアップ成功時の `status` は `completed` とする
+- バックアップ失敗時は `status: "completed"` の履歴を作成してはならない
+- バックアップ作成用の一時tarは `storage.basePath/backups/.tmp/` 配下にのみ作成できる
+- 開発リポジトリ内にバックアップtar、一時tar、checksum、退避データを作成してはならない
 
 **復旧**
 
 - 復旧前にバックアップファイルの存在と SHA-256 ハッシュを検証する
+- 復旧前退避先は `storage.basePath/backups/restore-staging/{restoreId}/previous/` とする
+- 復旧用展開先は `storage.basePath/backups/restore-staging/{restoreId}/next/` とする
 - 既存データを退避してから復旧する
 - 復旧後に JSON ファイル構文と必須フィールドを検証する
 - 復旧失敗時は `ERR_BACKUP_RESTORE_FAILED` を返す
+- 復旧失敗時は可能な限り退避済みの `previous/` から復元する
+- 退避領域からの復元に失敗した場合も成功扱いしてはならない
+- 復旧完了後の `restore-staging/{restoreId}/` 削除は best effort とし、削除失敗時は WARN ログへ記録する
 
 ### 13.12 監視・ログ詳細
 
@@ -1537,7 +1694,7 @@ GitHub Webhook は Push イベントのみを対象とする。
 
 ### 13.14 実装契約
 
-本節は Rev.16 時点の実装契約である。実装者は本節に反する判断をコード側で独自に行ってはならない。
+本節は Rev.22 時点の実装契約である。実装者は本節に反する判断をコード側で独自に行ってはならない。
 
 #### 13.14.1 パッケージ境界
 
@@ -1672,8 +1829,8 @@ ID 生成、時刻取得、保存処理は Service に注入された依存関�
 | Domain 追加 | projects/domains JSON | `config/domains.json` | なし |
 | SSL 管理 | domains/certs | SSL メタデータ | なし |
 | Webhook | config/projects/files | contents、files JSON、deploy log | 置換対象ファイル |
-| Backup 作成 | config/storage | backup tar.gz、backups JSON | なし |
-| Backup 復旧 | backup tar.gz、config/storage | config/storage | 復旧対象の既存データ退避 |
+| Backup 作成 | 対象Project files/contents | backup tar.gz、backups JSON | なし |
+| Backup 復旧 | backup tar.gz、対象Project files/contents | 対象Project files/contents | 復旧対象の既存データ退避 |
 | Log API | logs | なし | なし |
 
 複数ファイルにまたがる操作では、途中失敗時に成功レスポンスを返してはならない。
@@ -1682,14 +1839,15 @@ ID 生成、時刻取得、保存処理は Service に注入された依存関�
 
 #### 13.14.9 保留機能の実装禁止契約
 
-Rev.16 時点では以下を実装してはならない。
+Rev.22 時点では以下を実装してはならない。
 
 - SDK
 - APIキー管理
 - Rate limiting
 - ACME 実通信
 - CA 選定固定
-- Webhook 署名検証の必須化
+- `webhook.githubSecret` 未設定時のWebhook署名検証必須化
+- Webhook失敗時の自動リトライスケジューラー
 - 外部DB
 - 外部ストレージ連携
 - `.gitignore` を必要とする生成物設計
@@ -1698,7 +1856,7 @@ Rev.16 時点では以下を実装してはならない。
 
 ### 13.15 実装詳細固定仕様
 
-本節は Rev.16 時点で実装時に固定する詳細仕様である。
+本節は Rev.22 時点で実装時に固定する詳細仕様である。
 
 #### 13.15.1 API エンドポイント固定表
 
@@ -1714,7 +1872,7 @@ Rev.16 時点では以下を実装してはならない。
 | File 一覧 | GET | `/api/projects/:id/files` | なし | なし | 200 `{files:[]}` | 404, 500 |
 | File 削除 | DELETE | `/api/projects/:id/files/:name` | なし | なし | 200 `{status,projectId,fileName,deletedAt}` | 404, 500 |
 | Backup 一覧 | GET | `/api/backups` | なし | なし | 200 `{backups:[]}` | 500 |
-| Backup 復旧 | POST | `/api/backups/restore/:id` | なし | なし | 200 `{status,backupId,restoredAt}` | 404, 500 |
+| Backup 復旧 | POST | `/api/backups/restore/:id` | なし | なし | 200 `{status,backupId,restoredAt}` | 404, 409, 500 |
 | Monitoring | GET | `/api/monitoring/stats` | なし | なし | 200 Monitoring | 500 |
 | Access log | GET | `/api/logs/access` | なし | `limit`,`offset` | 200 `{logs:[]}` | 400, 500 |
 | Error log | GET | `/api/logs/error` | なし | `limit`,`offset` | 200 `{logs:[]}` | 400, 500 |
@@ -1744,6 +1902,10 @@ Rev.16 時点では以下を実装してはならない。
 | `log.level` | 任意 | `info` | `debug`,`info`,`warn`,`error` | 許可外 |
 | `log.format` | 任意 | `json` | `json` | `json` 以外 |
 | `log.maxSize` | 任意 | `104857600` | `1048576`-`1073741824` | 範囲外、数値以外 |
+| `deploy.projectId` | 任意 | 空文字 | UUID形式または空文字 | UUID形式以外 |
+| `deploy.sourcePath` | 任意 | `/srv/asb/source` | 絶対パス | 相対パス、存在しない、Git worktreeでない |
+| `deploy.branch` | 任意 | `main` | Git ref name | 空文字、空白文字を含む、`..` を含む |
+| `webhook.githubSecret` | 任意 | 空文字 | 文字列 | 文字列以外 |
 
 設定ファイルに未知フィールドがある場合は起動失敗とする。
 
@@ -1755,9 +1917,9 @@ Rev.16 時点では以下を実装してはならない。
 |---------|--------|------------------|----------|------|
 | `config/projects.json` | `{"projects":[]}` | `projects` | Project Service | Project 配列を `createdAt` 昇順で保存 |
 | `config/domains.json` | `{"domains":[]}` | `domains` | Domain Service | `domain` は小文字で保存 |
-| `config/backups.json` | `{"backups":[]}` | `backups` | Backup Service | `createdAt` 降順で保存 |
+| `config/backups.json` | `{"backups":[]}` | `backups` | Backup Service | `createdAt` 降順で保存。`path` は `storage.basePath` からの相対パス |
 | `storage/projects/:projectId/files.json` | `{"files":[]}` | `files` | File Service | `name` 昇順で保存 |
-| `config/webhooks.json` | `{"events":[]}` | `events` | Webhook Service | 冪等キー履歴を保存 |
+| `config/webhooks.json` | `{"events":[]}` | `events` | Webhook Service | 冪等キー、処理状態、失敗コードを保存 |
 
 上記 JSON ファイルは起動時に存在していなければならない。
 
@@ -1767,23 +1929,79 @@ ASB は上記 JSON ファイルを起動時に作成しない。
 
 #### 13.15.4 静的配信固定仕様
 
-静的配信は API パスに一致しない GET または HEAD のみ対象とする。
+静的配信は API パスに一致しない HTTP リクエストのうち、`GET` または `HEAD` のみ対象とする。
 
-対象プロジェクトの決定は Host ヘッダーのドメイン割り当てにより行う。
+API パスとは `/api/` で始まるパスを指す。
 
-Host ヘッダーが割り当て済みドメインに一致しない場合は `404 Not Found` とする。
+`GET` または `HEAD` 以外のメソッドで静的配信対象パスへアクセスした場合は `405 Method Not Allowed` とし、`Allow: GET, HEAD` を返す。
 
-リクエストパスが `/` の場合は `index.html` を探索する。
+対象 Project は以下の順序で決定する。
 
-ファイル探索は `storage/projects/:projectId/contents/` 配下に限定する。
+1. `Host` ヘッダーを取得する
+2. `Host` の port 部分を除去する
+3. 末尾の `.` を除去する
+4. 小文字へ正規化する
+5. 空文字、空白文字、`/`、`\` を含む Host は不正として扱う
+6. `config/domains.json` の `domain` と完全一致する Domain を検索する
+7. Domain に紐づく `projectId` を配信対象 Project とする
 
-`..`、絶対パス、URL decode 後のパス区切り脱出を含むリクエストは `404 Not Found` とする。
+`Host` ヘッダーが存在しない、不正、または割り当て済み Domain に一致しない場合は `404 Not Found` とする。
+
+Domain が存在しても対象 Project が存在しない場合は整合性エラーとして `500 Internal Server Error` とし、`ERR_STORAGE_VALIDATION_FAILED` をエラーログへ記録する。
+
+リクエストパスは以下の順序で正規化する。
+
+1. query string と fragment を除外し、URL path のみを対象とする
+2. percent encoding を URL decode する
+3. decode に失敗した場合は `404 Not Found` とする
+4. `/` の連続は単一 `/` として扱う
+5. 先頭 `/` を除去し、相対パスへ変換する
+6. 空パスまたは `/` は `index.html` として扱う
+7. パスが `/` で終わる場合は末尾に `index.html` を補う
+8. `path.Clean` 相当の正規化後も配信ルート外へ出ないことを検証する
+
+以下のパスは `404 Not Found` とする。
+
+- `..` セグメントを含む
+- 絶対パスである
+- URL decode 後に `/` または `\` による配信ルート外脱出を試みる
+- NUL 文字を含む
+- 空白のみのセグメントを含む
+- `.` で始まるセグメントを含む
+
+ファイル探索は `storage.basePath/storage/projects/{projectId}/contents/` 配下に限定する。
+
+正規化後の相対パスを `contents/` に結合した結果が、`contents/` 配下に収まらない場合は `404 Not Found` とする。
+
+ディレクトリ自体は配信しない。正規化後の対象がディレクトリの場合、末尾 `/` の有無にかかわらず `index.html` を探索する。
 
 存在しない静的ファイルは `404 Not Found` とする。
 
-Content-Type は Go 標準ライブラリで判定し、判定不能な場合は `application/octet-stream` とする。
+読み込み権限不足、ファイル情報取得失敗、読み込み途中失敗は `500 Internal Server Error` とする。
+
+静的配信レスポンスの `Content-Type` は、Go 標準ライブラリの拡張子判定を優先し、判定不能な場合は先頭512 bytesによる判定を行う。なお判定不能な場合は `application/octet-stream` とする。
+
+`HEAD` は `GET` と同じヘッダーを返し、レスポンスボディを返してはならない。
+
+`ETag` は `"{size}-{unixModifiedTime}"` 形式の弱い validator とし、レスポンスでは `W/"{size}-{unixModifiedTime}"` として返す。
+
+`Last-Modified` は対象ファイルの更新時刻を HTTP-date 形式で返す。
+
+`Cache-Control` は既定で `public, max-age=60` とする。
+
+`If-None-Match` が `ETag` と一致する場合は `304 Not Modified` を返す。
+
+`If-Modified-Since` が `Last-Modified` 以降の場合は `304 Not Modified` を返す。
+
+`304 Not Modified` ではレスポンスボディを返してはならない。
+
+Range request は Rev.22 時点では実装しない。
+
+`Range` ヘッダーを受信した場合も無視し、通常の `200 OK` または `304 Not Modified` 判定を行う。
 
 Gzip 圧縮済みファイルを返す場合は `Content-Encoding: gzip` を設定する。
+
+静的配信処理は開発リポジトリ内に配信用一時ファイル、キャッシュファイル、ログ以外の実行時データを作成してはならない。
 
 #### 13.15.5 Webhook 固定仕様
 
@@ -1791,17 +2009,92 @@ GitHub Webhook は `push` event のみ処理する。
 
 `X-GitHub-Event` が `push` 以外の場合は `200 OK` とし、`{"status":"ignored"}` を返す。
 
-対象ブランチは設定ファイルで指定する。
+対象ブランチは `deploy.branch` で指定する。
 
 対象外ブランチの場合は `200 OK` とし、`{"status":"ignored"}` を返す。
+
+`webhook.githubSecret` が空文字でない場合は、`X-Hub-Signature-256` を必須とする。
+
+署名ヘッダーは `sha256=<hex>` 形式のみ許可する。
+
+署名検証はリクエストBodyの生バイト列に対してHMAC-SHA256を計算し、`hmac.Equal` で比較する。
+
+署名ヘッダーが存在しない、形式不正、または署名不一致の場合は `401 Unauthorized` とし、`ERR_WEBHOOK_SIGNATURE_INVALID` を返す。
+
+`webhook.githubSecret` が空文字の場合、署名ヘッダーの有無にかかわらず署名検証を行わない。
+
+デプロイ元は `deploy.sourcePath` のローカルcheckoutに限定する。
+
+デプロイ先Projectは `deploy.projectId` で指定する。
+
+`deploy.projectId` が空文字の場合は `ERR_WEBHOOK_PROJECT_NOT_CONFIGURED` を返す。
+
+GitHub Push payload の `repository.clone_url`、`repository.ssh_url`、`repository.html_url` から clone、fetch、pull してはならない。
+
+Webhook処理はネットワーク越しにGit操作を行ってはならない。
+
+`deploy.sourcePath` が存在しない、Git worktreeでない、または `after` commit を参照できない場合は `ERR_WEBHOOK_SOURCE_INVALID` を返す。
+
+静的コンテンツ反映元は `deploy.sourcePath` の `after` commit 時点のファイルツリーとする。
+
+Rev.22 時点では、Webhookデプロイ時の対象ファイルパスはリポジトリルート配下の全静的ファイルとする。
+
+`.git/`、`.github/`、`AGENTS.md`、`ASB-spec.md`、`ASB-spec.html`、`IMPLEMENTATION_TASKS.md`、`DOCUMENT_INDEX.md`、`README.md` は配信対象から除外する。
+
+デプロイ先は対象Projectの `storage/projects/:projectId/contents/` 配下に限定する。
+
+Webhookデプロイは開発リポジトリ内へ実行時データ、一時ファイル、ログファイルを作成してはならない。
 
 冪等キーは `branch + ":" + after` とする。
 
 同一冪等キーが `config/webhooks.json` に存在する場合は `200 OK` とし、`{"status":"duplicate"}` を返す。
 
-Webhook 処理成功後に冪等キーを `config/webhooks.json` へ保存する。
+Webhook 処理完了後に処理状態を `config/webhooks.json` へ保存する。
 
-Webhook 署名検証は Rev.16 時点では必須化しない。
+成功時の `status` は `deployed` とする。
+
+失敗時の `status` は `failed` とし、`errorCode` を保存する。
+
+Webhook失敗時の自動リトライは Rev.22 時点では実装しない。
+
+GitHub側から同一イベントが再送された場合は、`config/webhooks.json` の既存イベントにより重複判定する。
+
+Webhookデプロイ処理順序は以下に固定する。
+
+1. `X-GitHub-Event` を確認する
+2. 必要な場合のみ `X-Hub-Signature-256` を検証する
+3. GitHub Push payload をJSONとして解析する
+4. `ref` から対象ブランチを取得する
+5. 対象外ブランチの場合は `ignored` として終了する
+6. `after` と `deploy.branch` から冪等キーを生成する
+7. 同一冪等キーが存在する場合は `duplicate` として終了する
+8. `deploy.sourcePath` の存在、Git worktree、`after` commit 参照可否を検証する
+9. `deploy.projectId` の対象Project存在を検証する
+10. `after` commit の静的ファイルツリーを列挙する
+11. 配信対象外ファイルを除外する
+12. 対象Projectの `contents/` へ一時ディレクトリを作成する
+13. 静的ファイルを一時ディレクトリへコピーする
+14. `fsync` 後に atomic rename で `contents/` を置き換える
+15. `storage/projects/:projectId/files.json` を更新する
+16. `config/webhooks.json` に `deployed` を保存する
+17. 成功レスポンスを返す
+
+8-15 の途中で失敗した場合は `failed` を `config/webhooks.json` に保存し、`ERR_WEBHOOK_PROCESSING_FAILED` または具体的なエラーコードを返す。
+
+Webhook固定仕様のテスト項目は以下とする。
+
+- secret未設定時に署名なしリクエストを受け付ける
+- secret設定時に署名なしリクエストを `401` で拒否する
+- secret設定時に不正署名を `401` で拒否する
+- secret設定時に正しい `X-Hub-Signature-256` を受け付ける
+- `push` 以外のイベントを `ignored` とする
+- 対象外ブランチを `ignored` とする
+- 同一冪等キーを `duplicate` とする
+- payload の remote URL をデプロイ元として使わない
+- `deploy.sourcePath` が存在しない場合に失敗する
+- `after` commit を参照できない場合に失敗する
+- Webhook失敗時に自動リトライを作成しない
+- 開発リポジトリ内に実行時データ、一時ファイル、ログファイルを作成しない
 
 #### 13.15.6 実装順序固定
 
@@ -1822,7 +2115,7 @@ Webhook 署名検証は Rev.16 時点では必須化しない。
 
 ### 13.16 入出力契約固定仕様
 
-本節は Rev.16 時点で API、JSON保存、ログ、起動時検証の入出力を固定する仕様である。
+本節は Rev.22 時点で API、JSON保存、ログ、起動時検証の入出力を固定する仕様である。
 
 #### 13.16.1 共通成功レスポンス契約
 
@@ -1854,7 +2147,7 @@ Webhook 署名検証は Rev.16 時点では必須化しない。
 | Monitoring | 200 | `{"cpu":number|null,"memory":number|null,"disk":number|null,"connections":number|null,"requests":number|null,"checkedAt":string}` |
 | Access log | 200 | `{"logs":[AccessLog...],"limit":number,"offset":number}` |
 | Error log | 200 | `{"logs":[ErrorLog...],"limit":number,"offset":number}` |
-| GitHub Webhook 処理 | 200 | `{"status":"received","branch":string,"after":string,"processedAt":string}` |
+| GitHub Webhook 処理 | 200 | `{"status":"deployed","branch":string,"after":string,"processedAt":string}` |
 | GitHub Webhook 無視 | 200 | `{"status":"ignored","reason":string}` |
 | GitHub Webhook 重複 | 200 | `{"status":"duplicate","key":string}` |
 
@@ -1930,7 +2223,8 @@ Webhook 署名検証は Rev.16 時点では必須化しない。
   "createdAt": "2026-09-08T00:00:00Z",
   "size": 536870912,
   "path": "backups/backup-id.tar.gz",
-  "sha256": "string"
+  "sha256": "string",
+  "status": "completed"
 }
 ```
 
@@ -1941,7 +2235,10 @@ Webhook 署名検証は Rev.16 時点では必須化しない。
   "key": "main:abcdef1234567890",
   "branch": "main",
   "after": "abcdef1234567890",
-  "receivedAt": "2026-09-08T00:00:00Z"
+  "status": "deployed",
+  "receivedAt": "2026-09-08T00:00:00Z",
+  "completedAt": "2026-09-08T00:00:05Z",
+  "errorCode": ""
 }
 ```
 
@@ -2023,7 +2320,7 @@ ASB_STARTUP_ERROR code=ERR_STORAGE_VALIDATION_FAILED message="Storage validation
 
 #### 13.16.8 テスト固定項目
 
-Rev.16 の実装では、以下のテストを必須とする。
+Rev.22 の実装では、以下のテストを必須とする。
 
 - 全API成功レスポンスの固定JSONキー検証
 - 全APIエラーレスポンスの固定JSONキー検証
@@ -2032,6 +2329,228 @@ Rev.16 の実装では、以下のテストを必須とする。
 - 保存JSONのソート順検証
 - 起動時検証の順序、終了コード、標準エラー形式検証
 - アクセスログとエラーログのJSON Linesフィールド検証
+
+### 13.17 実装境界とファイル操作固定仕様
+
+本節は Rev.22 時点で package 境界、公開 interface、Repository、Storage、複数ファイル更新の実装契約を固定する仕様である。
+
+#### 13.17.1 package 公開 interface 固定
+
+各 package は以下の公開 interface を境界として実装する。
+
+| package | 公開 interface | 主な責務 |
+|---------|----------------|----------|
+| `config` | `Loader` | 設定読み込み、デフォルト適用、起動時検証 |
+| `server` | `Router`, `Responder` | HTTPルーティング、成功/エラーJSON応答 |
+| `management` | `ProjectService`, `DomainService`, `SSLService` | Project、Domain、SSL管理境界 |
+| `delivery` | `FileService`, `StaticService`, `WebhookService` | ファイル管理、静的配信、Webhook |
+| `data` | `JSONRepository`, `StorageService`, `BackupService` | JSON永続化、ストレージ、バックアップ/復旧 |
+| `system` | `LogService`, `MonitoringService`, `Clock`, `IDGenerator` | ログ、監視、時刻、ID生成 |
+
+Handler は Service interface のみに依存する。
+
+Service は Repository、Storage、Clock、IDGenerator、LogService interface に依存できる。
+
+Entity は interface を定義せず、保存形式とレスポンス形式の型定義のみを持つ。
+
+他 package の具象型を直接生成してよい場所は `main.go` の依存関係生成処理のみとする。
+
+#### 13.17.2 Repository / Storage 責務固定
+
+`JSONRepository` は JSON ファイルの読み込み、スキーマ検証、排他、atomic save のみを担当する。
+
+`JSONRepository` は HTTP ステータス、HTTP リクエスト、HTTP レスポンスを扱ってはならない。
+
+`StorageService` は `storage.basePath` 配下のファイル実体操作のみを担当する。
+
+`StorageService` は Project、Domain、Webhook の業務判断を行ってはならない。
+
+Service は業務判断、整合性判断、複数Repository/Storage操作の順序制御を担当する。
+
+複数JSONまたはJSONとファイル実体をまたぐ操作では、Service が処理全体の成功/失敗を決定する。
+
+#### 13.17.3 静的配信処理順序固定
+
+Static delivery は以下の順序で実行する。
+
+1. リクエストパスが `/api/` で始まる場合は API ルーティングへ渡す
+2. HTTP method が `GET` または `HEAD` であることを検証する
+3. `GET` または `HEAD` 以外の場合は `405 Method Not Allowed` と `Allow: GET, HEAD` を返す
+4. `Host` ヘッダーを取得する
+5. `Host` の port、末尾 `.`, 大文字小文字を正規化する
+6. 正規化後 Host を `config/domains.json` の `domain` と完全一致で照合する
+7. Domain が存在しない場合は `404 Not Found` を返す
+8. Domain の `projectId` に対応する Project の存在を検証する
+9. Project が存在しない場合は `ERR_STORAGE_VALIDATION_FAILED` をログに記録し、`500 Internal Server Error` を返す
+10. URL path を decode し、静的配信用相対パスへ正規化する
+11. 不正パスまたは配信ルート外脱出は `404 Not Found` を返す
+12. 空パス、`/`、ディレクトリパスは `index.html` を探索対象とする
+13. `storage.basePath/storage/projects/{projectId}/contents/` と相対パスを結合する
+14. 結合後パスが `contents/` 配下に収まることを検証する
+15. 対象ファイルの存在と通常ファイルであることを検証する
+16. 存在しない場合は `404 Not Found` を返す
+17. `Content-Type`、`ETag`、`Last-Modified`、`Cache-Control` を決定する
+18. `If-None-Match` または `If-Modified-Since` により未変更と判定できる場合は `304 Not Modified` を返す
+19. `HEAD` の場合はヘッダーのみを返す
+20. `GET` の場合はファイル内容をレスポンスボディとして返す
+
+静的配信では `Range` ヘッダーを無視し、`206 Partial Content` を返してはならない。
+
+静的配信ではディレクトリ一覧を返してはならない。
+
+静的配信では開発リポジトリ内に配信用一時ファイル、キャッシュファイル、実行時データを作成してはならない。
+
+#### 13.17.4 ファイルアップロード処理順序固定
+
+File upload は以下の順序で実行する。
+
+1. URL `:id` を検証する
+2. Project の存在を検証する
+3. multipart field `file` の存在を検証する
+4. ファイル名、サイズ、quota を検証する
+5. 既存 `files.json` を読み込み検証する
+6. 保存先相対パスを決定する
+7. ファイル実体を `contents/` 配下の一時ファイルへ書き込む
+8. 書き込み内容を `fsync` する
+9. 一時ファイルを公開先へ atomic rename する
+10. `files.json` を更新する
+11. `projects.json` の `used` を更新する
+12. 成功レスポンスを返す
+
+7-11 の途中で失敗した場合、成功レスポンスを返してはならない。
+
+公開先への rename 後に JSON 更新が失敗した場合は、エラーログを記録し、次回起動時検証または整合性検証で検出できる状態にする。
+
+#### 13.17.5 ファイル上書き処理順序固定
+
+同名ファイル上書きは以下の順序で実行する。
+
+1. 旧ファイルメタデータを読み込む
+2. 新ファイルを一時ファイルへ書き込む
+3. 新ファイルを `fsync` する
+4. 新ファイルを公開先へ atomic rename する
+5. `files.json` の `size`、`uploadedAt`、`path` を更新する
+6. `projects.json` の `used` を差分更新する
+
+旧ファイルは、新ファイルの atomic rename が成功するまで削除してはならない。
+
+上書き後の `used` は旧サイズを差し引き、新サイズを加算して計算する。
+
+#### 13.17.6 ファイル削除処理順序固定
+
+File delete は以下の順序で実行する。
+
+1. URL `:id` と `:name` を検証する
+2. Project の存在を検証する
+3. `files.json` から対象ファイルを検出する
+4. ファイル実体を削除する
+5. `files.json` から対象メタデータを削除する
+6. `projects.json` の `used` を差分更新する
+7. 成功レスポンスを返す
+
+ファイル実体が存在しないが `files.json` にメタデータが存在する場合は、整合性エラーとして `ERR_FILE_NOT_FOUND` を返す。
+
+JSON 更新失敗時は成功レスポンスを返してはならない。
+
+#### 13.17.7 Project削除処理順序固定
+
+Project delete は以下の順序で実行する。
+
+1. Project の存在を検証する
+2. 対象 Project に紐づく Domain を列挙する
+3. 対象 Project に紐づく Backup を列挙する
+4. 対象 Project の `files.json` を読み込み検証する
+5. 対象 Project の `contents/` 配下を削除する
+6. 対象 Project の `files.json` を削除する
+7. `config/domains.json` から関連 Domain を削除する
+8. `config/backups.json` から関連 Backup 履歴を削除する
+9. `config/projects.json` から対象 Project を削除する
+10. 成功レスポンスを返す
+
+5-9 の途中で失敗した場合、成功レスポンスを返してはならない。
+
+Project削除は best effort 成功扱いにしてはならない。
+
+#### 13.17.8 Backup作成処理順序固定
+
+Backup 作成は以下の順序で実行する。
+
+1. 対象 Project の存在を検証する
+2. 対象 Project の JSON と `contents/` を読み込み可能であることを検証する
+3. `storage.basePath/backups/` が存在し、書き込み可能であることを検証する
+4. `storage.basePath/backups/.tmp/backup-{backupId}.tar.gz.tmp` を作成する
+5. tar.gz には対象Projectの `files.json` と `contents/` のみを含める
+6. tar.gz 作成後に SHA-256 を計算する
+7. `storage.basePath/backups/backup-{backupId}.tar.gz` へ atomic rename する
+8. `config/backups.json` に `status: "completed"` の履歴を保存する
+9. 成功レスポンスを返す
+
+バックアップtar.gzに `logs/`、`certs/`、他Projectの `contents/` を含めてはならない。
+
+`config/backups.json` の `path` には `backups/backup-{backupId}.tar.gz` を保存する。
+
+tar.gz 作成、ハッシュ計算、atomic rename、履歴保存のいずれかに失敗した場合、成功レスポンスを返してはならない。
+
+tar.gz 作成またはハッシュ計算に失敗した場合、`config/backups.json` に履歴を追加してはならない。
+
+atomic rename 後に履歴保存へ失敗した場合は、作成済みtar.gzを削除し、削除失敗時はエラーログへ記録する。
+
+バックアップ作成に使用する一時ファイルは、処理終了時に削除する。
+
+開発リポジトリ内にバックアップtar、一時tar、checksum、退避データを作成してはならない。
+
+#### 13.17.9 Backup復旧処理順序固定
+
+Backup restore は以下の順序で実行する。
+
+1. Backup 履歴の存在を検証する
+2. Backup 履歴の `status` が `completed` であることを検証する
+3. Backup ファイルの存在を検証する
+4. SHA-256 を検証する
+5. `storage.basePath/backups/restore-staging/{restoreId}/previous/` を作成する
+6. `storage.basePath/backups/restore-staging/{restoreId}/next/` を作成する
+7. 復旧対象Projectの現行 `files.json` と `contents/` を `previous/` へ退避する
+8. Backup を `next/` へ展開する
+9. 展開後の JSON 構文とスキーマを検証する
+10. `next/` の内容を復旧対象へ atomic rename する
+11. 成功レスポンスを返す
+
+7-10 の途中で失敗した場合、可能な限り `previous/` から復元する。
+
+復元に失敗した場合は `ERR_BACKUP_RESTORE_FAILED` を返し、成功レスポンスを返してはならない。
+
+復旧対象Projectが存在しない場合は `ERR_PROJECT_NOT_FOUND` を返す。
+
+復旧対象Projectの現行データ退避に失敗した場合は、復旧処理を開始してはならない。
+
+復旧後の `restore-staging/{restoreId}/` 削除は best effort とし、削除失敗時は WARN ログへ記録する。
+
+開発リポジトリ内に復旧用一時ファイル、退避データ、展開データを作成してはならない。
+
+#### 13.17.10 複数JSON更新失敗時契約
+
+複数JSON更新は、操作順序を Service に閉じ込める。
+
+複数JSON更新では、最終JSONの保存が完了するまで成功レスポンスを返してはならない。
+
+途中失敗時は、更新済みJSON名、未更新JSON名、操作名、requestId をエラーログへ記録する。
+
+途中失敗時に自動ロールバックを実装する場合も、ロールバック失敗時は成功扱いにしてはならない。
+
+Rev.22 時点では、複数JSON更新に外部トランザクション機構を導入してはならない。
+
+#### 13.17.11 最低テスト分類固定
+
+`go test ./...` に含める最低テスト分類は以下とする。
+
+| 分類 | 対象 |
+|------|------|
+| Unit | Entity validation、Service validation、Repository validation |
+| Handler | ルーティング、Content-Type、Body decode、レスポンスJSON |
+| Repository | unknown field、atomic save、sort order、保存失敗 |
+| Storage | path traversal、relative path、upload、overwrite、delete |
+| Integration | Project/File/Domain/Backup/Webhook の成功系と主要失敗系 |
+| Startup | 起動時検証順序、終了コード、stderr |
 
 ---
 
@@ -2101,7 +2620,7 @@ Rev.16 の実装では、以下のテストを必須とする。
 ### 15.2 テスト対象外
 
 以下はモック・スタブで対応：
-- ACME 実通信および CA 連携（Rev.16 時点では実通信を実装対象外とし、SSL管理境界のみ検証）
+- ACME 実通信および CA 連携（Rev.22 時点では実通信を実装対象外とし、SSL管理境界のみ検証）
 - GitHub Webhook（テスト用ペイロード）
 - 実際のファイルストレージ大容量テスト（テスト時は最大100MB）
 
@@ -2125,83 +2644,157 @@ $ ./tests/e2e.sh
 
 ## 16 マイグレーション戦略
 
-### 16.1 バージョン互換性
+### 16.1 基本方針
 
-**マイナーバージョン（v1.0 → v1.1）**
-- JSON スキーマ変更なし
-- 既存データとの互換性保証
-- 自動マイグレーション不要
-- 互換性：完全互換
+ASB のマイグレーションは、実行時 JSON ファイルのスキーマ変更に限定する。
 
-**メジャーバージョン（v1.x → v2.0）**
-- スキーマ変更の可能性
-- マイグレーションスクリプト提供予定
-- バックアップから復元可能
-- 互換性：後方互換性なし
+ASB は外部DBを使用しないため、DBマイグレーション機構、外部トランザクション機構、外部マイグレーションフレームワークを使用しない。
 
-### 16.2 マイグレーション手順
+マイグレーションは `storage.basePath` 配下の実行時データに対してのみ行う。
 
-**準備**
+開発リポジトリ内にマイグレーション作業ファイル、一時ファイル、退避ファイル、履歴ファイルを作成してはならない。
 
-```bash
-# 1. バックアップ作成
-$ asb-backup-create --output backup-v1.tar.gz
+ASB の開発版バージョンは累積連番 `v0.N` とし、メジャー/マイナー/パッチの意味を持たせない。
 
-# 2. バックアップ整合性確認
-$ asb-backup-verify backup-v1.tar.gz
+安定版バージョン `vX.Y` は、安定版リリース番号 `X` と切り出し元の開発版 `v0.Y` を示す表示であり、互換性判定には `schemaVersion` を使用する。
+
+### 16.2 マイグレーション対象
+
+マイグレーション対象は以下に限定する。
+
+| 対象 | 説明 |
+|------|------|
+| `config/projects.json` | Project スキーマ |
+| `config/domains.json` | Domain スキーマ |
+| `config/backups.json` | Backup スキーマ |
+| `config/webhooks.json` | Webhook 冪等キー履歴スキーマ |
+| `storage/projects/:projectId/files.json` | File メタデータスキーマ |
+
+静的コンテンツ実体、ログファイル、証明書ファイル、ビルド済みバイナリは、Rev.22 時点のマイグレーション対象外とする。
+
+### 16.3 schemaVersion 固定
+
+各実行時 JSON ファイルはトップレベルに `schemaVersion` を持つ。
+
+Rev.22 時点の `schemaVersion` は `1` とする。
+
+例：
+
+```json
+{
+  "schemaVersion": 1,
+  "projects": []
+}
 ```
 
-**実行**
+`schemaVersion` が存在しない JSON ファイルは、`schemaVersion: 0` として扱う。
+
+ASB 起動時に現在のASBが対応しない `schemaVersion` を検出した場合は起動失敗とする。
+
+起動時に自動マイグレーションを実行してはならない。
+
+### 16.4 実行方式
+
+マイグレーションは ASB 本体バイナリの管理コマンドとして提供する。
+
+外部スクリプトを正本実行方式として扱ってはならない。
+
+管理コマンドは以下を固定する。
 
 ```bash
-# 3. 新バイナリ起動（旧バージョンと並行動作テスト）
-$ ./asb-linux-amd64-v2.0 --dry-run
-
-# 4. 旧バイナリ停止
-$ sudo systemctl stop asb
-
-# 5. バイナリ置き換え
-$ cp asb-linux-amd64-v2.0 /usr/local/bin/asb
-$ chmod +x /usr/local/bin/asb
-
-# 6. マイグレーション実行（必要な場合）
-$ asb-migrate --from v1.0 --to v2.0
-
-# 7. サービス起動
-$ sudo systemctl start asb
+asb migrate --storage /var/asb --from-schema 0 --to-schema 1 --dry-run
+asb migrate --storage /var/asb --from-schema 0 --to-schema 1 --apply
 ```
 
-**検証**
+`--storage` は `storage.basePath` を指定する。
 
-```bash
-# 8. ログ確認
-$ sudo journalctl -u asb -n 50
+`--dry-run` は読み込み、検証、変換後データ生成、書き込み可否検証までを行い、実行時 JSON ファイルを変更してはならない。
 
-# 9. API 動作確認
-$ curl http://localhost:3000/api/projects
+`--apply` は実行時 JSON ファイルを更新する。
 
-# 10. データ整合性確認
-$ asb-verify-data
+`--dry-run` と `--apply` は同時指定してはならない。
+
+### 16.5 実行順序
+
+`--apply` のマイグレーションは以下の順序で実行する。
+
+1. ASB サーバープロセスが停止していることを確認する
+2. `storage.basePath` が開発リポジトリ配下でないことを検証する
+3. 対象 JSON ファイルの存在、構文、現在スキーマを検証する
+4. 対象 JSON ファイルの読み込み権限と書き込み権限を検証する
+5. `storage.basePath/backups/migrations/` 配下へ事前バックアップを作成する
+6. 変換後 JSON をメモリ上に生成する
+7. 変換後 JSON のスキーマを検証する
+8. 対象 JSON ファイルと同一ディレクトリ内の一時ファイルへ書き込む
+9. `fsync` 後に atomic rename で置き換える
+10. `config/migrations.json` に完了履歴を保存する
+11. 完了ログを JSON Lines で記録する
+
+5-10 の途中で失敗した場合、成功扱いにしてはならない。
+
+### 16.6 migrationHistory 保存形式
+
+マイグレーション履歴は `config/migrations.json` に保存する。
+
+`config/migrations.json` は起動時必須 JSON ファイルではなく、初回マイグレーション実行時に `storage.basePath/config/` 配下へ作成できる。
+
+作成場所は実行時データ領域に限定し、開発リポジトリ内へ作成してはならない。
+
+保存形式は以下とする。
+
+```json
+{
+  "schemaVersion": 1,
+  "migrations": [
+    {
+      "id": "string(UUID)",
+      "fromSchema": 0,
+      "toSchema": 1,
+      "startedAt": "2026-09-08T00:00:00Z",
+      "finishedAt": "2026-09-08T00:00:00Z",
+      "status": "applied",
+      "backupPath": "backups/migrations/migration-id.tar.gz"
+    }
+  ]
+}
 ```
 
-**ロールバック（必要な場合）**
+`status` は `applied` または `failed` のみ許可する。
 
-```bash
-# 11. バイナリ置き換え（旧）
-$ cp /usr/local/bin/asb-v1.0 /usr/local/bin/asb
+### 16.7 ロールバック
 
-# 12. サービス再起動
-$ sudo systemctl restart asb
+マイグレーション失敗時は、事前バックアップが作成済みであればバックアップから復元する。
 
-# 13. バックアップから復元（必要な場合）
-$ asb-backup-restore backup-v1.tar.gz
-```
+ロールバックは `storage.basePath` 配下の実行時データのみを対象とする。
 
-### 16.3 データ互換性の考慮
+ロールバックに失敗した場合は、標準エラー、エラーログ、`config/migrations.json` に `failed` として記録する。
 
-- JSON フォーマット：バージョン情報を付与（将来の互換性判定用）
-- スキーマ変更時：変更前後のスキーマを記録
-- マイグレーション情報：実行したマイグレーション履歴をログ記録
+ロールバック失敗時に成功扱いとしてはならない。
+
+### 16.8 禁止事項
+
+Rev.22 時点では以下を禁止する。
+
+- 起動時の自動マイグレーション
+- 開発リポジトリ内でのマイグレーション作業ファイル作成
+- 外部DBマイグレーション
+- 外部トランザクション機構
+- 外部マイグレーションフレームワーク
+- `.gitignore` を必要とする移行生成物設計
+
+### 16.9 テスト固定項目
+
+マイグレーション実装では以下のテストを必須とする。
+
+- `schemaVersion` なしを `0` として扱うテスト
+- 未対応 `schemaVersion` の起動失敗テスト
+- `--dry-run` が実行時 JSON ファイルを変更しないテスト
+- `--apply` が対象 JSON ファイルを atomic rename で更新するテスト
+- 事前バックアップ作成テスト
+- 途中失敗時の成功禁止テスト
+- ロールバック成功テスト
+- ロールバック失敗時の `failed` 記録テスト
+- 開発リポジトリ内に移行作業ファイルを作成しないテスト
 
 ---
 
@@ -2209,6 +2802,12 @@ $ asb-backup-restore backup-v1.tar.gz
 
 | バージョン | 日付 | 内容 |
 |-----------|------|------|
+| Rev.22 | 2026-09-08 | 静的配信のHost解決、パス正規化、HEAD、キャッシュヘッダー、304、Range非対応、開発リポジトリ非生成を実装レベルで固定 |
+| Rev.21 | 2026-09-08 | バックアップ保存先、tar.gz構成、checksum、復旧退避先、失敗時復元、開発リポジトリ非生成を実装レベルで固定 |
+| Rev.20 | 2026-09-08 | GitHub Webhook署名検証、ローカルcheckoutデプロイ、失敗時リトライ禁止、Webhook処理順序を実装レベルで固定 |
+| Rev.19 | 2026-09-08 | 安定版リリース判定、GitHub Releases配布、checksum、install/update、systemd仕様を実装レベルで固定 |
+| Rev.18 | 2026-09-08 | マイグレーション戦略をASBのJSONファイルベース実行時データ移行契約へ全面置換 |
+| Rev.17 | 2026-09-08 | package公開interface、Repository/Storage責務、ファイル操作、Project削除、Backup/Restore、複数JSON更新失敗時契約を固定 |
 | Rev.16 | 2026-09-08 | API成功/エラーレスポンス、保存JSONスキーマ、起動時検証出力、ログJSON Linesを固定 |
 | Rev.15 | 2026-09-08 | API、設定値、JSONファイル、静的配信、Webhook、実装順序を実装単位で固定 |
 | Rev.14 | 2026-09-08 | 実装契約を追加し、パッケージ境界、HTTP契約、JSON保存、起動時検証、Handler/Service/Entity責務、副作用、保留機能禁止を具体化 |
