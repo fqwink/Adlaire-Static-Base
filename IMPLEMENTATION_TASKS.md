@@ -6,7 +6,7 @@
 
 本ファイルは、`ASB-spec.md` に基づいて実装タスクを管理する。
 
-参照仕様バージョン: `ASB-spec.md Rev.21`
+参照仕様バージョン: `ASB-spec.md Rev.22`
 
 `ASB-spec.md` で仕様確定済みの事項を実装タスクとしてリスト化する。
 
@@ -75,9 +75,9 @@
 - 保存失敗時に成功レスポンスを返さないことを実装する。
 - 複数JSON更新では最終JSONの保存完了まで成功レスポンスを返さないことを実装する。
 - 複数JSON更新の途中失敗時に更新済みJSON名、未更新JSON名、操作名、requestId をエラーログへ記録する。
-- Rev.21 時点では複数JSON更新に外部トランザクション機構を導入しない。
-- Rev.21 時点の API エンドポイント固定表に記載されたメソッド、パス、成功ステータス、失敗コードを実装する。
-- Rev.21 API 成功レスポンス固定表に記載された JSON キーと型を実装する。
+- Rev.22 時点では複数JSON更新に外部トランザクション機構を導入しない。
+- Rev.22 時点の API エンドポイント固定表に記載されたメソッド、パス、成功ステータス、失敗コードを実装する。
+- Rev.22 API 成功レスポンス固定表に記載された JSON キーと型を実装する。
 - 配列レスポンスは対象データが空でも空配列を返す。
 - URL パラメータ `:id`、`:domain`、`:name` の URL decode、正規化、バリデーションを実装する。
 - `:id` は UUID 形式のみ許可する。
@@ -109,11 +109,23 @@
 - 旧ファイルは新ファイルの atomic rename 成功まで削除しないことを実装する。
 - Gzip による静的ファイル圧縮を実装する。
 - Host ヘッダーと `config/domains.json` の対応に基づく静的配信を実装する。
+- Host の port、末尾 `.`, 大文字小文字を正規化してから Domain と完全一致照合する。
 - 未割当 Host は `404 Not Found` とする。
+- Domain が存在しても対象 Project が存在しない場合は `500 Internal Server Error` とし、`ERR_STORAGE_VALIDATION_FAILED` をログへ記録する。
+- 静的配信対象パスで `GET` / `HEAD` 以外のメソッドは `405 Method Not Allowed` とし、`Allow: GET, HEAD` を返す。
 - `/` は `index.html` として解決する。
-- 静的ファイル配信は `storage/projects/:projectId/contents/` 配下に限定する。
-- `..`、絶対パス、URL decode 後に配信ルート外へ出るパスを拒否する。
-- 静的配信の `Content-Type` は Go 標準ライブラリで判定し、不明時は `application/octet-stream` とする。
+- 末尾 `/` のディレクトリパスは `index.html` として解決する。
+- 静的ファイル配信は `storage.basePath/storage/projects/:projectId/contents/` 配下に限定する。
+- `..`、絶対パス、NUL、隠しセグメント、URL decode 後に配信ルート外へ出るパスを `404 Not Found` として拒否する。
+- 静的配信の `Content-Type` は Go 標準ライブラリの拡張子判定、先頭512 bytes判定の順で判定し、不明時は `application/octet-stream` とする。
+- `HEAD` は `GET` と同じヘッダーを返し、レスポンスボディを返さない。
+- `ETag` を `W/"{size}-{unixModifiedTime}"` 形式で返す。
+- `Last-Modified` を HTTP-date 形式で返す。
+- `Cache-Control` を既定で `public, max-age=60` とする。
+- `If-None-Match` と `If-Modified-Since` による `304 Not Modified` を実装する。
+- Range request は Rev.22 時点では実装せず、`Range` ヘッダーを無視して `206 Partial Content` を返さない。
+- 静的配信でディレクトリ一覧を返さない。
+- 静的配信で開発リポジトリ内に配信用一時ファイル、キャッシュファイル、実行時データを作成しない。
 - アクセスログとエラーログのJSON出力を実装する。
 - アクセスログの JSON Lines 固定フィールドを実装する。
 - エラーログの JSON Lines 固定フィールドを実装する。
@@ -122,7 +134,7 @@
 - `go test ./...` によるユニットテスト基盤を整備する。
 - Project API、File API、起動時検証、404/405、共通エラーレスポンス、保留機能未実装のテストを整備する。
 - JSON 保存の排他、atomic rename、保存失敗時挙動のテストを整備する。
-- 静的配信の Host 解決、`index.html` 解決、path traversal 拒否、Content-Type、Gzip のテストを整備する。
+- 静的配信の Host 解決、`GET` / `HEAD` / `405`、`index.html` 解決、path traversal 拒否、隠しセグメント拒否、Content-Type、ETag、Last-Modified、Cache-Control、304、Range無視、Gzip のテストを整備する。
 - API 固定表の全エンドポイント、URL パラメータ検証、ログ `limit` / `offset` 境界値のテストを整備する。
 - 全API成功レスポンスの固定JSONキー検証テストを整備する。
 - 全APIエラーレスポンスの固定JSONキー検証テストを整備する。
@@ -227,7 +239,7 @@
 - バックアップ作成用一時tarを `storage.basePath/backups/.tmp/` 配下に限定する。
 - atomic rename 後に履歴保存へ失敗した場合は、作成済みtar.gzを削除する。
 - バックアップ保存先を別障害領域へ複製する作業をASB外の運用責務として扱う。
-- 外部ストレージ連携を Rev.21 時点では実装対象外として扱う。
+- 外部ストレージ連携を Rev.22 時点では実装対象外として扱う。
 - Backup復旧前退避先を `storage.basePath/backups/restore-staging/{restoreId}/previous/` に固定する。
 - Backup復旧用展開先を `storage.basePath/backups/restore-staging/{restoreId}/next/` に固定する。
 - Backup履歴の `status` が `completed` でない場合は復旧を拒否する。
@@ -265,7 +277,7 @@
 - Rate limiting の採用可否と実装範囲を確定する。
 - Brotli 圧縮を採用する場合の外部ライブラリ例外採用可否を確定する。
 - SSL証明書自動更新の実通信とスケジューリング仕様を確定する。
-- Rev.21 の保留機能実装禁止契約に反する実装が入らないことを確認する。
+- Rev.22 の保留機能実装禁止契約に反する実装が入らないことを確認する。
 - マイグレーションの `schemaVersion`、`--dry-run`、`--apply`、事前バックアップ、途中失敗、ロールバック、開発リポジトリ非生成のテストを整備する。
 
 ## 6. 実装済みリスト
