@@ -6,7 +6,7 @@
 
 本ファイルは、`ASB-spec.md` に基づいて実装タスクを管理する。
 
-参照仕様バージョン: `ASB-spec.md Rev.77`
+参照仕様バージョン: `ASB-spec.md Rev.88`
 
 `ASB-spec.md` で仕様確定済みの事項のみを実装タスクとして扱う。
 
@@ -26,7 +26,7 @@
 
 本ファイルに記載された実装フェーズ管理は、`ASB-spec.md` の仕様範囲、API、設定項目、JSON保存形式、生成ファイル、生成ディレクトリを追加または変更する根拠ではない。
 
-フェーズ完了時は、該当フェーズの完了条件をすべて満たし、`go test ./...`、`git diff --check`、`.gitignore` 不在確認、開発リポジトリ内生成物確認を行う。
+フェーズ完了時は、該当フェーズの完了条件をすべて満たし、`go test ./...`、`git diff --check`、`.gitignore` 不在確認、開発リポジトリ内生成物確認、CI 品質ゲート確認を行う。
 
 完了したフェーズは `13. 実装済みフェーズ` へ移動する。
 
@@ -51,7 +51,20 @@
 | 低 | P12 | v0.13 | 禁止機能・非実装確認 | 未着手 |
 | 高 | P13 | v0.14 | 単一システム管理者認証 | 未着手 |
 
-### 2.1 Rev.77 共通完了ゲート
+### 2.1 Rev.88 実装開始ゲート
+
+実装フェーズへ着手する前に、以下を満たす。
+
+- `AGENTS.md` を確認済みである。
+- `ASB-spec.md` の本書バージョンと本ファイルの参照仕様バージョンが一致している。
+- 実装対象が `ASB-spec.md` の確定仕様に存在する。
+- 実装対象が本ファイルの該当フェーズに存在する。
+- 作業ブランチ上で作業している。
+- `.gitignore` が存在しない。
+- 開発リポジトリ内に実行時データ、ログ、一時ファイル、cache、coverage output、build output、release artifact、download 済み asset、`dist/`、`.asb/` が存在しない。
+- 仕様不足が見つかった場合は、コードで補完せず `ASB-spec.md` の改訂へ戻す。
+
+### 2.2 Rev.88 共通完了ゲート
 
 各フェーズは、個別完了条件に加えて以下を満たすまで完了扱いにしない。
 
@@ -60,6 +73,7 @@
 - token、session、cookie、API key、Basic、Bearer、JWT、OAuth、OIDC を追加しない。
 - 保存状態は JSON ファイルベースとし、外部DB、SQLite、KVS、外部ストレージを追加しない。
 - 保存 JSON は `schemaVersion`、未知フィールド拒否、deterministic output、atomic write を満たす。
+- JSON 保存、ファイル実体操作、Backup / Restore、Log rotation、SSL / ACME、Webhook deploy は `ASB-spec.md` の保存・生成・副作用境界固定仕様を満たす。
 - 開発リポジトリ内に実行時データ、一時ファイル、cache、log、build output、`.gitignore` を生成しない。
 - 実行時データの初期化、自動生成、不足補完を目的とする CLI、API、background job、startup hook、maintenance task を追加しない。
 - `storage.basePath` 配下の不足 directory、必須 JSON、ログファイル、証明書ファイルを ASB が補完生成しない。
@@ -75,6 +89,27 @@
 - 対象 JSON の field、型、必須、default、validation、object key 出力順序が `ASB-spec.md` の保存JSON field 固定表と一致する。
 - 対象 API の失敗条件、HTTP status、error code、成功レスポンス禁止条件が `ASB-spec.md` の API 別失敗条件固定表と一致する。
 - 複数の失敗条件が同時に成立するテストでは、HTTP status / error code 選択優先順位と一致する。
+- 標準 CI は GitHub Actions とし、Pull Request と `main` 反映前確認で実行する前提にする。
+- GitHub Actions workflow ファイルは、Go 実装コード導入後に `.github/workflows/` 配下へ追加する。
+- CI workflow を追加する場合でも、ASB 本体、ASB SDK、ASB 標準Web UI、実行時データ、配布 artifact の責務境界を変更しない。
+- CI では `go test ./...`、`git diff --check`、`.gitignore` 不在確認、開発リポジトリ内生成物確認を必須にする。
+- CI では、起動失敗、panic recovery、API response、test failure message、ログ出力に secret、内部絶対パス、stack trace、JSON断片が露出しないことを確認する。
+- CI では、テスト fixture を静的入力としてのみ扱い、テスト実行により fixture を作成、更新、削除しない。
+- CI では、テスト中に必要な一時データを OS の一時領域のみへ作成し、テスト終了時に削除する。
+- CI、coverage、build、release 確認を理由に `.gitignore` を作成しない。
+- CI では、開発リポジトリ内に実行時データ、ログ、一時ファイル、cache、coverage output、build output、release artifact、download 済み asset、`dist/`、`.asb/` を残さない。
+- CI は GitHub repository 設定変更、Pull Request 自動 merge、`main` 直接 push を行わない。
+- CI workflow 実体化時は、repository-cleanliness、test、format-check、build-check、security-output-check の job を標準構成とする。
+- repository-cleanliness job は `.gitignore` 不在、生成物不在、差分不在を確認する。
+- test job は `go test ./...` を実行し、テスト中の一時データを OS 一時領域に限定する。
+- format-check job は `git diff --check` を実行する。
+- build-check job は Linux amd64 / arm64 のビルド確認を CI runner 一時領域で行い、開発リポジトリ内へ binary を残さない。
+- security-output-check job は起動失敗、panic recovery、API response、test failure message、ログ出力に secret、内部絶対パス、stack trace、JSON断片が露出しないことを確認する。
+- CI の coverage 出力は CI runner 一時領域または標準出力に限定し、`coverage.out` を開発リポジトリ内へ作成しない。
+- CI の E2E 用 runtime JSON、TLS テスト証明書、ログファイルは OS 一時領域へ事前配置し、ASB に初期化または不足補完させない。
+- CI は通常 build artifact と release artifact を区別し、通常 build artifact を GitHub Releases 配布成果物として扱わない。
+- CI は GitHub checkout、GitHub Actions 標準 action 取得、Go toolchain 取得、Pull Request 状態確認以外の外部通信を行わない。
+- CI は Let’s Encrypt 本番 ACME server、GitHub Webhook 実イベント、外部DB、外部KVS、外部ストレージ、DNS provider API、npm、Deno module registry、外部 package registry、telemetry、analytics、error reporting service へ通信しない。
 
 ## 3. P0 / v0.1 / 基盤
 
@@ -82,12 +117,154 @@
 
 目的: ASB 本体を Go 単一バイナリとして実装できる最小構造を確定する。
 
+### 実装単位
+
+P0 は以下の小単位に分けて実装する。
+
+| 小単位 | 目的 | 状態 |
+|-------|------|------|
+| P0-1 | 最小Go骨格 + `asb version` | 未着手 |
+| P0-2 | package境界 | 未着手 |
+| P0-3 | Clock / ID / Lock | 未着手 |
+| P0-4 | main実行境界 | 未着手 |
+
+P0 の初回実装は P0-1 のみに限定する。
+
+P0-1 では以下のみを実装する。
+
+- `go.mod`
+- `cmd/asb/main.go`
+- `asb version`
+- `cmd/asb/main.go` の最小CLI分岐
+- `go run ./cmd/asb version` で stdout に `asb <version>` の1行のみを出す処理
+
+P0-1 では以下を実装しない。
+
+- `asb start`
+- 起動設定ファイル読み込み
+- 起動時検証
+- HTTPS server 起動
+- signal受信
+- graceful shutdown
+- TLS 証明書検証
+- API routing
+- 管理 HTTPS JSON API
+- `internal/config/`
+- `internal/server/`
+- `internal/management/`
+- `internal/delivery/`
+- `internal/data/`
+- `internal/system/`
+- Clock
+- IDGenerator
+- LockManager
+- Project / Domain / File / SSL / Webhook / Backup / Log の業務処理
+- runtime JSON 読み書き
+- runtime JSON 初期化
+- 空状態 JSON 作成
+- ログ出力
+- CI workflow
+- Web UI
+- SDK
+- release artifact
+
+P0-1 実装後の確認は以下に固定する。
+
+- `go test ./...`
+- `go run ./cmd/asb version`
+- `git diff --check`
+- `.gitignore` 不在確認
+- 開発リポジトリ内生成物不在確認
+
+P0-2 では以下のみを実装する。
+
+- `internal/config/`
+- `internal/server/`
+- `internal/management/`
+- `internal/delivery/`
+- `internal/data/`
+- `internal/system/`
+- package 間の循環依存禁止
+- package 依存方向の確認
+
+P0-2 では `asb start`、HTTPS server 起動、API routing、runtime JSON 読み書きを実装しない。
+
+P0-3 では以下のみを実装する。
+
+- `internal/system` の Clock interface
+- `internal/system` の IDGenerator interface
+- `internal/system` の LockManager interface
+- UUID v4 生成・検証
+- in-memory lock の最小実装
+- `internal/system/id_test.go`
+- `internal/system/clock_test.go`
+- `internal/system/lock_test.go`
+
+P0-3 では Project / File / Backup の業務フロー、HTTP response、JSON永続化、外部 lock、lock file を実装しない。
+
+P0-4 では以下のみを実装する。
+
+- `cmd/asb/main.go` の依存関係生成境界
+- `cmd/asb/main.go` から各 package を接続する最小構造
+- signal受信の最小構造
+- graceful shutdown の最小構造
+
+P0-4 では `asb start` の実運用起動、起動設定ファイル読み込み、HTTPS listen、TLS証明書検証、API routing を完了扱いにしない。
+
+### 開始条件
+
+- Rev.88 実装開始ゲートを満たしている。
+- `go.mod` が未作成である場合、P0で新規作成する。
+- `.github/workflows/` はP0では作成しない。
+- `.gitignore` はP0では作成しない。
+- 実行時データ、起動設定ファイル、空状態JSON、ログファイル、TLS証明書、ACME関連ファイルを開発リポジトリ内に作成しない。
+- P0で作成するファイルは、Go module、ASB本体の最小package、基盤テストに限定する。
+
+### P0全体の作成許可ファイル
+
+- `go.mod`
+- `cmd/asb/main.go`
+- `internal/config/`
+- `internal/server/`
+- `internal/management/`
+- `internal/delivery/`
+- `internal/data/`
+- `internal/system/`
+- `internal/system/id_test.go`
+- `internal/system/clock_test.go`
+- `internal/system/lock_test.go`
+
+### P0全体の作成禁止ファイル・ディレクトリ
+
+- `.gitignore`
+- `.github/workflows/`
+- `.asb/`
+- `dist/`
+- `coverage.out`
+- `*.log`
+- `*.tmp`
+- runtime JSON
+- 起動設定ファイル
+- TLS証明書ファイル
+- ACME challenge file
+- build binary
+- release artifact
+- package manager lock file
+- 外部依存設定ファイル
+
 ### 実装タスク
+
+#### P0-1 最小Go骨格 + `asb version`
 
 - Go 1.21 以上による ASB 本体の単一バイナリ基盤を構築する。
 - `go.mod` を作成する。
 - `cmd/asb/main.go` を作成する。
-- `cmd/asb/main.go` は設定読み込み、依存関係生成、HTTPSサーバー起動、signal受信、graceful shutdown のみに限定する。
+- `cmd/asb/main.go` は P0-1 時点では `asb version` の最小CLI分岐のみに限定する。
+- `asb version` コマンドを実装し、stdout に `asb <version>` の1行のみを出力し、stderr、実行時データ、ログ、cache、一時ファイルを生成しない。
+- P0-1 時点では `cmd/asb/main.go` に設定読み込み、HTTPSサーバー起動、signal受信、graceful shutdown、業務判断、JSON schema、HTTP response body 生成を実装しない。
+
+#### P0-2 package境界
+
 - `config`、`server`、`management`、`delivery`、`data`、`system` の package 境界を作成する。
 - `internal/config/`、`internal/server/`、`internal/management/`、`internal/delivery/`、`internal/data/`、`internal/system/` を作成する。
 - Management Domain、Delivery Domain、Data Domain、System Domain の基本ディレクトリ構成を作成する。
@@ -100,20 +277,36 @@
 - Entity は保存形式とレスポンス形式の型定義のみを持つ構造にする。
 - ドメイン間の接続を `cmd/asb/main.go` で一元管理する。
 - 責務間の循環依存を禁止する。
+- `internal/config` は標準ライブラリのみに依存し、HTTP、Repository、Storage、Log、Domain、Project、SSL、Webhook、Backup の業務判断へ依存しない。
+- `internal/server` は HTTP ルーティングと response 境界に限定し、JSON ファイル path、atomic save、Project quota、Domain 永続化、SSL証明書状態、Backup archive の業務判断を持たない。
+- `internal/data` は HTTP status、HTTP header、CLI stdout/stderr、Domain 割当判断、Project quota policy、Webhook署名判断を持たない。
+- `internal/system` は Project 作成、Domain 割当、File upload、Backup restore、SSL enable の業務フローを持たない。
+- package 依存方向を `cmd/asb -> config/server/management/delivery/data/system`、`server -> management/delivery/system`、`management -> data/system`、`delivery -> data/system`、`data -> system`、`system -> 標準ライブラリのみ`、`config -> 標準ライブラリのみ` に固定する。
 - `config.Loader`、`server.Router`、`server.Responder`、`management.ProjectService`、`management.DomainService`、`management.SSLService`、`delivery.FileService`、`delivery.StaticService`、`delivery.WebhookService`、`data.JSONRepository`、`data.StorageService`、`data.BackupService`、`system.AuthService`、`system.LogService`、`system.MonitoringService`、`system.LockManager`、`system.Clock`、`system.IDGenerator` の公開 interface 境界を整備する。
+
+#### P0-3 Clock / ID / Lock
+
 - Project、File、Backup の UUID 形式 ID 生成を `crypto/rand` で実装する。
 - UUID を RFC 4122 version 4、小文字16進、ハイフン付き36文字として生成・検証し、`crypto/rand` 失敗時は `ERR_INTERNAL` とする。
 - Clock 注入により時刻取得を行い、時刻取得失敗時の `ERR_INTERNAL` をテスト可能にする。
-- 外部ルーターライブラリを使わず、Go標準 `net/http` でルーティングする。
+- in-memory lock として `system.LockManager` を実装し、lock 取得順序、競合、解放をテスト可能にする。
 - `internal/system/id_test.go` を作成する。
 - `internal/system/clock_test.go` を作成する。
 - `internal/system/lock_test.go` を作成し、lock 取得順序、競合時 `ERR_OPERATION_CONFLICT`、解放順序、無期限待機禁止を検証する。
+
+#### P0-4 main実行境界
+
+- `cmd/asb/main.go` は依存関係生成と実行境界のみを扱い、業務判断、JSON schema、HTTP response body 生成を持たない。
+- `cmd/asb/main.go` は設定読み込み、依存関係生成、HTTPSサーバー起動、signal受信、graceful shutdown の接続点のみを持つ構造にする。
+- 外部ルーターライブラリを使わず、Go標準 `net/http` でルーティングする前提を維持する。
 
 ### 完了条件
 
 - `go test ./...` が成功する。
 - package 間の循環依存がない。
+- package 依存方向が `ASB-spec.md` の package 境界最終固定仕様と一致する。
 - Handler が永続化層へ直接依存していない。
+- `cmd/asb/main.go` が業務判断、JSON schema、HTTP response body 生成を持たない。
 - `.gitignore` が存在しない。
 - 開発リポジトリ内に実行時データ、ログ、一時ファイル、ビルド成果物が残っていない。
 
@@ -142,7 +335,17 @@
 - `asb init-runtime` コマンドを実装しない。
 - 実行時データ初期化、不足補完、空 JSON 作成、必須 directory 作成を目的とする CLI、API、background job、startup hook、maintenance task を実装しない。
 - `asb start` コマンドを実装し、起動時に不足ディレクトリ、JSON、証明書、ログ、一時ファイルを作成しないことを保証する。
+- `asb version` コマンドを実装し、stdout に `asb <version>` の1行のみを出力し、stderr、実行時データ、ログ、cache、一時ファイルを生成しない。
+- 未定義 subcommand、未定義 option、必須 option 不足、option 型不正を exit code `2` とし、stderr に固定文言の `ASB_CLI_ERROR` を1行だけ出力する。
+- `asb init`、`asb init-runtime`、`asb repair`、`asb doctor --fix`、`asb create-config`、`asb generate-config`、`asb generate-cert`、`asb seed`、`asb dev`、`asb serve` を実装しない。
+- CLI 終了コードを正常終了 `0`、起動時検証・migration・永続化・内部処理失敗 `1`、CLI 引数不正 `2` に固定する。
 - `server.port`、`server.host`、`server.tlsCertFile`、`server.tlsKeyFile`、`server.shutdownTimeout`、`storage.basePath`、`storage.maxProjectSize`、`ssl.email`、`ssl.renewBefore`、`ssl.renewCheckInterval`、`log.level`、`log.format`、`log.maxSize` の起動時バリデーションを実装する。
+- `deploy.projectId`、`deploy.sourcePath`、`deploy.branch`、`webhook.githubSecret` の起動時バリデーションを実装する。
+- 起動設定ファイル `config.json` は UTF-8 JSON object のみに限定し、top-level array、文字列、数値、真偽値、`null`、空ファイル、複数JSON値を拒否する。
+- top-level、`server`、`storage`、`ssl`、`log`、`deploy`、`webhook` の未知 field 拒否を実装する。
+- `--config` に相対パス、空文字、directory、存在しない path、通常ファイル以外の path が指定された場合の起動失敗を実装する。
+- `server.tlsCertFile`、`server.tlsKeyFile`、`storage.basePath`、`deploy.sourcePath` が開発リポジトリ内 path を指す場合は起動失敗にする。
+- 起動設定ファイル内の secret 相当値を stdout、stderr、error log、access log、panic recovery、API response、test failure message にそのまま出力しない。
 - 任意設定項目の未指定時、親 object 未指定時、空文字、型不一致、数値の小数・指数表記・負数・`null` 拒否を仕様通り実装する。
 - `storage.basePath` と `deploy.sourcePath` の絶対パス正規化、開発リポジトリ配下判定、Git worktree 判定を実装する。
 - 設定未知フィールド検出時の起動失敗を実装する。
@@ -159,24 +362,70 @@
 - `server.tlsCertFile` と `server.tlsKeyFile` の絶対パス、存在、通常ファイル、秘密鍵ファイルの group/world writable 禁止を検証する。
 - 管理 API 用 TLS 証明書ファイルまたは秘密鍵ファイルを開発リポジトリ内へ生成しない。
 - 管理 API 用 TLS 証明書ファイルまたは秘密鍵ファイルを起動時に自動生成しない。
+- 起動失敗時は HTTPS server listen を開始せず、stdout を出力せず、stderr に `ASB_STARTUP_ERROR code=<code> message="<message>"` の1行のみを出力する。
+- 起動失敗時の stderr は固定文言のみとし、検証対象 path、secret、JSON断片、内部構造、stack trace を含めない。
+- 起動時検証順序を CLI 引数、起動設定 path、JSON decode、unknown field、default、設定値 validation、`storage.basePath`、必須 directory、必須 runtime JSON、必須ログファイル、TLS証明書・秘密鍵、依存関係生成、HTTPS server listen の順に固定する。
 - Go標準 `net/http` によるHTTPSサーバーを実装する。
+- 外部 HTTP server framework、外部 router、外部 middleware framework を採用しない。
+- `http.Server` の `ReadHeaderTimeout` を10秒に固定する。
+- `http.Server` の `ReadTimeout` を30秒に固定する。
+- `http.Server` の `WriteTimeout` を60秒に固定する。
+- `http.Server` の `IdleTimeout` を120秒に固定する。
 - グレースフルシャットダウンと `shutdownTimeout` を実装する。
+- `SIGINT` または `SIGTERM` 受信時に graceful shutdown を開始する。
+- graceful shutdown 開始後は新規接続を受け付けず、処理中 request は `server.shutdownTimeout` まで完了を待つ。
+- `server.shutdownTimeout` 超過後は処理中 request の context を cancel し、未完了操作を成功扱いしない。
+- timeout 値を API、Project、Domain、File、Webhook、SSL、Log、Monitoring、SDK、Web UI ごとに分岐しない。
 - API パスを静的ファイル配信より優先して判定する。
 - API パス解析では URL path のみを使用し、query string と fragment をルーティング判定に使わない。
 - API パスの URL decode 失敗、`//`、`.`、`..`、NUL、`\`、`/api`、`/api/` の拒否を実装する。
 - API レスポンスの `application/json; charset=utf-8` 統一を実装する。
+- 管理 API の全レスポンスで `X-Request-Id` を必須にする。
+- 管理 API の全レスポンスで `Cache-Control: no-store` を必須にする。
+- 管理 API の JSON body 付きレスポンスで `Content-Type: application/json; charset=utf-8` のみを返す。
+- 管理 API のレスポンスに `ETag`、`Last-Modified`、`Content-Encoding`、`Vary` を付与しない。
 - JSON API の `Content-Type: application/json` 要求を実装する。
 - JSON API request body 最大サイズ 1MiB と超過時 `413` / `ERR_INVALID_REQUEST` を実装する。
+- multipart upload の request body 最大サイズを 1GiB + 1MiB に固定する。
+- multipart の file part 最大サイズを 1GiB に固定する。
+- multipart request 全体が 1GiB + 1MiB を超えた場合は `413` / `ERR_INVALID_REQUEST` を返す。
+- multipart の file part が 1GiB を超えた場合は `413` / `ERR_PROJECT_QUOTA_EXCEEDED` を返す。
+- Project quota 超過は request body サイズ上限を満たした後に判定し、`413` / `ERR_PROJECT_QUOTA_EXCEEDED` を返す。
+- request body サイズ超過と Project quota 超過が同時に成立する場合は request body サイズ超過を優先する。
 - charset 付き `Content-Type: application/json` を許可する。
+- JSON API の `Content-Type` は `application/json` または `application/json; charset=utf-8` のみに限定する。
+- JSON API の `Content-Type` で未知 parameter、複数 charset、空 charset、utf-8 以外の charset を拒否する。
+- JSON API request body は UTF-8 JSON object のみに限定し、top-level array、文字列、数値、真偽値、`null` を拒否する。
 - JSON decode で未知フィールド拒否、空 Body 拒否、後続トークン拒否を実装する。
 - 未定義ルート `404 Not Found` と未対応メソッド `405 Method Not Allowed` を実装する。
+- `/api` と `/api/` は `404 Not Found` と `ERR_NOT_FOUND` を返す。
+- 未定義 `/api/` 配下 path は `404 Not Found` と `ERR_NOT_FOUND` を返す。
+- 定義済み path に対する未対応 method は `405 Method Not Allowed` と `ERR_METHOD_NOT_ALLOWED` を返す。
 - `405 Method Not Allowed` では `Allow` ヘッダーを返す。
+- `Allow` ヘッダーは許可 method を大文字表記、comma + space 区切り、辞書順で返す。
 - 共通JSONレスポンスと共通エラーレスポンス形式を実装する。
 - エラーレスポンスに `error`、`code`、`timestamp`、`httpStatus` を含める。
 - エラーレスポンスの `httpStatus` と実際の HTTP ステータスを一致させる。
 - エラーレスポンスの `timestamp` を UTC RFC3339 秒精度に固定する。
 - エラーレスポンスに内部ファイルパス、スタックトレース、機密値を含めない。
-- すべてのHTTPレスポンスで `X-Request-Id` を返し、JSONレスポンスの `Content-Type` を固定する。
+- 管理 API のすべてのレスポンスで `X-Request-Id` を返し、JSONレスポンスの `Content-Type` を固定する。
+- 管理 API の `HEAD` は許可 method として扱わず、対象 path の許可 method に従い `405 Method Not Allowed` を返す。
+- body なし endpoint に request body が存在する場合は `400 Bad Request` と `ERR_INVALID_REQUEST` を返す。
+- `/api/` 配下の request は静的コンテンツ配信へ fallback しない。
+- `OPTIONS` を CORS preflight 用 method として追加しない。
+- 管理 API 定義済み path への `OPTIONS` は `405` / `ERR_METHOD_NOT_ALLOWED` を返す。
+- 管理 API は `Access-Control-Allow-Origin`、`Access-Control-Allow-Methods`、`Access-Control-Allow-Headers`、`Access-Control-Allow-Credentials`、`Access-Control-Max-Age` を返さない。
+- `Origin` header の存在だけを理由に request を拒否しない。
+- `Origin` header を認証、認可、Domain 解決、Rate limiting、ログ分類、保存JSON選択、SDK通信、Web UI通信の判断に使用しない。
+- `/health` を管理 API 外の Health Check endpoint として実装する。
+- `/health` は `GET` のみ許可し、認証不要、`200 OK`、`Content-Type: application/json; charset=utf-8`、`Cache-Control: no-store`、body `{"status":"ok"}` を返す。
+- `/health` では実行時 JSON、ログファイル、証明書ファイル、Project データ、Domain データ、Backup データ、ACME 状態を読まない。
+- `/health` は readiness、liveness、dependency check、storage validation、monitoring stats を兼ねない。
+- panic recovery を `internal/server/middleware.go` で実装し、response 未送信であれば `500` / `ERR_INTERNAL` を返す。
+- panic recovery は stack trace、内部ファイルパス、環境変数、秘密情報、request body、管理者パスワード、webhook secret、private key、ACME token を出力しない。
+- client disconnect を request context cancellation または response write error として扱う。
+- client disconnect 発生後は新規の保存 JSON 更新、実体ファイル公開、backup 完了記録、SSL状態完了記録、Webhook成功記録、ログローテーション補完を開始しない。
+- timeout、CORS、health、client disconnect、panic recovery、graceful shutdown を理由に timeout JSON、CORS JSON、health JSON、request size state、client disconnect state、panic dump、retry queue、scheduler state、cache、一時ファイルを生成しない。
 - `HEAD` と `304 Not Modified` でレスポンスボディを返さないことを共通レスポンス層で保証する。
 - `204 No Content` を使用しない。
 - 配列レスポンスは対象データが空でも空配列を返す。
@@ -186,7 +435,9 @@
 - `:name` は長さ、NUL、パス区切り、`.`、`..`、先頭 `.`、空白のみを仕様通り拒否する。
 - JSON ファイル更新時の読み込み検証、保存前再検証、同一ファイル排他書き込みを実装する。
 - JSON ファイル保存では同一ディレクトリ内の一時ファイル、`fsync`、atomic rename による置換を実装する。
+- JSON 保存順序を既存 JSON 読み込み、schema validation、unknown field 拒否、deterministic output 生成、同一ディレクトリ内一時ファイル書き込み、file `fsync`、atomic rename、directory `fsync` に固定する。
 - JSON encode、file fsync、directory fsync、atomic rename の失敗時に成功レスポンスを返さない。
+- 保存失敗時に代替 JSON、復旧 JSON、差分 JSON、journal、write-ahead log、補助 index、cache を生成しない。
 - `data.JSONRepository` は JSON 読み込み、スキーマ検証、排他、atomic save のみに限定する。
 - `data.JSONRepository` が HTTP ステータス、HTTP リクエスト、HTTP レスポンスを扱わないことを実装する。
 - `data.StorageService` は `storage.basePath` 配下のファイル実体操作のみに限定する。
@@ -197,11 +448,11 @@
 - 複数JSON更新の途中失敗時に更新済みJSON名、未更新JSON名、操作名、requestId をエラーログへ記録する。
 - 複数ファイル更新の途中失敗時に、更新予定JSON、更新済みJSON、`files.json` path、実ファイル、`projects.used` の整合性検証を実装する。
 - 整合性検証失敗時は `ERR_STORAGE_VALIDATION_FAILED` を error log へ記録する。
-- Rev.77 時点では複数JSON更新に外部トランザクション機構を導入しない。
-- Rev.77 時点の API エンドポイント固定表に記載されたメソッド、パス、成功ステータス、失敗コードを実装する。
-- Rev.77 API 成功レスポンス固定表に記載された JSON キーと型を実装する。
-- Rev.77 API 個別実装契約に記載された request schema、保存先、更新順序、audit 対象を実装する。
-- Rev.77 API 別失敗条件固定表に記載された失敗条件、HTTP status、error code を実装する。
+- Rev.88 時点では複数JSON更新に外部トランザクション機構を導入しない。
+- Rev.88 時点の API エンドポイント固定表に記載されたメソッド、パス、成功ステータス、失敗コードを実装する。
+- Rev.88 API 成功レスポンス固定表に記載された JSON キーと型を実装する。
+- Rev.88 API 個別実装契約に記載された request schema、保存先、更新順序、audit 対象を実装する。
+- Rev.88 API 別失敗条件固定表に記載された失敗条件、HTTP status、error code を実装する。
 - HTTP status / error code 選択優先順位を共通 middleware または handler 境界で統一する。
 - 保存 JSON の field 固定表に従い、Project、Domain、File、Backup、WebhookEvent の型、必須、default、validation、object key 出力順序を実装する。
 - プロジェクト作成 API `POST /api/projects` を実装する。
@@ -221,7 +472,13 @@
 ### 完了条件
 
 - 起動時検証順序、終了コード、stderr 形式のテストが成功する。
+- `asb version` が stdout 1行のみを返し、stderr と生成物を出さないテストが成功する。
+- 未定義 subcommand、未定義 option、必須 option 不足、option 型不正が exit code `2` と `ASB_CLI_ERROR` になるテストが成功する。
+- 禁止 CLI subcommand が存在しないことを確認するテストが成功する。
 - 起動設定ファイルが `--config` 指定パスから読み込まれ、`storage.basePath/config/config.json` を標準実行時JSONとして扱わないテストが成功する。
+- 起動設定ファイルの JSON object 限定、unknown field 拒否、default 適用、validation、開発リポジトリ内 path 拒否のテストが成功する。
+- 起動失敗時に listen、stdout、ログ生成、cache、一時ファイル生成が発生しないテストが成功する。
+- secret 相当値が stdout、stderr、ログ、panic recovery、API response、test failure message に出ないテストが成功する。
 - `asb init-runtime` が実装されていないことを確認するテストが成功する。
 - 実行時データ初期化、不足補完、空 JSON 作成、必須 directory 作成を目的とする CLI、API、background job、startup hook、maintenance task が存在しないことを確認する。
 - `asb start` が不足ディレクトリ、不足 JSON、不足ログファイル、不足証明書を自動生成せず起動失敗するテストが成功する。
@@ -229,6 +486,22 @@
 - Project 作成 API が Project ディレクトリ、`contents/`、`files.json` を作成し、既存ファイルを上書きしないテストが成功する。
 - 全API成功レスポンスの固定JSONキー検証テストが成功する。
 - 全APIエラーレスポンスの固定JSONキー検証テストが成功する。
+- 管理 API の成功/失敗レスポンスで `Content-Type`、`X-Request-Id`、`Cache-Control` が仕様通り返るテストが成功する。
+- `ReadHeaderTimeout`、`ReadTimeout`、`WriteTimeout`、`IdleTimeout`、`server.shutdownTimeout` が仕様通り設定されるテストが成功する。
+- request body サイズ超過、multipart 全体サイズ超過、file part サイズ超過、Project quota 超過の優先順位テストが成功する。
+- timeout、client disconnect、response write error で未完了操作を成功扱いしないテストが成功する。
+- panic recovery が `ERR_INTERNAL` を返し、stack trace、内部ファイルパス、秘密情報を出力しないテストが成功する。
+- graceful shutdown 開始後に新規接続を受け付けず、timeout 超過後に処理中 request を成功扱いしないテストが成功する。
+- 管理 API が CORS response header を返さず、`OPTIONS` を CORS preflight として扱わないテストが成功する。
+- `Origin` header が認証、Domain 解決、ログ分類、保存JSON選択に影響しないテストが成功する。
+- `/health` が認証不要、管理 API 外、固定 JSON response、非依存 check、非生成であるテストが成功する。
+- timeout、CORS、health、client disconnect、panic recovery、shutdown を理由に実行時データ、cache、queue、一時ファイルが生成されないテストが成功する。
+- 管理 API レスポンスに静的配信用の `ETag`、`Last-Modified`、`Content-Encoding`、`Vary` が付与されないテストが成功する。
+- 未定義 `/api/` path、`/api`、`/api/` が `ERR_NOT_FOUND` を返し、静的配信へ fallback しないテストが成功する。
+- method 不一致と管理 API への `HEAD` が `ERR_METHOD_NOT_ALLOWED` と辞書順 `Allow` ヘッダーを返すテストが成功する。
+- body なし endpoint の body 拒否、JSON `Content-Type` parameter 拒否、top-level object 以外拒否、無効 UTF-8 拒否のテストが成功する。
+- error response と成功レスポンス内 timestamp が UTC RFC3339 秒精度かつ末尾 `Z` であるテストが成功する。
+- 静的配信レスポンスに管理 API JSON response header 契約を誤適用していないテストが成功する。
 - API 個別実装契約の request schema、保存先、更新順序、audit 対象のテストが成功する。
 - API 別失敗条件固定表の HTTP status、error code、成功レスポンス禁止条件のテストが成功する。
 - 認証失敗時と初期パスワード未変更時に resource 存在確認を行わないテストが成功する。
@@ -284,11 +557,23 @@
 - 同名ファイル上書き時は旧メタデータ読み込み、旧ファイル実体検証、新ファイル一時書込、fsync、旧ファイル退避、新ファイル公開、`files.json`更新、`projects.json` used差分更新、旧ファイル退避削除の順で実装する。
 - 旧ファイルは新ファイルの atomic rename 成功まで削除しない。
 - File upload / overwrite 失敗時に成功レスポンスを返さず、仕様に従って一時ファイル、退避ファイル、公開済みファイルの削除または復元を行う。
+- Project 作成 API のみ、対象 Project の `storage/projects/{projectId}/`、`contents/`、`files.json` を新規作成できるようにする。
+- File upload / overwrite は対象 Project の `contents/` 配下にのみ一時ファイル、退避ファイル、公開ファイルを作成できるようにする。
+- File API は未記録ファイルを発見しても自動登録、自動削除、自動修復しない。
+- 静的配信、File list、Monitoring、Log API、Health Check がファイル実体、`files.json`、`projects.json` を変更しないことを保証する。
 - `projects.used` は通常時差分更新とし、不一致、負数、整合性検証時は `files[]` の `size` 合計から再計算する。
 - `files.json` と `contents/` の不整合検出を実装し、未記録ファイル、実体欠落、通常ファイル以外、サイズ不一致、配信ルート外 path を失敗扱いにする。
 - 不整合検出時、整合性検証は自動修復しない。
 - 不整合検出時、File API の list、upload、overwrite、delete は成功レスポンスを返さない。
 - Host ヘッダーから Domain を解決する。
+- Host header は Domain 解決専用として扱い、管理 API 認証、Rate limiting、監視、SDK通信、保存JSON選択に使用しない。
+- Host header の port 除去、末尾 `.` 除去、小文字 ASCII 正規化、Domain validation 同等検証を実装する。
+- Host header の空文字、制御文字、空白、`/`、`\`、`@`、`#`、`?`、IPv6 literal、port 不正、複数 Host header を不正 Host として扱う。
+- 不正 Host、未割当 Host、Domain 不一致 Host は静的配信と ACME HTTP-01 challenge で `404 Not Found` とする。
+- `X-Forwarded-Host`、`Forwarded`、`X-Forwarded-For`、`X-Real-IP`、`CF-Connecting-IP`、`True-Client-IP`、その他 proxy / CDN 由来 header を Domain 解決に使用しない。
+- proxy header の存在だけを理由に request を拒否しない。
+- Webhook 受信では Host header を署名検証、対象 Project 判定、branch 判定、deploy source 判定に使用しない。
+- ACME HTTP-01 challenge では正規化後 Host を challenge 対象 Domain とし、`X-Forwarded-Host` を使用しない。
 - Domain から Project を解決する。
 - URL path を静的ファイルパスへ変換する。
 - `GET` と `HEAD` の静的配信を実装する。
@@ -310,7 +595,7 @@
 - `Cache-Control` を既定で `public, max-age=60` とする。
 - `If-None-Match` と `If-Modified-Since` による `304 Not Modified` を実装し、両方が存在する場合は `If-None-Match` を優先する。
 - `304 Not Modified` では `Content-Type`、`ETag`、`Last-Modified`、`Cache-Control` を返し、`Content-Encoding` を返さない。
-- Range request は Rev.77 時点では実装せず、`Range` ヘッダーを無視して `206 Partial Content` を返さない。
+- Range request は Rev.88 時点では実装せず、`Range` ヘッダーを無視して `206 Partial Content` を返さない。
 - `Accept-Encoding: br` では Brotli 応答を返さない。
 - Brotli 用の `.br`、キャッシュ、一時ファイル、メタデータを開発リポジトリ内にも `storage.basePath` 配下にも生成しない。
 - 静的配信でディレクトリ一覧を返さない。
@@ -323,6 +608,11 @@
 - upload API の Content-Type、file field欠落、file field複数、filename、path segment、未記録公開先ファイル拒否のテストが成功する。
 - `files.json` と `contents/` の不整合で File API が成功レスポンスを返さず、自動修復しないテストが成功する。
 - 静的配信の Host 解決、`GET`、`HEAD`、`405`、`index.html` 解決、path traversal 拒否、隠しセグメント拒否、Content-Type、ETag、Last-Modified、Cache-Control、304、Range無視、Gzip のテストが成功する。
+- 静的配信の Host 正規化、port 除去、末尾 dot 除去、小文字化、不正 Host、複数 Host header、IPv6 literal 非対応のテストが成功する。
+- `X-Forwarded-Host`、`Forwarded`、proxy / CDN 由来 header が Domain 解決へ影響しないテストが成功する。
+- Webhook 受信が Host header を対象 Project 判定、branch 判定、deploy source 判定に使用しないテストが成功する。
+- ACME HTTP-01 challenge が正規化後 Host のみを対象 Domain とし、`X-Forwarded-Host` を使用しないテストが成功する。
+- Host / proxy 境界を理由に proxy 設定JSON、trusted proxy JSON、client IP cache、forwarded header log、proxy状態ファイルが生成されないテストが成功する。
 - 静的配信が `files.json` 未記録ファイルを配信せず、記録済みファイル不整合を `500` とするテストが成功する。
 - `304 Not Modified` の `If-None-Match` 優先、`Content-Encoding` 不在、`HEAD` body不在、Gzip `Vary`、不正 q 値のテストが成功する。
 - Brotli 用外部ライブラリ、middleware、precompress、`.br`、キャッシュ、設定項目、メタデータを生成しないテストが成功する。
@@ -426,6 +716,10 @@
 - 無効化 API は無料独自SSL状態を `disabled` に変更し、既存証明書ファイルを即時削除しない。
 - Let’s Encrypt ACME v2 client を実装する。
 - ACME account 登録、account key 生成・保存、directory 取得、nonce 管理、order 作成、authorization 取得、HTTP-01 challenge 応答、finalize、certificate download を実装する。
+- 無料独自SSL enable、renew、disable、ACME 更新処理のみが、仕様定義済み ACME JSON、証明書ファイル、秘密鍵ファイル、HTTP-01 challenge 応答状態を変更できるようにする。
+- 起動時、Health Check、Monitoring、Domain list、SSL status read は ACME JSON、証明書ファイル、秘密鍵ファイル、challenge file を生成しない。
+- HTTP-01 challenge 応答は、仕様で管理された challenge token のみを返し、開発リポジトリ内または公開 `contents/` 配下へ challenge file を生成しない。
+- DNS-01、TLS-ALPN-01、wildcard、複数CA、DNS provider API を理由に設定、JSON、cache、token、challenge file を生成しない。
 - HTTP-01 challenge 応答を通常の静的ファイル配信より優先する。
 - `/.well-known/acme-challenge/{token}` を ASB の challenge handler で応答する。
 - HTTP-01 challenge handler は token が存在しない場合に通常の静的ファイル探索へ fallback せず `404 Not Found` を返す。
@@ -511,6 +805,7 @@
 - `deploy.projectId` 未設定時は `ERR_WEBHOOK_PROJECT_NOT_CONFIGURED` を返す。
 - `deploy.sourcePath` のローカルcheckoutを唯一のデプロイ元として扱う。
 - Webhook処理時にネットワーク越しのGit clone、fetch、pullを行わない。
+- `deploy.sourcePath` は既存 checkout を読むのみとし、ASB は checkout、clone、pull、build、package install、dependency install、cache 生成を行わない。
 - `deploy.sourcePath` の存在、Git worktree、`after` commit 参照可否を検証する。
 - `deploy.sourcePath` 不正時は `ERR_WEBHOOK_SOURCE_INVALID` を返す。
 - 指定ブランチの自動デプロイ処理を実装する。
@@ -519,6 +814,9 @@
 - Webhookデプロイ対象pathの絶対パス、NUL、`\`、`.`、`..`、空白のみセグメント、先頭 `.` セグメントを拒否する。
 - Webhookデプロイ先を対象Projectの `storage/projects/:projectId/contents/` 配下に限定する。
 - Webhookデプロイを一時ディレクトリ作成、静的ファイルコピー、fsync、atomic rename、`files.json`更新、`webhooks.json`保存の順に実装する。
+- Webhook deploy 成功時に変更できる対象を、対象 Project の `contents/`、`files.json`、`projects.json`、`config/webhooks.json`、必要な access log / error log のみに限定する。
+- Webhook deploy 失敗時に deploy state file、retry queue、failed payload dump、checkout cache、build cache、一時ログを開発リポジトリ内または `storage.basePath` 配下へ生成しない。
+- Webhook deploy で一時ファイルが必要な場合は、対象 Project の `contents/` 配下または仕様定義済み staging のみに限定する。
 - Webhookデプロイでは既存 `contents/` を `deploy-staging/{deployId}/previous-contents/` へ退避し、新 `contents/` 公開失敗または `files.json` 更新失敗時に仕様に従って復元する。
 - Webhookデプロイ反映後のファイル集合から `files.json` を再生成する。
 - Webhookデプロイで生成する File object の必須キーを `name`、`path`、`size`、`uploadedAt` に固定し、`path` 昇順で保存する。
@@ -547,7 +845,7 @@
 - GitHub API 連携
 - ネットワーク越しのGit操作
 - 自動リトライスケジューラー
-- GitHub Actions 実行
+- Webhookによる GitHub Actions 実行
 
 ## 9. P6 / v0.7 / バックアップ・復旧
 
@@ -564,10 +862,14 @@
 - `config/backups.json` の `backups[]` スキーマ、`createdAt` 降順、同一時刻時 `id` 昇順を実装する。
 - tar.gz 形式のバックアップ作成を実装する。
 - Backup作成処理順序を Project検証、対象データ読み込み検証、`storage.basePath/backups/` 書き込み検証、tar.gz一時作成、SHA-256計算、atomic rename、`backups.json` へ `status: "completed"` 保存、成功応答の順に固定して実装する。
+- Backup 作成で生成できるファイルを `storage.basePath/backups/.tmp/backup-{backupId}.tar.gz.tmp` と `storage.basePath/backups/backup-{backupId}.tar.gz` のみに限定する。
+- Backup 作成で更新できる JSON を `config/backups.json` のみに限定する。
 - SHA-256 ハッシュによるバックアップ整合性検証を実装する。
 - 復旧前の既存データ退避を実装する。
 - 復旧後の整合性確認を実装する。
 - Backup復旧処理順序を Backup履歴検証、`status: "completed"` 検証、Backupファイル存在検証、SHA-256検証、`previous/` と `next/` 作成、現行データ退避、展開、展開後JSON検証、atomic rename、成功応答の順に固定して実装する。
+- Restore で生成できる directory を `storage.basePath/backups/restore-staging/{restoreId}/previous/` と `storage.basePath/backups/restore-staging/{restoreId}/next/` のみに限定する。
+- Restore で変更できる対象を復旧対象 Project の `files.json`、`contents/`、restore staging、必要な error log のみに限定する。
 - Backup復旧途中失敗時は可能な限り退避領域から復元し、復元失敗時は `ERR_BACKUP_RESTORE_FAILED` を返す。
 - バックアップ保存先を `storage.basePath/backups/` に固定する。
 - バックアップファイル名を `backup-{backupId}.tar.gz` に固定する。
@@ -583,7 +885,7 @@
 - atomic rename 後に履歴保存へ失敗した場合は、作成済みtar.gzを削除する。
 - 作成済みtar.gzの削除に失敗した場合でも、バックアップ作成APIは成功レスポンスを返さない。
 - バックアップ保存先を別障害領域へ複製する作業をASB外の運用責務として扱う。
-- 外部ストレージ連携を Rev.77 時点では実装対象外として扱う。
+- 外部ストレージ連携を Rev.88 時点では実装対象外として扱う。
 - Backup復旧前退避先を `storage.basePath/backups/restore-staging/{restoreId}/previous/` に固定する。
 - Backup復旧用展開先を `storage.basePath/backups/restore-staging/{restoreId}/next/` に固定する。
 - Backup履歴の `status` が `completed` でない場合は復旧を拒否する。
@@ -594,6 +896,7 @@
 - 復旧処理では `files.json` と `contents/` のみを置換し、Project定義、Domain定義、SSL証明書、ACME状態、Webhook履歴、ログを置換しない。
 - `restore-staging/{restoreId}/` 削除失敗は WARN ログに記録する。
 - 開発リポジトリ内にバックアップ、一時tar、checksum、復旧用一時ファイル、退避データ、展開データを作成しない。
+- Backup / Restore の整合性検証が不整合を自動修復しないことを保証する。
 - `internal/data/backup_test.go` を作成する。
 
 ### 完了条件
@@ -626,7 +929,13 @@
 - エラーログを `storage.basePath/logs/error.log` に保存する。
 - アクセスログとエラーログを UTF-8 JSON Lines で出力する。
 - アクセスログの固定フィールドと順序を実装する。
+- アクセスログの `remoteAddr` は `Request.RemoteAddr` 由来に固定する。
+- `Request.RemoteAddr` が `ip:port` の場合は IP 部分のみを `remoteAddr` に記録する。
+- `Request.RemoteAddr` が port なし、Unix socket 表記、parse不能の場合は元の文字列を記録し、空文字の場合は `unknown` を記録する。
+- `X-Forwarded-For`、`X-Real-IP`、`Forwarded`、CDN由来 header でアクセスログの `remoteAddr` を上書きしない。
 - エラーログの固定フィールドと順序を実装する。
+- エラーログの field 順序を `timestamp`、`requestId`、`level`、`code`、`message`、`operation` に固定する。
+- ログ出力で管理者パスワード、webhook secret、private key、ACME token、request body、TLS秘密鍵内容、環境変数、内部ファイルパス、stack trace を出力しない。
 - `requestId` をリクエスト受信時に生成し、`X-Request-Id`、アクセスログ、エラーログへ同一値で引き回す。
 - `log.level` による DEBUG、INFO、WARN、ERROR の出力条件を実装する。
 - 通常運用ログを stdout へ出力しない。
@@ -643,11 +952,15 @@
 - LogService は既存ログファイルへの追記と既存ログファイルの rotation のみを実行する。
 - ログAPI、監視API、静的配信、File API、Domain API、SSL状態確認API、Backup一覧APIではログファイルを初回作成しない。
 - `access.log` または `error.log` が存在しない状態でログ書き込みが必要になった場合、ログファイルを作成せず `ERR_LOG_WRITE_FAILED` を返す。
+- Log rotation は既存の `access.log` または `error.log` を `access.log.{unixTime}` または `error.log.{unixTime}` へ rename し、新しい現行ログファイルを作成する場合に限り許可する。
+- rotation 失敗時に補助ログ、rotation state、index、cache、queue、一時ディレクトリを作成しない。
+- ログ読み取り、ログ検証、監視、Health Check を理由にログファイルを作成、修復、切り詰め、退避、再生成しない。
 - ログファイル破損を検出して切り詰め、上書き、削除、退避、再作成しない。
 - 開発リポジトリ内にログ、一時ログ、ローテーション済みログ、ログ検証結果を作成しない。
 - アクセスログ書き込みはレスポンスステータス確定後、レスポンス送信前に実行する。
 - 成功レスポンス送信前にアクセスログ書き込みまたはローテーションへ失敗した場合は `500 Internal Server Error` と `ERR_LOG_WRITE_FAILED` を返す。
 - エラーレスポンス生成中の error log 書き込み失敗時は、内部パスや詳細原因をレスポンス本文に含めない。
+- エラーレスポンス生成中の error log 書き込み失敗時も代替ログ、panic dump、cache、一時ファイルを生成しない。
 - アクセスログ API `GET /api/logs/access` を実装する。
 - エラーログ API `GET /api/logs/error` を実装する。
 - ログ API は現行 `access.log` / `error.log` のみを新しい順に返す。
@@ -683,9 +996,11 @@
 ### 完了条件
 
 - アクセスログとエラーログのJSON Linesフィールド、フィールド順、requestId一致、stdout非出力、stderr起動失敗出力、ローテーションのテストが成功する。
+- ログに secret、request body、内部ファイルパス、stack trace が出力されないテストが成功する。
 - ログファイル欠落時に初回作成せず、`ERR_LOG_WRITE_FAILED` または `ERR_LOG_READ_FAILED` になるテストが成功する。
 - ローテーション後の新現行ログ作成失敗時に復旧を1回だけ試行し、成功レスポンスを返さないテストが成功する。
 - ログ API の新しい順、壊れたJSON行検出、現行ログのみ対象のテストが成功する。
+- アクセスログの `remoteAddr` が `Request.RemoteAddr` 由来であり、proxy header で上書きされないテストが成功する。
 - Monitoring API の認証必須、body拒否、成功レスポンスキー、型、単位、丸め、`checkedAt` のテストが成功する。
 - Monitoring API の取得不可項目 `null` と `200 OK` のテストが成功する。
 - Monitoring API の `connections` と `requests` が in-memory counter であり、ファイル永続化せず、プロセス再起動で初期化されるテストが成功する。
@@ -717,6 +1032,7 @@
 - 起動時の自動マイグレーションを禁止する。
 - `asb migrate --storage /var/asb --from-schema 0 --to-schema 1 --dry-run` を実装する。
 - `asb migrate --storage /var/asb --from-schema 0 --to-schema 1 --apply` を実装する。
+- `asb migrate` は `--storage`、`--from-schema`、`--to-schema`、`--dry-run` または `--apply` の CLI 契約に従い、未定義 option、不足 option、型不正を exit code `2` とする。
 - `--dry-run` と `--apply` の同時指定を拒否する。
 - `--dry-run` では実行時 JSON ファイルを変更しない。
 - `--dry-run` では `config/migrations.json` を作成、更新、削除しない。
@@ -736,6 +1052,7 @@
 - `schemaVersion` なしを `0` として扱うテストが成功する。
 - 未対応 `schemaVersion` の起動失敗テストが成功する。
 - `--dry-run` が実行時 JSON ファイルを変更しないテストが成功する。
+- `asb migrate` の CLI option 不正が exit code `2` と `ASB_CLI_ERROR` になるテストが成功する。
 - `--apply` が対象 JSON ファイルを atomic rename で更新するテストが成功する。
 - `config/migrations.json` が ASB の全実行境界で初回作成されないテストが成功する。
 - `config/migrations.json` が存在しない状態で `asb migrate --apply` が失敗するテストが成功する。
@@ -759,10 +1076,17 @@
 ### 実装タスク
 
 - 安定版リリース判定基準を実装手順として固定する。
+- 開発版 `v0.N` を GitHub Releases の配布タグとして使用しない。
+- 安定版 `vX.Y` の `Y` が切り出し元の開発版 `v0.Y` と一致することを確認する。
 - GitHub Releases を標準配布先として扱う。
 - GitHub Releases 以外の配布元を標準配布元として扱わない。
 - リリースタグを安定版バージョンと同一文字列にする。
+- `latest`、`stable`、`nightly`、branch名、commit hash、日付文字列を release tag として扱わない。
 - `asb-linux-amd64-vX.Y`、`asb-linux-arm64-vX.Y`、`checksums.txt` を標準配布成果物として生成する。
+- release artifact は ASB 本体単一バイナリ2件と `checksums.txt` のみに限定する。
+- ASB 本体 release artifact に `config.json`、runtime JSON、空状態 JSON、ログファイル、証明書ファイル、systemd 実行時状態、Web UI artifact、SDK artifact、`.gitignore` を同梱しない。
+- GitHub Releases に runtime state、起動設定、runtime JSON、ログ、証明書、ACME token、Webhook secret、管理者パスワード、backup archive、migration 作業ファイルを含めない。
+- GitHub 自動生成 source archive を ASB の運用入力、install/update 入力、runtime 初期化入力として扱わない。
 - `checksums.txt` のSHA-256形式と配布ファイル名一致を検証する。
 - `checksums.txt` は小文字16進64文字のSHA-256、半角スペース2文字、ファイル名、改行の形式に固定する。
 - `checksums.txt` に空行、コメント行、相対path、絶対path、URL、glob、タブ区切り、CRLF、未配布ファイル名がある場合は失敗する。
@@ -777,26 +1101,39 @@
 - install/update は `sha256sum` または `shasum -a 256` が存在しない場合に失敗する。
 - install/update は検証完了前に root 権限が必要な配置、停止、置換、systemd 操作を行わない。
 - install/update は `curl` 失敗時に `wget` へ暗黙 fallback しない。
+- `install.sh` と `update.sh` は runtime 初期化、設定生成、証明書生成、ログ生成、空状態 JSON 生成を行わない。
 - `install.sh` は既存 `/usr/local/bin/asb`、既存 `/etc/systemd/system/asb.service`、既存 `asb` service が存在する場合に上書きせず失敗する。
+- `install.sh` が新規配置できる対象を `/usr/local/bin/asb`、`/etc/systemd/system/asb.service`、必要な `asb` system user / group のみに限定する。
 - `install.sh` は checksum 検証、`--version` 出力確認、配置、`asb.service` 配置、`daemon-reload`、`enable`、`start` の順に実装する。
 - `install.sh` / `update.sh` が配置する `/usr/local/bin/asb` と `/usr/local/bin/asb.previous` の owner、group、mode を仕様通り固定する。
 - `update.sh` は checksum 検証と `--version` 出力確認が完了するまで、既存サービス停止、既存バイナリ退避、バイナリ置換を実行しない。
 - `update.sh` は `/usr/local/bin/asb` 不在、または `/usr/local/bin/asb.previous` 既存の場合に失敗する。
+- `update.sh` が変更できる対象を `/usr/local/bin/asb`、`/usr/local/bin/asb.previous`、`/etc/systemd/system/asb.service` のみに限定する。
+- `update.sh` は install へ fallback せず、`install.sh` は update へ fallback しない。
 - `update.sh` は既存 `/usr/local/bin/asb` を `/usr/local/bin/asb.previous` へ rename し、新バイナリ配置、`systemctl start asb`、`systemctl is-active --quiet asb` を実行する。
 - `update.sh` の起動失敗時に `/usr/local/bin/asb.previous` から rename による復旧を1回だけ試行する。
+- rollback は `/usr/local/bin/asb.previous` を `/usr/local/bin/asb` へ戻す1回の rename と service 起動確認に限定する。
+- rollback 失敗時に追加退避ファイル、rollback state file、復旧ログ、cache、queue を作成しない。
 - `update.sh` は復旧に成功した場合でも終了コード `1` で失敗する。
 - install/update は `/etc/asb/config.json`、`storage.basePath`、runtime JSON、静的コンテンツ、証明書、ログを自動生成または変更しない。
 - `asb.service` を `/etc/systemd/system/asb.service` 向けの固定仕様で提供する。
 - `asb.service` の owner、group、mode と、`asb` system user のログイン不可・homeなし作成を実装する。
 - `asb.service` の `ExecStart=/usr/local/bin/asb --config /etc/asb/config.json`、`Restart=on-failure`、`NoNewPrivileges=true`、`PrivateTmp=true`、`ProtectSystem=full`、`ProtectHome=true` を実装する。
+- `/etc/asb/config.json`、`storage.basePath` 配下の必須 directory、runtime JSON 空状態、`logs/access.log`、`logs/error.log`、管理 HTTPS API 用 TLS 証明書ファイルと秘密鍵ファイルの初期配置を運用者事前責務として扱う。
+- reverse proxy、firewall、VPN、SSH tunnel、IP制限、DNS設定、service manager の環境設定を ASB 外部の運用者責務として扱う。
 - install/update は `.gitignore`、`go.mod`、`deno.json`、`package.json`、lock file、cache directory、log file を開発リポジトリ内に作成しない。
+- 配布・運用境界を理由に、開発リポジトリ内へ release artifact、download 済み asset、checksum 作業ファイル、install/update log、runtime state、cache、一時ファイル、`.gitignore` を生成しない。
 
 ### 完了条件
 
 - Linux amd64 と Linux arm64 のビルドが成功する。
+- release tag が安定版 `vX.Y` のみで、`latest`、`stable`、`nightly`、branch名、commit hash、日付文字列を拒否するテストが成功する。
 - 配布成果物名と `checksums.txt` の整合テストが成功する。
+- release artifact に runtime state、起動設定、runtime JSON、ログ、証明書、secret、backup archive、migration 作業ファイル、Web UI artifact、SDK artifact、`.gitignore` が含まれないテストが成功する。
 - install/update の正常系、失敗系、`latest` 拒否、`v0.N` 拒否、`--version` 不一致、checksum不一致、既存ファイル拒否、復旧処理のテストが成功する。
 - install/update が `/etc/asb/config.json`、runtime JSON、静的コンテンツ、証明書、ログを自動生成または変更しないテストが成功する。
+- install/update が runtime 初期化、設定生成、証明書生成、ログ生成、空状態 JSON 生成を行わないテストが成功する。
+- rollback が1回の rename と service 起動確認に限定され、追加退避ファイル、rollback state file、復旧ログ、cache、queue を作成しないテストが成功する。
 - `asb.service` の unit 内容、owner、group、mode、`systemctl daemon-reload`、`systemctl is-active --quiet asb` のテストが成功する。
 - ビルド成果物が開発リポジトリに残っていない。
 - `go test ./...` が成功する。
@@ -833,7 +1170,7 @@
 - ASB SDK の Go 実装を `sdk/go/` 配下に配置し、package 名を `asb` とする。
 - ASB SDK の Go 実装で `go.mod` を作成する場合、module path を `github.com/fqwink/Adlaire-Static-Base/sdk/go` に固定する。
 - ASB SDK の Go 実装の tag を ASB 本体の安定版リリースタグと同一にする。
-- ASB SDK の Go 実装を Rev.77 時点では外部配布サービスへ登録しない。
+- ASB SDK の Go 実装を Rev.88 時点では外部配布サービスへ登録しない。
 - ASB SDK の Go 実装は `net/http`、`net/url`、`encoding/json`、`context`、`time`、`mime/multipart` を中心に Go標準ライブラリで実装する。
 - ASB SDK の Go 実装は ASB 本体の `internal/` package を import しない。
 - ASB SDK の Go 実装は外部HTTP client library、外部JSON library、generated client を前提にしない。
@@ -979,20 +1316,20 @@
 
 優先度: 低
 
-目的: Rev.77 時点で実装対象外の機能が混入していないことを確認する。
+目的: Rev.88 時点で実装対象外の機能が混入していないことを確認する。
 
 ### 実装タスク
 
-- 未昇格のASB互換目標を将来の到達目標として扱い、Rev.77 時点の実装対象として扱わない。
+- 未昇格のASB互換目標を将来の到達目標として扱い、Rev.88 時点の実装対象として扱わない。
 - `internal/asb_forbidden_test.go` を作成する。
 - XServer Static互換機能セットの実装対象が、静的配信、独自ドメイン、無料独自SSL、GitHub Webhookデプロイ、HTTPS JSON APIによるファイル管理、ログ・状態確認、バックアップ・復旧に限定されていることを確認する。
 - XServer Static互換機能セットを理由に、XServer Static完全互換、管理画面再現、内部実装再現、DNS管理、DNS provider API、DNS-01、wildcard、複数CA、CDN完全互換、課金・契約・アカウント管理を追加しない。
 - ASB互換目標に含まれることを、未昇格機能の実装根拠として扱わない。
 - ASB互換目標を理由に `.gitignore`、外部DB、未承認外部ライブラリ、未承認外部サービス連携、開発リポジトリ内実行時データ、起動時自動生成、ビルド成果物自動生成を追加しない。
 - ASB互換目標を理由に APIキー管理、複数ユーザー管理、Rate limiting、Brotli圧縮、HTTP/2、CA選定、SDK専用通信を実装しない。
-- HTTP/2 が暗黙的に有効化されないよう、Rev.77 の実装では `http.Server.TLSNextProto` を空 map に設定する。
+- HTTP/2 が暗黙的に有効化されないよう、Rev.88 の実装では `http.Server.TLSNextProto` を空 map に設定する。
 - HTTP/2 専用設定項目、h2c、ALPN独自制御、server push、stream priority、専用handler、専用middleware、専用ログ項目を実装しない。
-- 将来計画、保留事項、検討・調査中事項を Rev.77 時点の実装対象として扱わない。
+- 将来計画、保留事項、検討・調査中事項を Rev.88 時点の実装対象として扱わない。
 - GUIという曖昧カテゴリ、ASB本体へのWeb UI内包、デスクトップアプリ、モバイルアプリ、複数ユーザー管理、ユーザー別権限管理、マルチテナント、課金管理、契約管理、複数インスタンス管理、クラスタ管理、分散ロック、NFS専用連携、分散ストレージ専用連携、外部ストレージサービス連携、ログファイル暗号化、HTTP/2実装詳細、FTP、FTPS、SFTPをASB本体に実装しない。
 - 将来計画機能または転送プロトコル互換を理由に ASB本体内包Web UI用API、モバイル専用API、テナント用API、課金用API、契約用API、外部ストレージ用API、ログ暗号化用API、FTP / FTPS / SFTP 用 APIを追加しない。
 - 将来計画機能または転送プロトコル互換を理由に `ui.*`、`webui.*`、`desktop.*`、`mobile.*`、`tenant.*`、`billing.*`、`nfs.*`、`cluster.*`、`distributedStorage.*`、`externalStorage.*`、`logEncryption.*`、`ftp.*`、`ftps.*`、`sftp.*` 設定項目を追加しない。
@@ -1010,7 +1347,7 @@
 - Auteur リポジトリ `https://github.com/fqwink/Auteur` の `Auteur_Master_Specification.md` は仕様移管元としてのみ扱い、source code、runtime、CLI、fixture、test、CI、release automation、package、lock file、設定ファイル、生成物を ASB へ移管しない。
 - Auteur リポジトリ内の `.gitignore`、`deno.json`、TypeScript 実装、fixture、test が ASB の仕様、実装、生成物、依存関係、開発手順としてコピーされていないことを確認する。
 - `auteur.config.json`、`.auteur/`、`auteur-project/`、`src/pages/**/*.astro`、`src/pages/api/**/*.go`、`ui/`、`content/`、`dist/`、`.env`、`deno.json`、`deno.lock`、`AUTEUR_*` error code、Auteur 固有 hydration directive、Auteur 固有 component syntax が ASB の有効仕様として追加されていないことを確認する。
-- Content Pipeline、Site Routing、Site Rendering、Site Output、Blog、Docs、Sitemap、Ad Slot、Asset Pipeline、Source Sync、External Data Integration、Runtime Cache、Database Gateway、Database Adapter が Rev.77 時点の実装対象へ昇格していないことを確認する。
+- Content Pipeline、Site Routing、Site Rendering、Site Output、Blog、Docs、Sitemap、Ad Slot、Asset Pipeline、Source Sync、External Data Integration、Runtime Cache、Database Gateway、Database Adapter が Rev.88 時点の実装対象へ昇格していないことを確認する。
 - 管理 API が `Authorization` ヘッダーまたは `X-API-Key` ヘッダーの有無でレスポンスを変えないことをテストする。
 - APIキー、複数ユーザー、ロール、セッションを表す JSON ファイルまたはディレクトリを生成しないことをテストする。
 - 起動設定ファイル `config.json` に認証関連フィールドが存在する場合に未知フィールドとして起動失敗することをテストする。
@@ -1110,7 +1447,7 @@
 
 ## 18. 実装フェーズ外の昇格待ちタスク
 
-以下は Rev.77 時点では実装フェーズに含めない。
+以下は Rev.88 時点では実装フェーズに含めない。
 
 - SDK認証拡張を実装対象へ昇格する場合の認証方式、対象SDK実装、ASB管理APIとの関係、単一システム管理者認証との併存または置換、APIキー管理、複数ユーザー化、保存JSON、公開API、Web UI、監査ログ、migration、downgrade、テスト条件を仕様改訂で確定する。
 - 移管元由来の Content Pipeline を実装対象へ昇格する場合は、`.md`、`.mdx`、`.json`、JSON Front Matter、metadata 型、slug 重複、draft、未来日付、unsafe HTML、script tag、link URL scheme、parser / sanitizer 採否、保存JSON、cache、Site Output との責務境界、migration、downgrade、テスト条件を仕様改訂で確定する。
