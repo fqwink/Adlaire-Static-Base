@@ -6,7 +6,7 @@
 
 本ファイルは、`ASB-spec.md` に基づいて実装タスクを管理する。
 
-参照仕様バージョン: `ASB-spec.md Rev.49`
+参照仕様バージョン: `ASB-spec.md Rev.50`
 
 `ASB-spec.md` で仕様確定済みの事項のみを実装タスクとして扱う。
 
@@ -46,7 +46,7 @@
 | 中 | P7 | v0.8 | ログ・監視 | 未着手 |
 | 中 | P8 | v0.9 | マイグレーション | 未着手 |
 | 低 | P9 | v0.10 | 配布・install/update | 未着手 |
-| 低 | P10 | v0.11 | ブラウザ専用 JavaScript SDK | 未着手 |
+| 低 | P10 | v0.11 | ASB SDK | 未着手 |
 | 低 | P11 | v0.12 | ASB Web UI | 未着手 |
 | 低 | P12 | v0.13 | 禁止機能・非実装確認 | 未着手 |
 
@@ -145,7 +145,7 @@
 - `204 No Content` を使用しない。
 - 配列レスポンスは対象データが空でも空配列を返す。
 - URL パラメータ `:id`、`:domain`、`:name` の URL decode、正規化、バリデーションを実装する。
-- `:id` は Rev.49 の UUID 正規表現に一致する値のみ許可する。
+- `:id` は Rev.50 の UUID 正規表現に一致する値のみ許可する。
 - `:domain` は小文字正規化後、label数、全体長、label正規表現、末尾 `.` 除去を仕様通り検証する。
 - `:name` は長さ、NUL、パス区切り、`.`、`..`、先頭 `.`、空白のみを仕様通り拒否する。
 - JSON ファイル更新時の読み込み検証、保存前再検証、同一ファイル排他書き込みを実装する。
@@ -161,9 +161,9 @@
 - 複数JSON更新の途中失敗時に更新済みJSON名、未更新JSON名、操作名、requestId をエラーログへ記録する。
 - 複数ファイル更新の途中失敗時に、更新予定JSON、更新済みJSON、`files.json` path、実ファイル、`projects.used` の整合性検証を実装する。
 - 整合性検証失敗時は `ERR_STORAGE_VALIDATION_FAILED` を error log へ記録する。
-- Rev.49 時点では複数JSON更新に外部トランザクション機構を導入しない。
-- Rev.49 時点の API エンドポイント固定表に記載されたメソッド、パス、成功ステータス、失敗コードを実装する。
-- Rev.49 API 成功レスポンス固定表に記載された JSON キーと型を実装する。
+- Rev.50 時点では複数JSON更新に外部トランザクション機構を導入しない。
+- Rev.50 時点の API エンドポイント固定表に記載されたメソッド、パス、成功ステータス、失敗コードを実装する。
+- Rev.50 API 成功レスポンス固定表に記載された JSON キーと型を実装する。
 - プロジェクト作成 API `POST /api/projects` を実装する。
 - プロジェクト一覧 API `GET /api/projects` を実装する。
 - プロジェクト削除 API `DELETE /api/projects/:id` を実装する。
@@ -245,7 +245,7 @@
 - `Last-Modified` を HTTP-date 形式で返す。
 - `Cache-Control` を既定で `public, max-age=60` とする。
 - `If-None-Match` と `If-Modified-Since` による `304 Not Modified` を実装する。
-- Range request は Rev.49 時点では実装せず、`Range` ヘッダーを無視して `206 Partial Content` を返さない。
+- Range request は Rev.50 時点では実装せず、`Range` ヘッダーを無視して `206 Partial Content` を返さない。
 - `Accept-Encoding: br` では Brotli 応答を返さない。
 - Brotli 用の `.br`、キャッシュ、一時ファイル、メタデータを開発リポジトリ内にも `storage.basePath` 配下にも生成しない。
 - 静的配信でディレクトリ一覧を返さない。
@@ -455,7 +455,7 @@
 - バックアップ作成用一時tarを `storage.basePath/backups/.tmp/` 配下に限定する。
 - atomic rename 後に履歴保存へ失敗した場合は、作成済みtar.gzを削除する。
 - バックアップ保存先を別障害領域へ複製する作業をASB外の運用責務として扱う。
-- 外部ストレージ連携を Rev.49 時点では実装対象外として扱う。
+- 外部ストレージ連携を Rev.50 時点では実装対象外として扱う。
 - Backup復旧前退避先を `storage.basePath/backups/restore-staging/{restoreId}/previous/` に固定する。
 - Backup復旧用展開先を `storage.basePath/backups/restore-staging/{restoreId}/next/` に固定する。
 - Backup履歴の `status` が `completed` でない場合は復旧を拒否する。
@@ -626,39 +626,46 @@
 - Pull Request merge
 - GitHub リポジトリ設定変更
 
-## 13. P10 / v0.11 / ブラウザ専用 JavaScript SDK
+## 13. P10 / v0.11 / ASB SDK
 
 優先度: 低
 
-目的: ASB Web UI から ASB 管理 HTTPS JSON API を呼び出すための、ブラウザ専用 JavaScript SDK を実装する。
+目的: ASB 管理 HTTPS JSON API を呼び出すための、Browser JavaScript SDK、Deno専用 TypeScript SDK、Go SDK を実装する。
 
 ### 実装タスク
 
-- ASB SDK をブラウザ専用 JavaScript SDK として実装する。
-- SDK 標準ファイルを `asb-sdk.js` として実装する。
-- SDK をブラウザ標準 ES module として読み込める形式にする。
-- SDK は package 名を持たない構成にする。
-- ASB SDK は ASB Web UI から使用する通信層に限定する。
-- ASB SDK は ASB 管理 HTTPS JSON API の method、path、query parameter、path parameter、request JSON、multipart upload、success response JSON、error response JSON、HTTP status code、error code、pagination、UTC RFC3339 timestamp を扱う。
-- ASB SDK は Web 標準 API の `fetch`、`URL`、`URLSearchParams`、`Headers`、`FormData`、`Blob`、`AbortController`、`Promise` の範囲で実装する。
-- SDK API は `baseUrl`、timeout、request cancellation、JSON request、JSON response、multipart upload、error response の扱いを提供する。
-- SDK の timeout は `AbortController` で実装する。
-- SDK の自動 retry 回数は `0` とし、失敗した HTTP request を自動再送しない。
-- ASB SDK は ASB 本体の内部 JSON、Service、Repository、Storage を直接参照または呼び出さない。
-- Node.js 実行環境、npm 配布、package manager、bundler、transpiler、generated client、外部ライブラリを前提にしない。
+- Browser JavaScript SDK をブラウザ専用 JavaScript SDK として実装する。
+- Browser JavaScript SDK の標準ファイルを `asb-sdk.js` として実装する。
+- Browser JavaScript SDK をブラウザ標準 ES module として読み込める形式にする。
+- Browser JavaScript SDK は package 名を持たない構成にする。
+- Browser JavaScript SDK は Web 標準 API の `fetch`、`URL`、`URLSearchParams`、`Headers`、`FormData`、`Blob`、`AbortController`、`Promise` の範囲で実装する。
+- TypeScript SDK を Deno 専用ランタイムの TypeScript module として実装する。
+- TypeScript SDK の標準ファイルを `asb-sdk.ts` として実装する。
+- TypeScript SDK は Deno runtime API と Web 標準 API の範囲で実装する。
+- TypeScript SDK は Node.js、npm、package manager、`package.json`、`node_modules/`、`deno.json`、`deno.lock`、bundler、transpiler、generated client、外部ライブラリを前提にしない。
+- Go SDK を Go 1.21 以上の ASB 管理 HTTPS JSON API クライアントとして実装する。
+- Go SDK は `net/http`、`net/url`、`encoding/json`、`context`、`time`、`mime/multipart` を中心に Go標準ライブラリで実装する。
+- Go SDK は ASB 本体の `internal/` package を import しない。
+- Go SDK は外部HTTP client library、外部JSON library、generated client を前提にしない。
+- すべての ASB SDK は ASB 管理 HTTPS JSON API の method、path、query parameter、path parameter、request JSON、multipart upload、success response JSON、error response JSON、HTTP status code、error code、pagination、UTC RFC3339 timestamp を扱う。
+- すべての ASB SDK は `baseUrl`、timeout、request cancellation、JSON request、JSON response、multipart upload、error response の扱いを提供する。
+- すべての ASB SDK の自動 retry 回数は `0` とし、失敗した HTTP request を自動再送しない。
+- すべての ASB SDK は ASB 本体の内部 JSON、Service、Repository、Storage を直接参照または呼び出さない。
 - SDK 専用 HTTPS API、SDK 専用 URL prefix、SDK 専用 request body、SDK 専用 response body、SDK 専用 error format、SDK 専用 pagination、SDK 専用 upload protocol を作らない。
 - SDK 専用 session、token、cookie、handshake、protocol negotiation、version negotiation を作らない。
 - SDK 専用 JSON ファイル、SDK 専用ディレクトリ、SDK 専用設定項目、SDK 専用実行時データを作らない。
-- ブラウザストレージ、cookie、Service Worker、Cache Storage、IndexedDB を SDK 通信用の永続状態として使用しない。
-- `package.json`、`node_modules/`、`dist/`、`build/` を SDK 実装理由で追加しない。
+- Browser JavaScript SDK はブラウザストレージ、cookie、Service Worker、Cache Storage、IndexedDB を SDK 通信用の永続状態として使用しない。
+- `package.json`、`node_modules/`、`deno.json`、`deno.lock`、`dist/`、`build/` を SDK 実装理由で追加しない。
 - SDK のユニットテストまたはレビューで、Node.js、npm、bundler、外部ライブラリへの依存がないことを確認する。
 
 ### 完了条件
 
-- ASB Web UI が使用できるブラウザ専用 JavaScript SDK の通信層が実装されている。
-- SDK が ASB 管理 HTTPS JSON API と同一規格で通信する。
+- Browser JavaScript SDK、Deno専用 TypeScript SDK、Go SDK が実装されている。
+- すべての SDK が ASB 管理 HTTPS JSON API と同一規格で通信する。
 - SDK 専用 API、SDK 専用保存データ、SDK 専用実行時データが存在しない。
-- Node.js、npm、bundler、外部ライブラリを前提にしていない。
+- Browser JavaScript SDK と TypeScript SDK が Node.js、npm、package manager、bundler、外部ライブラリを前提にしていない。
+- TypeScript SDK が Deno 専用である。
+- Go SDK が ASB 本体の `internal/` package を import していない。
 - `.gitignore` が存在しない。
 - 開発リポジトリ内に実行時データ、ログ、一時ファイル、ビルド成果物が残っていない。
 - `go test ./...` が成功する。
@@ -668,7 +675,7 @@
 - ASB Web UI 本体の実装
 - Node.js 対応
 - npm 配布
-- TypeScript 化
+- Deno 以外の TypeScript runtime 対応
 - bundler 前提の配布
 - SDK 認証仕様
 - デスクトップアプリ向け SDK 対応
@@ -720,7 +727,7 @@
 - Web UI 専用実行時データ
 - Node.js 対応
 - npm 配布
-- TypeScript 化
+- ASB Web UI 本体を TypeScript で実装すること
 - bundler 前提の配布
 - 外部フレームワーク採用
 - 外部ライブラリ採用
@@ -730,18 +737,18 @@
 
 優先度: 低
 
-目的: Rev.49 時点で実装対象外の機能が混入していないことを確認する。
+目的: Rev.50 時点で実装対象外の機能が混入していないことを確認する。
 
 ### 実装タスク
 
-- 未確定のASB互換目標を将来の到達目標として扱い、Rev.49 時点の実装対象として扱わない。
+- 未確定のASB互換目標を将来の到達目標として扱い、Rev.50 時点の実装対象として扱わない。
 - `internal/asb_forbidden_test.go` を作成する。
 - XServer Static互換機能セットの実装対象が、静的配信、独自ドメイン、無料独自SSL、GitHub Webhookデプロイ、HTTPS JSON APIによるファイル管理、ログ・状態確認、バックアップ・復旧に限定されていることを確認する。
 - XServer Static互換機能セットを理由に、XServer Static完全互換、管理画面再現、内部実装再現、DNS管理、DNS provider API、DNS-01、wildcard、複数CA、CDN完全互換、課金・契約・アカウント管理、クラウドサービス化、ウイルススキャンを追加しない。
 - ASB互換目標に含まれることを、未確定機能の実装根拠として扱わない。
 - ASB互換目標を理由に `.gitignore`、外部DB、未承認外部ライブラリ、未承認外部サービス連携、開発リポジトリ内実行時データ、起動時自動生成、ビルド成果物自動生成を追加しない。
 - ASB互換目標を理由に APIキー管理、ユーザー認証、Rate limiting、Brotli圧縮、CA選定、SDK専用通信を実装しない。
-- 将来計画、保留事項、検討・調査中事項を Rev.49 時点の実装対象として扱わない。
+- 将来計画、保留事項、検討・調査中事項を Rev.50 時点の実装対象として扱わない。
 - GUIという曖昧カテゴリ、ASB本体へのWeb UI内包、デスクトップアプリ、モバイルアプリ、ユーザー管理、マルチテナント、課金管理、契約管理、複数インスタンス管理、クラスタ管理、分散ロック、NFS専用連携、分散ストレージ専用連携、外部ストレージサービス連携、ログファイル暗号化、HTTP/2実装詳細、FTP、FTPS、SFTPをASB本体に実装しない。
 - 将来計画機能または転送プロトコル互換を理由に ASB本体内包Web UI用API、モバイル専用API、テナント用API、課金用API、契約用API、外部ストレージ用API、ログ暗号化用API、FTP / FTPS / SFTP 用 APIを追加しない。
 - 将来計画機能または転送プロトコル互換を理由に `ui.*`、`webui.*`、`desktop.*`、`mobile.*`、`tenant.*`、`billing.*`、`nfs.*`、`cluster.*`、`distributedStorage.*`、`externalStorage.*`、`logEncryption.*`、`ftp.*`、`ftps.*`、`sftp.*` 設定項目を追加しない。
@@ -783,7 +790,7 @@
 
 ## 17. 実装フェーズ外の仕様未確定タスク
 
-以下は Rev.49 時点では実装フェーズに含めない。
+以下は Rev.50 時点では実装フェーズに含めない。
 
 - ASB SDK の認証仕様、デスクトップアプリ向け利用、モバイルアプリ向け利用を確定する。
 - ASB Web UI のリポジトリ境界、配布方式、認証方針を確定する。
