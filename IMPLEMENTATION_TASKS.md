@@ -6,7 +6,7 @@
 
 本ファイルは、`ASB-spec.md` に基づいて実装タスクを管理する。
 
-参照仕様バージョン: `ASB-spec.md Rev.78`
+参照仕様バージョン: `ASB-spec.md Rev.79`
 
 `ASB-spec.md` で仕様確定済みの事項のみを実装タスクとして扱う。
 
@@ -51,7 +51,7 @@
 | 低 | P12 | v0.13 | 禁止機能・非実装確認 | 未着手 |
 | 高 | P13 | v0.14 | 単一システム管理者認証 | 未着手 |
 
-### 2.1 Rev.78 共通完了ゲート
+### 2.1 Rev.79 共通完了ゲート
 
 各フェーズは、個別完了条件に加えて以下を満たすまで完了扱いにしない。
 
@@ -211,11 +211,11 @@
 - 複数JSON更新の途中失敗時に更新済みJSON名、未更新JSON名、操作名、requestId をエラーログへ記録する。
 - 複数ファイル更新の途中失敗時に、更新予定JSON、更新済みJSON、`files.json` path、実ファイル、`projects.used` の整合性検証を実装する。
 - 整合性検証失敗時は `ERR_STORAGE_VALIDATION_FAILED` を error log へ記録する。
-- Rev.78 時点では複数JSON更新に外部トランザクション機構を導入しない。
-- Rev.78 時点の API エンドポイント固定表に記載されたメソッド、パス、成功ステータス、失敗コードを実装する。
-- Rev.78 API 成功レスポンス固定表に記載された JSON キーと型を実装する。
-- Rev.78 API 個別実装契約に記載された request schema、保存先、更新順序、audit 対象を実装する。
-- Rev.78 API 別失敗条件固定表に記載された失敗条件、HTTP status、error code を実装する。
+- Rev.79 時点では複数JSON更新に外部トランザクション機構を導入しない。
+- Rev.79 時点の API エンドポイント固定表に記載されたメソッド、パス、成功ステータス、失敗コードを実装する。
+- Rev.79 API 成功レスポンス固定表に記載された JSON キーと型を実装する。
+- Rev.79 API 個別実装契約に記載された request schema、保存先、更新順序、audit 対象を実装する。
+- Rev.79 API 別失敗条件固定表に記載された失敗条件、HTTP status、error code を実装する。
 - HTTP status / error code 選択優先順位を共通 middleware または handler 境界で統一する。
 - 保存 JSON の field 固定表に従い、Project、Domain、File、Backup、WebhookEvent の型、必須、default、validation、object key 出力順序を実装する。
 - プロジェクト作成 API `POST /api/projects` を実装する。
@@ -310,6 +310,14 @@
 - 不整合検出時、整合性検証は自動修復しない。
 - 不整合検出時、File API の list、upload、overwrite、delete は成功レスポンスを返さない。
 - Host ヘッダーから Domain を解決する。
+- Host header は Domain 解決専用として扱い、管理 API 認証、Rate limiting、監視、SDK通信、保存JSON選択に使用しない。
+- Host header の port 除去、末尾 `.` 除去、小文字 ASCII 正規化、Domain validation 同等検証を実装する。
+- Host header の空文字、制御文字、空白、`/`、`\`、`@`、`#`、`?`、IPv6 literal、port 不正、複数 Host header を不正 Host として扱う。
+- 不正 Host、未割当 Host、Domain 不一致 Host は静的配信と ACME HTTP-01 challenge で `404 Not Found` とする。
+- `X-Forwarded-Host`、`Forwarded`、`X-Forwarded-For`、`X-Real-IP`、`CF-Connecting-IP`、`True-Client-IP`、その他 proxy / CDN 由来 header を Domain 解決に使用しない。
+- proxy header の存在だけを理由に request を拒否しない。
+- Webhook 受信では Host header を署名検証、対象 Project 判定、branch 判定、deploy source 判定に使用しない。
+- ACME HTTP-01 challenge では正規化後 Host を challenge 対象 Domain とし、`X-Forwarded-Host` を使用しない。
 - Domain から Project を解決する。
 - URL path を静的ファイルパスへ変換する。
 - `GET` と `HEAD` の静的配信を実装する。
@@ -331,7 +339,7 @@
 - `Cache-Control` を既定で `public, max-age=60` とする。
 - `If-None-Match` と `If-Modified-Since` による `304 Not Modified` を実装し、両方が存在する場合は `If-None-Match` を優先する。
 - `304 Not Modified` では `Content-Type`、`ETag`、`Last-Modified`、`Cache-Control` を返し、`Content-Encoding` を返さない。
-- Range request は Rev.78 時点では実装せず、`Range` ヘッダーを無視して `206 Partial Content` を返さない。
+- Range request は Rev.79 時点では実装せず、`Range` ヘッダーを無視して `206 Partial Content` を返さない。
 - `Accept-Encoding: br` では Brotli 応答を返さない。
 - Brotli 用の `.br`、キャッシュ、一時ファイル、メタデータを開発リポジトリ内にも `storage.basePath` 配下にも生成しない。
 - 静的配信でディレクトリ一覧を返さない。
@@ -344,6 +352,11 @@
 - upload API の Content-Type、file field欠落、file field複数、filename、path segment、未記録公開先ファイル拒否のテストが成功する。
 - `files.json` と `contents/` の不整合で File API が成功レスポンスを返さず、自動修復しないテストが成功する。
 - 静的配信の Host 解決、`GET`、`HEAD`、`405`、`index.html` 解決、path traversal 拒否、隠しセグメント拒否、Content-Type、ETag、Last-Modified、Cache-Control、304、Range無視、Gzip のテストが成功する。
+- 静的配信の Host 正規化、port 除去、末尾 dot 除去、小文字化、不正 Host、複数 Host header、IPv6 literal 非対応のテストが成功する。
+- `X-Forwarded-Host`、`Forwarded`、proxy / CDN 由来 header が Domain 解決へ影響しないテストが成功する。
+- Webhook 受信が Host header を対象 Project 判定、branch 判定、deploy source 判定に使用しないテストが成功する。
+- ACME HTTP-01 challenge が正規化後 Host のみを対象 Domain とし、`X-Forwarded-Host` を使用しないテストが成功する。
+- Host / proxy 境界を理由に proxy 設定JSON、trusted proxy JSON、client IP cache、forwarded header log、proxy状態ファイルが生成されないテストが成功する。
 - 静的配信が `files.json` 未記録ファイルを配信せず、記録済みファイル不整合を `500` とするテストが成功する。
 - `304 Not Modified` の `If-None-Match` 優先、`Content-Encoding` 不在、`HEAD` body不在、Gzip `Vary`、不正 q 値のテストが成功する。
 - Brotli 用外部ライブラリ、middleware、precompress、`.br`、キャッシュ、設定項目、メタデータを生成しないテストが成功する。
@@ -604,7 +617,7 @@
 - atomic rename 後に履歴保存へ失敗した場合は、作成済みtar.gzを削除する。
 - 作成済みtar.gzの削除に失敗した場合でも、バックアップ作成APIは成功レスポンスを返さない。
 - バックアップ保存先を別障害領域へ複製する作業をASB外の運用責務として扱う。
-- 外部ストレージ連携を Rev.78 時点では実装対象外として扱う。
+- 外部ストレージ連携を Rev.79 時点では実装対象外として扱う。
 - Backup復旧前退避先を `storage.basePath/backups/restore-staging/{restoreId}/previous/` に固定する。
 - Backup復旧用展開先を `storage.basePath/backups/restore-staging/{restoreId}/next/` に固定する。
 - Backup履歴の `status` が `completed` でない場合は復旧を拒否する。
@@ -647,6 +660,10 @@
 - エラーログを `storage.basePath/logs/error.log` に保存する。
 - アクセスログとエラーログを UTF-8 JSON Lines で出力する。
 - アクセスログの固定フィールドと順序を実装する。
+- アクセスログの `remoteAddr` は `Request.RemoteAddr` 由来に固定する。
+- `Request.RemoteAddr` が `ip:port` の場合は IP 部分のみを `remoteAddr` に記録する。
+- `Request.RemoteAddr` が port なし、Unix socket 表記、parse不能の場合は元の文字列を記録し、空文字の場合は `unknown` を記録する。
+- `X-Forwarded-For`、`X-Real-IP`、`Forwarded`、CDN由来 header でアクセスログの `remoteAddr` を上書きしない。
 - エラーログの固定フィールドと順序を実装する。
 - `requestId` をリクエスト受信時に生成し、`X-Request-Id`、アクセスログ、エラーログへ同一値で引き回す。
 - `log.level` による DEBUG、INFO、WARN、ERROR の出力条件を実装する。
@@ -707,6 +724,7 @@
 - ログファイル欠落時に初回作成せず、`ERR_LOG_WRITE_FAILED` または `ERR_LOG_READ_FAILED` になるテストが成功する。
 - ローテーション後の新現行ログ作成失敗時に復旧を1回だけ試行し、成功レスポンスを返さないテストが成功する。
 - ログ API の新しい順、壊れたJSON行検出、現行ログのみ対象のテストが成功する。
+- アクセスログの `remoteAddr` が `Request.RemoteAddr` 由来であり、proxy header で上書きされないテストが成功する。
 - Monitoring API の認証必須、body拒否、成功レスポンスキー、型、単位、丸め、`checkedAt` のテストが成功する。
 - Monitoring API の取得不可項目 `null` と `200 OK` のテストが成功する。
 - Monitoring API の `connections` と `requests` が in-memory counter であり、ファイル永続化せず、プロセス再起動で初期化されるテストが成功する。
@@ -854,7 +872,7 @@
 - ASB SDK の Go 実装を `sdk/go/` 配下に配置し、package 名を `asb` とする。
 - ASB SDK の Go 実装で `go.mod` を作成する場合、module path を `github.com/fqwink/Adlaire-Static-Base/sdk/go` に固定する。
 - ASB SDK の Go 実装の tag を ASB 本体の安定版リリースタグと同一にする。
-- ASB SDK の Go 実装を Rev.78 時点では外部配布サービスへ登録しない。
+- ASB SDK の Go 実装を Rev.79 時点では外部配布サービスへ登録しない。
 - ASB SDK の Go 実装は `net/http`、`net/url`、`encoding/json`、`context`、`time`、`mime/multipart` を中心に Go標準ライブラリで実装する。
 - ASB SDK の Go 実装は ASB 本体の `internal/` package を import しない。
 - ASB SDK の Go 実装は外部HTTP client library、外部JSON library、generated client を前提にしない。
@@ -1000,20 +1018,20 @@
 
 優先度: 低
 
-目的: Rev.78 時点で実装対象外の機能が混入していないことを確認する。
+目的: Rev.79 時点で実装対象外の機能が混入していないことを確認する。
 
 ### 実装タスク
 
-- 未昇格のASB互換目標を将来の到達目標として扱い、Rev.78 時点の実装対象として扱わない。
+- 未昇格のASB互換目標を将来の到達目標として扱い、Rev.79 時点の実装対象として扱わない。
 - `internal/asb_forbidden_test.go` を作成する。
 - XServer Static互換機能セットの実装対象が、静的配信、独自ドメイン、無料独自SSL、GitHub Webhookデプロイ、HTTPS JSON APIによるファイル管理、ログ・状態確認、バックアップ・復旧に限定されていることを確認する。
 - XServer Static互換機能セットを理由に、XServer Static完全互換、管理画面再現、内部実装再現、DNS管理、DNS provider API、DNS-01、wildcard、複数CA、CDN完全互換、課金・契約・アカウント管理を追加しない。
 - ASB互換目標に含まれることを、未昇格機能の実装根拠として扱わない。
 - ASB互換目標を理由に `.gitignore`、外部DB、未承認外部ライブラリ、未承認外部サービス連携、開発リポジトリ内実行時データ、起動時自動生成、ビルド成果物自動生成を追加しない。
 - ASB互換目標を理由に APIキー管理、複数ユーザー管理、Rate limiting、Brotli圧縮、HTTP/2、CA選定、SDK専用通信を実装しない。
-- HTTP/2 が暗黙的に有効化されないよう、Rev.78 の実装では `http.Server.TLSNextProto` を空 map に設定する。
+- HTTP/2 が暗黙的に有効化されないよう、Rev.79 の実装では `http.Server.TLSNextProto` を空 map に設定する。
 - HTTP/2 専用設定項目、h2c、ALPN独自制御、server push、stream priority、専用handler、専用middleware、専用ログ項目を実装しない。
-- 将来計画、保留事項、検討・調査中事項を Rev.78 時点の実装対象として扱わない。
+- 将来計画、保留事項、検討・調査中事項を Rev.79 時点の実装対象として扱わない。
 - GUIという曖昧カテゴリ、ASB本体へのWeb UI内包、デスクトップアプリ、モバイルアプリ、複数ユーザー管理、ユーザー別権限管理、マルチテナント、課金管理、契約管理、複数インスタンス管理、クラスタ管理、分散ロック、NFS専用連携、分散ストレージ専用連携、外部ストレージサービス連携、ログファイル暗号化、HTTP/2実装詳細、FTP、FTPS、SFTPをASB本体に実装しない。
 - 将来計画機能または転送プロトコル互換を理由に ASB本体内包Web UI用API、モバイル専用API、テナント用API、課金用API、契約用API、外部ストレージ用API、ログ暗号化用API、FTP / FTPS / SFTP 用 APIを追加しない。
 - 将来計画機能または転送プロトコル互換を理由に `ui.*`、`webui.*`、`desktop.*`、`mobile.*`、`tenant.*`、`billing.*`、`nfs.*`、`cluster.*`、`distributedStorage.*`、`externalStorage.*`、`logEncryption.*`、`ftp.*`、`ftps.*`、`sftp.*` 設定項目を追加しない。
@@ -1031,7 +1049,7 @@
 - Auteur リポジトリ `https://github.com/fqwink/Auteur` の `Auteur_Master_Specification.md` は仕様移管元としてのみ扱い、source code、runtime、CLI、fixture、test、CI、release automation、package、lock file、設定ファイル、生成物を ASB へ移管しない。
 - Auteur リポジトリ内の `.gitignore`、`deno.json`、TypeScript 実装、fixture、test が ASB の仕様、実装、生成物、依存関係、開発手順としてコピーされていないことを確認する。
 - `auteur.config.json`、`.auteur/`、`auteur-project/`、`src/pages/**/*.astro`、`src/pages/api/**/*.go`、`ui/`、`content/`、`dist/`、`.env`、`deno.json`、`deno.lock`、`AUTEUR_*` error code、Auteur 固有 hydration directive、Auteur 固有 component syntax が ASB の有効仕様として追加されていないことを確認する。
-- Content Pipeline、Site Routing、Site Rendering、Site Output、Blog、Docs、Sitemap、Ad Slot、Asset Pipeline、Source Sync、External Data Integration、Runtime Cache、Database Gateway、Database Adapter が Rev.78 時点の実装対象へ昇格していないことを確認する。
+- Content Pipeline、Site Routing、Site Rendering、Site Output、Blog、Docs、Sitemap、Ad Slot、Asset Pipeline、Source Sync、External Data Integration、Runtime Cache、Database Gateway、Database Adapter が Rev.79 時点の実装対象へ昇格していないことを確認する。
 - 管理 API が `Authorization` ヘッダーまたは `X-API-Key` ヘッダーの有無でレスポンスを変えないことをテストする。
 - APIキー、複数ユーザー、ロール、セッションを表す JSON ファイルまたはディレクトリを生成しないことをテストする。
 - 起動設定ファイル `config.json` に認証関連フィールドが存在する場合に未知フィールドとして起動失敗することをテストする。
@@ -1131,7 +1149,7 @@
 
 ## 18. 実装フェーズ外の昇格待ちタスク
 
-以下は Rev.78 時点では実装フェーズに含めない。
+以下は Rev.79 時点では実装フェーズに含めない。
 
 - SDK認証拡張を実装対象へ昇格する場合の認証方式、対象SDK実装、ASB管理APIとの関係、単一システム管理者認証との併存または置換、APIキー管理、複数ユーザー化、保存JSON、公開API、Web UI、監査ログ、migration、downgrade、テスト条件を仕様改訂で確定する。
 - 移管元由来の Content Pipeline を実装対象へ昇格する場合は、`.md`、`.mdx`、`.json`、JSON Front Matter、metadata 型、slug 重複、draft、未来日付、unsafe HTML、script tag、link URL scheme、parser / sanitizer 採否、保存JSON、cache、Site Output との責務境界、migration、downgrade、テスト条件を仕様改訂で確定する。
