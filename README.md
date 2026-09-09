@@ -10,7 +10,7 @@ ASB SDK は単一の公式SDKとして扱い、Browser JavaScript、Deno専用 T
 
 ASB Web UI は、ASB 本体外の内製標準管理画面クライアントとして扱い、静的 HTML / CSS / JavaScript とブラウザ標準 API のみで実装します。ASB 標準Web UI は、ASB SDK の Browser JavaScript 実装を利用して ASB 管理 HTTPS JSON API と通信します。
 
-Rev.72 では、Project / Domain / File / SSL / GitHub Webhook / Backup / Restore / Log の排他制御、lock取得順序、同時操作時の競合条件、整合性検証タイミング、自動修復禁止方針を固定しています。
+Rev.73 では、GitHub Releases 配布成果物、checksum形式、install/update の成功・失敗条件、rollback、systemd unit を固定しています。
 
 旧 Auteur 仕様は ASB に仕様のみを吸収し、`https://github.com/fqwink/Auteur` を移管元として記録します。旧名称の別枠は作らず、Content Pipeline、Site Routing、Site Rendering、Site Output、Blog、Docs、Sitemap、Ad Slot などの ASB 通常機能名へ分解します。Auteur の source code、runtime、CLI、fixture、CI、package、設定ファイル、生成物は移管しません。
 
@@ -22,7 +22,7 @@ Rev.72 では、Project / Domain / File / SSL / GitHub Webhook / Backup / Restor
 
 ## Documents
 
-- `ASB-spec.md`: 仕様正本（Rev.72）
+- `ASB-spec.md`: 仕様正本（Rev.73）
 - `ASB-spec.html`: `ASB-spec.md` から生成するHTML版仕様書
 - `DOCUMENT_INDEX.md`: 文書索引
 - `IMPLEMENTATION_TASKS.md`: `ASB-spec.md` に基づく実装フェーズ別タスクリスト
