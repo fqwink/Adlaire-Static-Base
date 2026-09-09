@@ -6,7 +6,7 @@
 
 本ファイルは、`ASB-spec.md` に基づいて実装タスクを管理する。
 
-参照仕様バージョン: `ASB-spec.md Rev.89`
+参照仕様バージョン: `ASB-spec.md Rev.90`
 
 `ASB-spec.md` で仕様確定済みの事項のみを実装タスクとして扱う。
 
@@ -50,12 +50,12 @@
 | 低 | P11 | v0.12 | ASB 標準Web UI | 未着手 |
 | 低 | P12 | v0.13 | 禁止機能・非実装確認 | 未着手 |
 
-### 2.1 Rev.89 実装開始ゲート
+### 2.1 Rev.90 実装開始ゲート
 
 実装フェーズへ着手する前に、以下を満たす。
 
 - `AGENTS.md` を確認済みである。
-- `ASB-spec.md` の本書バージョンと本ファイルの参照仕様バージョンが一致している。
+- `ASB-spec.md` の本書バージョン、本ファイルの参照仕様バージョン、`README.md` の仕様正本Rev表記が一致している。
 - 実装対象が `ASB-spec.md` の確定仕様に存在する。
 - 実装対象が本ファイルの該当フェーズに存在する。
 - 作業ブランチ上で作業している。
@@ -63,11 +63,12 @@
 - 開発リポジトリ内に実行時データ、ログ、一時ファイル、cache、coverage output、build output、release artifact、download 済み asset、`dist/`、`.asb/` が存在しない。
 - 仕様不足が見つかった場合は、コードで補完せず `ASB-spec.md` の改訂へ戻す。
 
-### 2.2 Rev.89 共通完了ゲート
+### 2.2 Rev.90 共通完了ゲート
 
 各フェーズは、個別完了条件に加えて以下を満たすまで完了扱いにしない。
 
 - 管理 API は HTTPS JSON API とし、成功 response、error response、timestamp、pagination、upload の形式が `ASB-spec.md` と一致する。
+- `README.md` の概要、現在状態、文書一覧、実装順序要約が `ASB-spec.md` と本ファイルの内容に一致する。
 - Webhook を除く管理 API は `X-ASB-Admin-Password` による単一システム管理者パスワード認証を通す。
 - token、session、cookie、API key、Basic、Bearer、JWT、OAuth、OIDC を追加しない。
 - 保存状態は JSON ファイルベースとし、外部DB、SQLite、KVS、外部ストレージを追加しない。
@@ -212,7 +213,7 @@ P0-4 では `asb start` の実運用起動、起動設定ファイル読み込�
 
 ### 開始条件
 
-- Rev.89 実装開始ゲートを満たしている。
+- Rev.90 実装開始ゲートを満たしている。
 - `go.mod` が未作成である場合、P0で新規作成する。
 - `.github/workflows/` はP0では作成しない。
 - `.gitignore` はP0では作成しない。
@@ -447,11 +448,11 @@ P0-4 では `asb start` の実運用起動、起動設定ファイル読み込�
 - 複数JSON更新の途中失敗時に更新済みJSON名、未更新JSON名、操作名、requestId をエラーログへ記録する。
 - 複数ファイル更新の途中失敗時に、更新予定JSON、更新済みJSON、`files.json` path、実ファイル、`projects.used` の整合性検証を実装する。
 - 整合性検証失敗時は `ERR_STORAGE_VALIDATION_FAILED` を error log へ記録する。
-- Rev.89 時点では複数JSON更新に外部トランザクション機構を導入しない。
-- Rev.89 時点の API エンドポイント固定表に記載されたメソッド、パス、成功ステータス、失敗コードを実装する。
-- Rev.89 API 成功レスポンス固定表に記載された JSON キーと型を実装する。
-- Rev.89 API 個別実装契約に記載された request schema、保存先、更新順序、audit 対象を実装する。
-- Rev.89 API 別失敗条件固定表に記載された失敗条件、HTTP status、error code を実装する。
+- Rev.90 時点では複数JSON更新に外部トランザクション機構を導入しない。
+- Rev.90 時点の API エンドポイント固定表に記載されたメソッド、パス、成功ステータス、失敗コードを実装する。
+- Rev.90 API 成功レスポンス固定表に記載された JSON キーと型を実装する。
+- Rev.90 API 個別実装契約に記載された request schema、保存先、更新順序、audit 対象を実装する。
+- Rev.90 API 別失敗条件固定表に記載された失敗条件、HTTP status、error code を実装する。
 - HTTP status / error code 選択優先順位を共通 middleware または handler 境界で統一する。
 - 保存 JSON の field 固定表に従い、Project、Domain、File、Backup、WebhookEvent の型、必須、default、validation、object key 出力順序を実装する。
 - プロジェクト作成 API `POST /api/projects` を実装する。
@@ -643,7 +644,7 @@ P0-4 では `asb start` の実運用起動、起動設定ファイル読み込�
 - `Cache-Control` を既定で `public, max-age=60` とする。
 - `If-None-Match` と `If-Modified-Since` による `304 Not Modified` を実装し、両方が存在する場合は `If-None-Match` を優先する。
 - `304 Not Modified` では `Content-Type`、`ETag`、`Last-Modified`、`Cache-Control` を返し、`Content-Encoding` を返さない。
-- Range request は Rev.89 時点では実装せず、`Range` ヘッダーを無視して `206 Partial Content` を返さない。
+- Range request は Rev.90 時点では実装せず、`Range` ヘッダーを無視して `206 Partial Content` を返さない。
 - `Accept-Encoding: br` では Brotli 応答を返さない。
 - Brotli 用の `.br`、キャッシュ、一時ファイル、メタデータを開発リポジトリ内にも `storage.basePath` 配下にも生成しない。
 - 静的配信でディレクトリ一覧を返さない。
@@ -876,7 +877,7 @@ P0-4 では `asb start` の実運用起動、起動設定ファイル読み込�
 - atomic rename 後に履歴保存へ失敗した場合は、作成済みtar.gzを削除する。
 - 作成済みtar.gzの削除に失敗した場合でも、バックアップ作成APIは成功レスポンスを返さない。
 - バックアップ保存先を別障害領域へ複製する作業をASB外の運用責務として扱う。
-- 外部ストレージ連携を Rev.89 時点では実装対象外として扱う。
+- 外部ストレージ連携を Rev.90 時点では実装対象外として扱う。
 - Backup復旧前退避先を `storage.basePath/backups/restore-staging/{restoreId}/previous/` に固定する。
 - Backup復旧用展開先を `storage.basePath/backups/restore-staging/{restoreId}/next/` に固定する。
 - Backup履歴の `status` が `completed` でない場合は復旧を拒否する。
@@ -1218,7 +1219,7 @@ P0-4 では `asb start` の実運用起動、起動設定ファイル読み込�
 - ASB SDK の Go 実装を `sdk/go/` 配下に配置し、package 名を `asb` とする。
 - ASB SDK の Go 実装で `go.mod` を作成する場合、module path を `github.com/fqwink/Adlaire-Static-Base/sdk/go` に固定する。
 - ASB SDK の Go 実装の tag を ASB 本体の安定版リリースタグと同一にする。
-- ASB SDK の Go 実装を Rev.89 時点では外部配布サービスへ登録しない。
+- ASB SDK の Go 実装を Rev.90 時点では外部配布サービスへ登録しない。
 - ASB SDK の Go 実装は `net/http`、`net/url`、`encoding/json`、`context`、`time`、`mime/multipart` を中心に Go標準ライブラリで実装する。
 - ASB SDK の Go 実装は ASB 本体の `internal/` package を import しない。
 - ASB SDK の Go 実装は外部HTTP client library、外部JSON library、generated client を前提にしない。
@@ -1364,20 +1365,20 @@ P0-4 では `asb start` の実運用起動、起動設定ファイル読み込�
 
 優先度: 低
 
-目的: Rev.89 時点で実装対象外の機能が混入していないことを確認する。
+目的: Rev.90 時点で実装対象外の機能が混入していないことを確認する。
 
 ### 実装タスク
 
-- 未昇格のASB互換目標を将来の到達目標として扱い、Rev.89 時点の実装対象として扱わない。
+- 未昇格のASB互換目標を将来の到達目標として扱い、Rev.90 時点の実装対象として扱わない。
 - `internal/asb_forbidden_test.go` を作成する。
 - XServer Static互換機能セットの実装対象が、静的配信、独自ドメイン、無料独自SSL、GitHub Webhookデプロイ、HTTPS JSON APIによるファイル管理、ログ・状態確認、バックアップ・復旧に限定されていることを確認する。
 - XServer Static互換機能セットを理由に、XServer Static完全互換、管理画面再現、内部実装再現、DNS管理、DNS provider API、DNS-01、wildcard、複数CA、CDN完全互換、課金・契約・アカウント管理を追加しない。
 - ASB互換目標に含まれることを、未昇格機能の実装根拠として扱わない。
 - ASB互換目標を理由に `.gitignore`、外部DB、未承認外部ライブラリ、未承認外部サービス連携、開発リポジトリ内実行時データ、起動時自動生成、ビルド成果物自動生成を追加しない。
 - ASB互換目標を理由に APIキー管理、複数ユーザー管理、Rate limiting、Brotli圧縮、HTTP/2、CA選定、SDK専用通信を実装しない。
-- HTTP/2 が暗黙的に有効化されないよう、Rev.89 の実装では `http.Server.TLSNextProto` を空 map に設定する。
+- HTTP/2 が暗黙的に有効化されないよう、Rev.90 の実装では `http.Server.TLSNextProto` を空 map に設定する。
 - HTTP/2 専用設定項目、h2c、ALPN独自制御、server push、stream priority、専用handler、専用middleware、専用ログ項目を実装しない。
-- 将来計画、保留事項、検討・調査中事項を Rev.89 時点の実装対象として扱わない。
+- 将来計画、保留事項、検討・調査中事項を Rev.90 時点の実装対象として扱わない。
 - GUIという曖昧カテゴリ、ASB本体へのWeb UI内包、デスクトップアプリ、モバイルアプリ、複数ユーザー管理、ユーザー別権限管理、マルチテナント、課金管理、契約管理、複数インスタンス管理、クラスタ管理、分散ロック、NFS専用連携、分散ストレージ専用連携、外部ストレージサービス連携、ログファイル暗号化、HTTP/2実装詳細、FTP、FTPS、SFTPをASB本体に実装しない。
 - 将来計画機能または転送プロトコル互換を理由に ASB本体内包Web UI用API、モバイル専用API、テナント用API、課金用API、契約用API、外部ストレージ用API、ログ暗号化用API、FTP / FTPS / SFTP 用 APIを追加しない。
 - 将来計画機能または転送プロトコル互換を理由に `ui.*`、`webui.*`、`desktop.*`、`mobile.*`、`tenant.*`、`billing.*`、`nfs.*`、`cluster.*`、`distributedStorage.*`、`externalStorage.*`、`logEncryption.*`、`ftp.*`、`ftps.*`、`sftp.*` 設定項目を追加しない。
@@ -1395,7 +1396,7 @@ P0-4 では `asb start` の実運用起動、起動設定ファイル読み込�
 - Auteur リポジトリ `https://github.com/fqwink/Auteur` の `Auteur_Master_Specification.md` は仕様移管元としてのみ扱い、source code、runtime、CLI、fixture、test、CI、release automation、package、lock file、設定ファイル、生成物を ASB へ移管しない。
 - Auteur リポジトリ内の `.gitignore`、`deno.json`、TypeScript 実装、fixture、test が ASB の仕様、実装、生成物、依存関係、開発手順としてコピーされていないことを確認する。
 - `auteur.config.json`、`.auteur/`、`auteur-project/`、`src/pages/**/*.astro`、`src/pages/api/**/*.go`、`ui/`、`content/`、`dist/`、`.env`、`deno.json`、`deno.lock`、`AUTEUR_*` error code、Auteur 固有 hydration directive、Auteur 固有 component syntax が ASB の有効仕様として追加されていないことを確認する。
-- Content Pipeline、Site Routing、Site Rendering、Site Output、Blog、Docs、Sitemap、Ad Slot、Asset Pipeline、Source Sync、External Data Integration、Runtime Cache、Database Gateway、Database Adapter が Rev.89 時点の実装対象へ昇格していないことを確認する。
+- Content Pipeline、Site Routing、Site Rendering、Site Output、Blog、Docs、Sitemap、Ad Slot、Asset Pipeline、Source Sync、External Data Integration、Runtime Cache、Database Gateway、Database Adapter が Rev.90 時点の実装対象へ昇格していないことを確認する。
 - 管理 API が `Authorization` ヘッダーまたは `X-API-Key` ヘッダーの有無でレスポンスを変えないことをテストする。
 - APIキー、複数ユーザー、ロール、セッションを表す JSON ファイルまたはディレクトリを生成しないことをテストする。
 - 起動設定ファイル `config.json` に認証関連フィールドが存在する場合に未知フィールドとして起動失敗することをテストする。
@@ -1442,7 +1443,7 @@ P0-4 では `asb start` の実運用起動、起動設定ファイル読み込�
 
 ## 17. 実装フェーズ外の昇格待ちタスク
 
-以下は Rev.89 時点では実装フェーズに含めない。
+以下は Rev.90 時点では実装フェーズに含めない。
 
 - SDK認証拡張を実装対象へ昇格する場合の認証方式、対象SDK実装、ASB管理APIとの関係、単一システム管理者認証との併存または置換、APIキー管理、複数ユーザー化、保存JSON、公開API、Web UI、監査ログ、migration、downgrade、テスト条件を仕様改訂で確定する。
 - 移管元由来の Content Pipeline を実装対象へ昇格する場合は、`.md`、`.mdx`、`.json`、JSON Front Matter、metadata 型、slug 重複、draft、未来日付、unsafe HTML、script tag、link URL scheme、parser / sanitizer 採否、保存JSON、cache、Site Output との責務境界、migration、downgrade、テスト条件を仕様改訂で確定する。
