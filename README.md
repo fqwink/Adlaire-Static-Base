@@ -20,7 +20,7 @@ Auteur は ASB に完全統合吸収し、`https://github.com/fqwink/Auteur` の
 
 ## Documents
 
-- `ASB-spec.md`: 仕様正本（Rev.66）
+- `ASB-spec.md`: 仕様正本（Rev.67）
 - `ASB-spec.html`: `ASB-spec.md` から生成するHTML版仕様書
 - `DOCUMENT_INDEX.md`: 文書索引
 - `IMPLEMENTATION_TASKS.md`: `ASB-spec.md` に基づく実装フェーズ別タスクリスト
