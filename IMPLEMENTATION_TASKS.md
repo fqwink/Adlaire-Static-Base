@@ -6,7 +6,7 @@
 
 本ファイルは、`ASB-spec.md` に基づいて実装タスクを管理する。
 
-参照仕様バージョン: `ASB-spec.md Rev.63`
+参照仕様バージョン: `ASB-spec.md Rev.64`
 
 `ASB-spec.md` で仕様確定済みの事項のみを実装タスクとして扱う。
 
@@ -158,7 +158,7 @@
 - `204 No Content` を使用しない。
 - 配列レスポンスは対象データが空でも空配列を返す。
 - URL パラメータ `:id`、`:domain`、`:name` の URL decode、正規化、バリデーションを実装する。
-- `:id` は Rev.63 の UUID 正規表現に一致する値のみ許可する。
+- `:id` は Rev.64 の UUID 正規表現に一致する値のみ許可する。
 - `:domain` は小文字正規化後、label数、全体長、label正規表現、末尾 `.` 除去を仕様通り検証する。
 - `:name` は長さ、NUL、パス区切り、`.`、`..`、先頭 `.`、空白のみを仕様通り拒否する。
 - JSON ファイル更新時の読み込み検証、保存前再検証、同一ファイル排他書き込みを実装する。
@@ -174,9 +174,9 @@
 - 複数JSON更新の途中失敗時に更新済みJSON名、未更新JSON名、操作名、requestId をエラーログへ記録する。
 - 複数ファイル更新の途中失敗時に、更新予定JSON、更新済みJSON、`files.json` path、実ファイル、`projects.used` の整合性検証を実装する。
 - 整合性検証失敗時は `ERR_STORAGE_VALIDATION_FAILED` を error log へ記録する。
-- Rev.63 時点では複数JSON更新に外部トランザクション機構を導入しない。
-- Rev.63 時点の API エンドポイント固定表に記載されたメソッド、パス、成功ステータス、失敗コードを実装する。
-- Rev.63 API 成功レスポンス固定表に記載された JSON キーと型を実装する。
+- Rev.64 時点では複数JSON更新に外部トランザクション機構を導入しない。
+- Rev.64 時点の API エンドポイント固定表に記載されたメソッド、パス、成功ステータス、失敗コードを実装する。
+- Rev.64 API 成功レスポンス固定表に記載された JSON キーと型を実装する。
 - プロジェクト作成 API `POST /api/projects` を実装する。
 - プロジェクト一覧 API `GET /api/projects` を実装する。
 - プロジェクト削除 API `DELETE /api/projects/:id` を実装する。
@@ -278,7 +278,7 @@
 - `Cache-Control` を既定で `public, max-age=60` とする。
 - `If-None-Match` と `If-Modified-Since` による `304 Not Modified` を実装し、両方が存在する場合は `If-None-Match` を優先する。
 - `304 Not Modified` では `Content-Type`、`ETag`、`Last-Modified`、`Cache-Control` を返し、`Content-Encoding` を返さない。
-- Range request は Rev.63 時点では実装せず、`Range` ヘッダーを無視して `206 Partial Content` を返さない。
+- Range request は Rev.64 時点では実装せず、`Range` ヘッダーを無視して `206 Partial Content` を返さない。
 - `Accept-Encoding: br` では Brotli 応答を返さない。
 - Brotli 用の `.br`、キャッシュ、一時ファイル、メタデータを開発リポジトリ内にも `storage.basePath` 配下にも生成しない。
 - 静的配信でディレクトリ一覧を返さない。
@@ -551,7 +551,7 @@
 - atomic rename 後に履歴保存へ失敗した場合は、作成済みtar.gzを削除する。
 - 作成済みtar.gzの削除に失敗した場合でも、バックアップ作成APIは成功レスポンスを返さない。
 - バックアップ保存先を別障害領域へ複製する作業をASB外の運用責務として扱う。
-- 外部ストレージ連携を Rev.63 時点では実装対象外として扱う。
+- 外部ストレージ連携を Rev.64 時点では実装対象外として扱う。
 - Backup復旧前退避先を `storage.basePath/backups/restore-staging/{restoreId}/previous/` に固定する。
 - Backup復旧用展開先を `storage.basePath/backups/restore-staging/{restoreId}/next/` に固定する。
 - Backup履歴の `status` が `completed` でない場合は復旧を拒否する。
@@ -764,7 +764,7 @@
 - ASB SDK の Go 実装を `sdk/go/` 配下に配置し、package 名を `asb` とする。
 - ASB SDK の Go 実装で `go.mod` を作成する場合、module path を `github.com/fqwink/Adlaire-Static-Base/sdk/go` に固定する。
 - ASB SDK の Go 実装の tag を ASB 本体の安定版リリースタグと同一にする。
-- ASB SDK の Go 実装を Rev.63 時点では外部配布サービスへ登録しない。
+- ASB SDK の Go 実装を Rev.64 時点では外部配布サービスへ登録しない。
 - ASB SDK の Go 実装は `net/http`、`net/url`、`encoding/json`、`context`、`time`、`mime/multipart` を中心に Go標準ライブラリで実装する。
 - ASB SDK の Go 実装は ASB 本体の `internal/` package を import しない。
 - ASB SDK の Go 実装は外部HTTP client library、外部JSON library、generated client を前提にしない。
@@ -910,25 +910,32 @@
 
 優先度: 低
 
-目的: Rev.63 時点で実装対象外の機能が混入していないことを確認する。
+目的: Rev.64 時点で実装対象外の機能が混入していないことを確認する。
 
 ### 実装タスク
 
-- 未昇格のASB互換目標を将来の到達目標として扱い、Rev.63 時点の実装対象として扱わない。
+- 未昇格のASB互換目標を将来の到達目標として扱い、Rev.64 時点の実装対象として扱わない。
 - `internal/asb_forbidden_test.go` を作成する。
 - XServer Static互換機能セットの実装対象が、静的配信、独自ドメイン、無料独自SSL、GitHub Webhookデプロイ、HTTPS JSON APIによるファイル管理、ログ・状態確認、バックアップ・復旧に限定されていることを確認する。
 - XServer Static互換機能セットを理由に、XServer Static完全互換、管理画面再現、内部実装再現、DNS管理、DNS provider API、DNS-01、wildcard、複数CA、CDN完全互換、課金・契約・アカウント管理を追加しない。
 - ASB互換目標に含まれることを、未昇格機能の実装根拠として扱わない。
 - ASB互換目標を理由に `.gitignore`、外部DB、未承認外部ライブラリ、未承認外部サービス連携、開発リポジトリ内実行時データ、起動時自動生成、ビルド成果物自動生成を追加しない。
 - ASB互換目標を理由に APIキー管理、複数ユーザー管理、Rate limiting、Brotli圧縮、HTTP/2、CA選定、SDK専用通信を実装しない。
-- HTTP/2 が暗黙的に有効化されないよう、Rev.63 の実装では `http.Server.TLSNextProto` を空 map に設定する。
+- HTTP/2 が暗黙的に有効化されないよう、Rev.64 の実装では `http.Server.TLSNextProto` を空 map に設定する。
 - HTTP/2 専用設定項目、h2c、ALPN独自制御、server push、stream priority、専用handler、専用middleware、専用ログ項目を実装しない。
-- 将来計画、保留事項、検討・調査中事項を Rev.63 時点の実装対象として扱わない。
+- 将来計画、保留事項、検討・調査中事項を Rev.64 時点の実装対象として扱わない。
 - GUIという曖昧カテゴリ、ASB本体へのWeb UI内包、デスクトップアプリ、モバイルアプリ、複数ユーザー管理、ユーザー別権限管理、マルチテナント、課金管理、契約管理、複数インスタンス管理、クラスタ管理、分散ロック、NFS専用連携、分散ストレージ専用連携、外部ストレージサービス連携、ログファイル暗号化、HTTP/2実装詳細、FTP、FTPS、SFTPをASB本体に実装しない。
 - 将来計画機能または転送プロトコル互換を理由に ASB本体内包Web UI用API、モバイル専用API、テナント用API、課金用API、契約用API、外部ストレージ用API、ログ暗号化用API、FTP / FTPS / SFTP 用 APIを追加しない。
 - 将来計画機能または転送プロトコル互換を理由に `ui.*`、`webui.*`、`desktop.*`、`mobile.*`、`tenant.*`、`billing.*`、`nfs.*`、`cluster.*`、`distributedStorage.*`、`externalStorage.*`、`logEncryption.*`、`ftp.*`、`ftps.*`、`sftp.*` 設定項目を追加しない。
 - 将来計画機能または転送プロトコル互換を理由に ASB本体内包Web UI用JSON、モバイル用JSON、テナント用JSON、課金用JSON、外部ストレージ用JSON、ログ暗号化用JSON、FTP / FTPS / SFTP 用 JSONを追加しない。
 - 将来計画機能または転送プロトコル互換を理由に ASB本体内包Web UI用ディレクトリ、モバイル用ディレクトリ、テナント用ディレクトリ、課金用ディレクトリ、外部ストレージ用ディレクトリ、ログ暗号化用ディレクトリ、FTP / FTPS / SFTP 用ディレクトリを追加しない。
+- 複数インスタンス対応を理由に node 管理、leader election、distributed lock、cluster membership、node heartbeat、shared queue を実装しない。
+- NFS 連携を理由に NFS mount 管理、NFS lock 制御、NFS stale handle 検出、NFS 専用 retry、NFS 専用 health check を実装しない。
+- 分散ストレージ連携を理由に distributed storage driver、replica 管理、shard 管理、quorum 制御、repair job、rebalancing を実装しない。
+- 外部ストレージ連携を理由に S3、S3互換API、GCS、Azure Blob、Dropbox、Google Drive、Box、presigned URL、外部ストレージ credential 管理、外部SDK を実装しない。
+- ログファイル暗号化を理由にログ保存時暗号化、ログ復号 API、key 生成、key 保存、key rotation、KMS連携、暗号化ログ viewer を実装しない。
+- デスクトップアプリ向けSDK利用を理由に専用API、専用認証、専用token、callback URL、deep link、OS keychain、auto update、installer、desktop notification、tray integration、native menu、GUIライブラリ依存を追加しない。
+- モバイルアプリ向けSDK利用を理由に専用API、専用認証、専用token、device registration、push notification、biometric authentication、mobile deep link、offline cache、sync queue、app store 配布設定、モバイルGUIライブラリ依存を追加しない。
 - 管理 API が `Authorization` ヘッダーまたは `X-API-Key` ヘッダーの有無でレスポンスを変えないことをテストする。
 - APIキー、複数ユーザー、ロール、セッションを表す JSON ファイルまたはディレクトリを生成しないことをテストする。
 - `config/config.json` に認証関連フィールドが存在する場合に未知フィールドとして起動失敗することをテストする。
@@ -947,6 +954,8 @@
 - SDK認証拡張用の token、session、client registration、credential cache、scope、secret を表す JSON ファイル、ディレクトリ、設定項目、実行時データが生成されないことをテストする。
 - ASB SDK が単一システム管理者パスワード以外の認証入力を保持、更新、ローテーション、永続化しないことを確認する。
 - `config/config.json` に SDK認証拡張関連フィールドが存在する場合に未知フィールドとして起動失敗することをテストする。
+- 複数インスタンス、NFS、分散ストレージ、外部ストレージ、ログ暗号化、デスクトップアプリ、モバイルアプリ用の設定項目、JSON ファイル、ディレクトリ、実行時データが生成されないことをテストする。
+- `config/config.json` に `cluster.*`、`node.*`、`lock.*`、`nfs.*`、`distributedStorage.*`、`externalStorage.*`、`logEncryption.*`、`desktop.*`、`desktopSdk.*`、`mobile.*`、`mobileSdk.*` 相当の関連フィールドが存在する場合に未知フィールドとして起動失敗することをテストする。
 - 将来計画機能を理由に未昇格 API、設定項目、JSONファイル、ディレクトリ、外部依存が追加されていないことをテストまたはレビューで確認する。
 - 将来計画、保留事項、検討・調査中事項が個別確定仕様なしに実装対象へ昇格していないことを確認する。
 - XServer Static互換機能セット外の機能が、個別確定仕様なしに実装対象へ昇格していないことを確認する。
@@ -1024,13 +1033,14 @@
 
 ## 18. 実装フェーズ外の昇格待ちタスク
 
-以下は Rev.63 時点では実装フェーズに含めない。
+以下は Rev.64 時点では実装フェーズに含めない。
 
 - SDK認証拡張を実装対象へ昇格する場合の認証方式、対象SDK実装、ASB管理APIとの関係、単一システム管理者認証との併存または置換、APIキー管理、複数ユーザー化、保存JSON、公開API、Web UI、監査ログ、migration、downgrade、テスト条件を仕様改訂で確定する。
-- デスクトップアプリ向けSDK利用、モバイルアプリ向けSDK利用を確定する。
+- 複数インスタンス対応を実装対象へ昇格する場合の node 識別子、共有ストレージ、lock方式、障害時復旧、同時書き込み整合性、Webhook重複処理、ACME更新競合、Backup競合、ログ集約、設定形式、migration、downgrade、テスト条件を仕様改訂で確定する。
+- NFS連携を実装対象へ昇格する場合の対応NFS version、mount前提、lock方式、atomic rename前提、権限、障害時挙動、性能前提、複数インスタンス対応との関係、設定形式、migration、downgrade、テスト条件を仕様改訂で確定する。
+- 分散ストレージ連携を実装対象へ昇格する場合の保存対象、整合性モデル、書き込み順序、読み取り優先順位、障害時復旧、データ修復、複数インスタンス対応との関係、設定形式、migration、downgrade、テスト条件を仕様改訂で確定する。
+- 外部ストレージ連携を実装対象へ昇格する場合の対象provider、外部SDK採否、credential保存方式、暗号化要否、保存対象、同期方式、整合性、失敗時再試行、Backupとの関係、設定形式、migration、downgrade、テスト条件を仕様改訂で確定する。
+- ログファイル暗号化を実装対象へ昇格する場合の暗号方式、key保存方式、key rotation、復号API、閲覧権限、既存ログ移行、Backupとの関係、外部KMS採否、設定形式、migration、downgrade、テスト条件を仕様改訂で確定する。
+- デスクトップアプリ向けSDK利用を実装対象へ昇格する場合の対象OS、配布方式、署名、更新方式、GUIライブラリ採否、SDK実装、認証方式、保存データ、ASB本体との責務分界、外部依存、migration、downgrade、テスト条件を仕様改訂で確定する。
+- モバイルアプリ向けSDK利用を実装対象へ昇格する場合の対象OS、配布方式、署名、更新方式、GUIライブラリ採否、SDK実装、認証方式、通知、offline cache採否、保存データ、ASB本体との責務分界、外部依存、migration、downgrade、テスト条件を仕様改訂で確定する。
 - HTTP/2 を実装対象へ昇格する場合の API、設定項目、ALPN、h2c採否、テスト条件を仕様改訂で確定する。
-- デスクトップアプリを実装対象へ昇格する場合のASB SDK利用、リポジトリ境界、API、設定項目、GUIライブラリ採否、外部依存、生成物を仕様改訂で確定する。
-- モバイルアプリを実装対象へ昇格する場合のASB SDK利用、API、認証、配布、設定項目、GUIライブラリ採否、外部依存、生成物を仕様改訂で確定する。
-- 複数インスタンス対応、NFS連携、分散ストレージ連携を実装対象へ昇格する場合のロック、整合性、障害時挙動、設定項目、外部依存を仕様改訂で確定する。
-- 外部ストレージサービス統合を実装対象へ昇格する場合のAPI、認証、保存JSON、バックアップ整合性、外部SDK採否を仕様改訂で確定する。
-- ログファイル暗号化を実装対象へ昇格する場合の鍵管理、暗号化形式、復号API、外部KMS採否、移行手順を仕様改訂で確定する。
