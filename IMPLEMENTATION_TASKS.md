@@ -6,7 +6,7 @@
 
 本ファイルは、`ASB-spec.md` に基づいて実装タスクを管理する。
 
-参照仕様バージョン: `ASB-spec.md Rev.67`
+参照仕様バージョン: `ASB-spec.md Rev.68`
 
 `ASB-spec.md` で仕様確定済みの事項のみを実装タスクとして扱う。
 
@@ -158,7 +158,7 @@
 - `204 No Content` を使用しない。
 - 配列レスポンスは対象データが空でも空配列を返す。
 - URL パラメータ `:id`、`:domain`、`:name` の URL decode、正規化、バリデーションを実装する。
-- `:id` は Rev.67 の UUID 正規表現に一致する値のみ許可する。
+- `:id` は Rev.68 の UUID 正規表現に一致する値のみ許可する。
 - `:domain` は小文字正規化後、label数、全体長、label正規表現、末尾 `.` 除去を仕様通り検証する。
 - `:name` は長さ、NUL、パス区切り、`.`、`..`、先頭 `.`、空白のみを仕様通り拒否する。
 - JSON ファイル更新時の読み込み検証、保存前再検証、同一ファイル排他書き込みを実装する。
@@ -174,9 +174,9 @@
 - 複数JSON更新の途中失敗時に更新済みJSON名、未更新JSON名、操作名、requestId をエラーログへ記録する。
 - 複数ファイル更新の途中失敗時に、更新予定JSON、更新済みJSON、`files.json` path、実ファイル、`projects.used` の整合性検証を実装する。
 - 整合性検証失敗時は `ERR_STORAGE_VALIDATION_FAILED` を error log へ記録する。
-- Rev.67 時点では複数JSON更新に外部トランザクション機構を導入しない。
-- Rev.67 時点の API エンドポイント固定表に記載されたメソッド、パス、成功ステータス、失敗コードを実装する。
-- Rev.67 API 成功レスポンス固定表に記載された JSON キーと型を実装する。
+- Rev.68 時点では複数JSON更新に外部トランザクション機構を導入しない。
+- Rev.68 時点の API エンドポイント固定表に記載されたメソッド、パス、成功ステータス、失敗コードを実装する。
+- Rev.68 API 成功レスポンス固定表に記載された JSON キーと型を実装する。
 - プロジェクト作成 API `POST /api/projects` を実装する。
 - プロジェクト一覧 API `GET /api/projects` を実装する。
 - プロジェクト削除 API `DELETE /api/projects/:id` を実装する。
@@ -278,7 +278,7 @@
 - `Cache-Control` を既定で `public, max-age=60` とする。
 - `If-None-Match` と `If-Modified-Since` による `304 Not Modified` を実装し、両方が存在する場合は `If-None-Match` を優先する。
 - `304 Not Modified` では `Content-Type`、`ETag`、`Last-Modified`、`Cache-Control` を返し、`Content-Encoding` を返さない。
-- Range request は Rev.67 時点では実装せず、`Range` ヘッダーを無視して `206 Partial Content` を返さない。
+- Range request は Rev.68 時点では実装せず、`Range` ヘッダーを無視して `206 Partial Content` を返さない。
 - `Accept-Encoding: br` では Brotli 応答を返さない。
 - Brotli 用の `.br`、キャッシュ、一時ファイル、メタデータを開発リポジトリ内にも `storage.basePath` 配下にも生成しない。
 - 静的配信でディレクトリ一覧を返さない。
@@ -551,7 +551,7 @@
 - atomic rename 後に履歴保存へ失敗した場合は、作成済みtar.gzを削除する。
 - 作成済みtar.gzの削除に失敗した場合でも、バックアップ作成APIは成功レスポンスを返さない。
 - バックアップ保存先を別障害領域へ複製する作業をASB外の運用責務として扱う。
-- 外部ストレージ連携を Rev.67 時点では実装対象外として扱う。
+- 外部ストレージ連携を Rev.68 時点では実装対象外として扱う。
 - Backup復旧前退避先を `storage.basePath/backups/restore-staging/{restoreId}/previous/` に固定する。
 - Backup復旧用展開先を `storage.basePath/backups/restore-staging/{restoreId}/next/` に固定する。
 - Backup履歴の `status` が `completed` でない場合は復旧を拒否する。
@@ -764,7 +764,7 @@
 - ASB SDK の Go 実装を `sdk/go/` 配下に配置し、package 名を `asb` とする。
 - ASB SDK の Go 実装で `go.mod` を作成する場合、module path を `github.com/fqwink/Adlaire-Static-Base/sdk/go` に固定する。
 - ASB SDK の Go 実装の tag を ASB 本体の安定版リリースタグと同一にする。
-- ASB SDK の Go 実装を Rev.67 時点では外部配布サービスへ登録しない。
+- ASB SDK の Go 実装を Rev.68 時点では外部配布サービスへ登録しない。
 - ASB SDK の Go 実装は `net/http`、`net/url`、`encoding/json`、`context`、`time`、`mime/multipart` を中心に Go標準ライブラリで実装する。
 - ASB SDK の Go 実装は ASB 本体の `internal/` package を import しない。
 - ASB SDK の Go 実装は外部HTTP client library、外部JSON library、generated client を前提にしない。
@@ -910,20 +910,20 @@
 
 優先度: 低
 
-目的: Rev.67 時点で実装対象外の機能が混入していないことを確認する。
+目的: Rev.68 時点で実装対象外の機能が混入していないことを確認する。
 
 ### 実装タスク
 
-- 未昇格のASB互換目標を将来の到達目標として扱い、Rev.67 時点の実装対象として扱わない。
+- 未昇格のASB互換目標を将来の到達目標として扱い、Rev.68 時点の実装対象として扱わない。
 - `internal/asb_forbidden_test.go` を作成する。
 - XServer Static互換機能セットの実装対象が、静的配信、独自ドメイン、無料独自SSL、GitHub Webhookデプロイ、HTTPS JSON APIによるファイル管理、ログ・状態確認、バックアップ・復旧に限定されていることを確認する。
 - XServer Static互換機能セットを理由に、XServer Static完全互換、管理画面再現、内部実装再現、DNS管理、DNS provider API、DNS-01、wildcard、複数CA、CDN完全互換、課金・契約・アカウント管理を追加しない。
 - ASB互換目標に含まれることを、未昇格機能の実装根拠として扱わない。
 - ASB互換目標を理由に `.gitignore`、外部DB、未承認外部ライブラリ、未承認外部サービス連携、開発リポジトリ内実行時データ、起動時自動生成、ビルド成果物自動生成を追加しない。
 - ASB互換目標を理由に APIキー管理、複数ユーザー管理、Rate limiting、Brotli圧縮、HTTP/2、CA選定、SDK専用通信を実装しない。
-- HTTP/2 が暗黙的に有効化されないよう、Rev.67 の実装では `http.Server.TLSNextProto` を空 map に設定する。
+- HTTP/2 が暗黙的に有効化されないよう、Rev.68 の実装では `http.Server.TLSNextProto` を空 map に設定する。
 - HTTP/2 専用設定項目、h2c、ALPN独自制御、server push、stream priority、専用handler、専用middleware、専用ログ項目を実装しない。
-- 将来計画、保留事項、検討・調査中事項を Rev.67 時点の実装対象として扱わない。
+- 将来計画、保留事項、検討・調査中事項を Rev.68 時点の実装対象として扱わない。
 - GUIという曖昧カテゴリ、ASB本体へのWeb UI内包、デスクトップアプリ、モバイルアプリ、複数ユーザー管理、ユーザー別権限管理、マルチテナント、課金管理、契約管理、複数インスタンス管理、クラスタ管理、分散ロック、NFS専用連携、分散ストレージ専用連携、外部ストレージサービス連携、ログファイル暗号化、HTTP/2実装詳細、FTP、FTPS、SFTPをASB本体に実装しない。
 - 将来計画機能または転送プロトコル互換を理由に ASB本体内包Web UI用API、モバイル専用API、テナント用API、課金用API、契約用API、外部ストレージ用API、ログ暗号化用API、FTP / FTPS / SFTP 用 APIを追加しない。
 - 将来計画機能または転送プロトコル互換を理由に `ui.*`、`webui.*`、`desktop.*`、`mobile.*`、`tenant.*`、`billing.*`、`nfs.*`、`cluster.*`、`distributedStorage.*`、`externalStorage.*`、`logEncryption.*`、`ftp.*`、`ftps.*`、`sftp.*` 設定項目を追加しない。
@@ -936,12 +936,12 @@
 - ログファイル暗号化を理由にログ保存時暗号化、ログ復号 API、key 生成、key 保存、key rotation、KMS連携、暗号化ログ viewer を実装しない。
 - デスクトップアプリ向けSDK利用を理由に専用API、専用認証、専用token、callback URL、deep link、OS keychain、auto update、installer、desktop notification、tray integration、native menu、GUIライブラリ依存を追加しない。
 - モバイルアプリ向けSDK利用を理由に専用API、専用認証、専用token、device registration、push notification、biometric authentication、mobile deep link、offline cache、sync queue、app store 配布設定、モバイルGUIライブラリ依存を追加しない。
-- Auteur 統合吸収を理由に Auteur 専用 API、設定、JSON、ディレクトリ、SDK、Web UI、CLI、互換モード、migration、import、export、plugin、adapter、bridge、protocol、runtime を追加しない。
+- 旧プロジェクト仕様の吸収を理由に、旧プロジェクト専用 API、設定、JSON、ディレクトリ、SDK、Web UI、CLI、互換モード、migration、import、export、plugin、adapter、bridge、protocol、runtime を追加しない。
 - 外部公開名、API名、設定名、JSON名、ディレクトリ名、package 名、SDK名、Web UI名、CLI subcommand 名に `Auteur` または `auteur` を使用しない。
 - Auteur リポジトリ `https://github.com/fqwink/Auteur` の `Auteur_Master_Specification.md` は仕様移管元としてのみ扱い、source code、runtime、CLI、fixture、test、CI、release automation、package、lock file、設定ファイル、生成物を ASB へ移管しない。
 - Auteur リポジトリ内の `.gitignore`、`deno.json`、TypeScript 実装、fixture、test が ASB の仕様、実装、生成物、依存関係、開発手順としてコピーされていないことを確認する。
 - `auteur.config.json`、`.auteur/`、`auteur-project/`、`src/pages/**/*.astro`、`src/pages/api/**/*.go`、`ui/`、`content/`、`dist/`、`.env`、`deno.json`、`deno.lock`、`AUTEUR_*` error code、Auteur 固有 hydration directive、Auteur 固有 component syntax が ASB の有効仕様として追加されていないことを確認する。
-- Markdown / MDX rendering、JSON Front Matter、Content Collections、File-based Routing、SSG、SSR、Hybrid Rendering、Islands Architecture、Route Manifest、Build Manifest、Blog generator、Documentation generator、Sitemap generator、SEO metadata generator、i18n route generator、Ad Slot Rendering、External Content Loader、Runtime Cache、Database Gateway、Database Adapter が Rev.67 時点の実装対象へ昇格していないことを確認する。
+- Content Pipeline、Site Routing、Site Rendering、Site Output、Blog、Docs、Sitemap、Ad Slot、Asset Pipeline、Source Sync、External Data Integration、Runtime Cache、Database Gateway、Database Adapter が Rev.68 時点の実装対象へ昇格していないことを確認する。
 - 管理 API が `Authorization` ヘッダーまたは `X-API-Key` ヘッダーの有無でレスポンスを変えないことをテストする。
 - APIキー、複数ユーザー、ロール、セッションを表す JSON ファイルまたはディレクトリを生成しないことをテストする。
 - `config/config.json` に認証関連フィールドが存在する場合に未知フィールドとして起動失敗することをテストする。
@@ -963,7 +963,7 @@
 - 複数インスタンス、NFS、分散ストレージ、外部ストレージ、ログ暗号化、デスクトップアプリ、モバイルアプリ用の設定項目、JSON ファイル、ディレクトリ、実行時データが生成されないことをテストする。
 - `config/config.json` に `cluster.*`、`node.*`、`lock.*`、`nfs.*`、`distributedStorage.*`、`externalStorage.*`、`logEncryption.*`、`desktop.*`、`desktopSdk.*`、`mobile.*`、`mobileSdk.*` 相当の関連フィールドが存在する場合に未知フィールドとして起動失敗することをテストする。
 - `config/auteur.json`、`config/auteur_compat.json`、`config/auteur_migration.json`、`storage/auteur/`、`storage/auteur_compat/`、`storage/auteur_migration/`、`auteur.*`、`auteurCompat.*`、`auteurMigration.*` が追加または生成されないことをテストする。
-- Auteur 名が実装入力元、互換対象、migration 元、独立サブシステム名として使用されていないことをレビューで確認する。ただし、`ASB-spec.md` で固定した仕様移管元の記録と変更履歴は除く。
+- 旧プロジェクト名が実装入力元、互換対象、migration 元、独立サブシステム名、ASB の有効な通常機能名として使用されていないことをレビューで確認する。ただし、`ASB-spec.md` で固定した仕様移管元の記録と変更履歴は除く。
 - 将来計画機能を理由に未昇格 API、設定項目、JSONファイル、ディレクトリ、外部依存が追加されていないことをテストまたはレビューで確認する。
 - 将来計画、保留事項、検討・調査中事項が個別確定仕様なしに実装対象へ昇格していないことを確認する。
 - XServer Static互換機能セット外の機能が、個別確定仕様なしに実装対象へ昇格していないことを確認する。
@@ -1041,14 +1041,14 @@
 
 ## 18. 実装フェーズ外の昇格待ちタスク
 
-以下は Rev.67 時点では実装フェーズに含めない。
+以下は Rev.68 時点では実装フェーズに含めない。
 
 - SDK認証拡張を実装対象へ昇格する場合の認証方式、対象SDK実装、ASB管理APIとの関係、単一システム管理者認証との併存または置換、APIキー管理、複数ユーザー化、保存JSON、公開API、Web UI、監査ログ、migration、downgrade、テスト条件を仕様改訂で確定する。
-- Auteur 由来の Content Pipeline を実装対象へ昇格する場合は、`.md`、`.mdx`、`.json`、JSON Front Matter、content metadata、parser / sanitizer 採否、source directory、schema file、output directory、cache directory、slug 重複、draft、unsafe HTML、link URL scheme、保存JSON、cache、migration、downgrade、テスト条件を仕様改訂で確定する。
-- Auteur 由来の Site Routing、Site Rendering、Site Runtime を実装対象へ昇格する場合は、route source、route file extension、dynamic route、catch-all route、route conflict、`index.html`、trailing slash、404、redirect、method handling、SSG、SSR、Hybrid Rendering、公開 API route、middleware、route manifest、build manifest、preview/dev server、HTTPS 必須性、生成物配置、テスト条件を仕様改訂で確定する。
-- Auteur 由来の Site Output を実装対象へ昇格する場合は、Blog、Documentation / Knowledge Base、Sitemap、SEO metadata、i18n route、Ad Slot Rendering の採否、出力 artifact、atomic publish、rollback、Backup 対象性、route、metadata、外部SDK非内蔵、tracking 非対応、テスト条件を仕様改訂で確定する。
-- Auteur 由来の Source Sync、External Data Integration、Runtime Cache を実装対象へ昇格する場合は、GitHub Webhook デプロイとの責務分離、対象 provider、認証方式、secret 保存、署名検証、retry、冪等性、timeout、schema validation、fallback、個人情報非取得、cache key、TTL、invalidation、容量上限、migration 対象性、テスト条件を仕様改訂で確定する。
-- Auteur 由来仕様を実装対象へ昇格する場合は、ASB 名称のみを使い、Auteur 専用名、Auteur 互換モード、Auteur CLI、Auteur runtime、`auteur.config.json`、`.auteur/`、`auteur-project/`、`AUTEUR_*` error code を作らないことを仕様改訂で確定する。
+- 移管元由来の Content Pipeline を実装対象へ昇格する場合は、`.md`、`.mdx`、`.json`、JSON Front Matter、content metadata、parser / sanitizer 採否、source directory、schema file、output directory、cache directory、slug 重複、draft、unsafe HTML、link URL scheme、保存JSON、cache、migration、downgrade、テスト条件を仕様改訂で確定する。
+- 移管元由来の Site Routing、Site Rendering を実装対象へ昇格する場合は、route source、route file extension、dynamic route、catch-all route、route conflict、`index.html`、trailing slash、404、redirect、method handling、SSG、SSR、Hybrid Rendering、公開 API route、middleware、route manifest、build manifest、preview/dev server、HTTPS 必須性、生成物配置、テスト条件を仕様改訂で確定する。
+- 移管元由来の Site Output、Blog、Docs、Sitemap、Ad Slot を実装対象へ昇格する場合は、採否、出力 artifact、atomic publish、rollback、Backup 対象性、route、metadata、外部SDK非内蔵、tracking 非対応、テスト条件を仕様改訂で確定する。
+- 移管元由来の Source Sync、External Data Integration、Runtime Cache を実装対象へ昇格する場合は、GitHub Webhook デプロイとの責務分離、対象 provider、認証方式、secret 保存、署名検証、retry、冪等性、timeout、schema validation、fallback、個人情報非取得、cache key、TTL、invalidation、容量上限、migration 対象性、テスト条件を仕様改訂で確定する。
+- 移管元由来仕様を実装対象へ昇格する場合は、ASB 通常機能名のみを使い、旧プロジェクト専用名、互換モード、旧プロジェクト CLI、旧プロジェクト runtime、`auteur.config.json`、`.auteur/`、`auteur-project/`、`AUTEUR_*` error code を作らないことを仕様改訂で確定する。
 - 複数インスタンス対応を実装対象へ昇格する場合の node 識別子、共有ストレージ、lock方式、障害時復旧、同時書き込み整合性、Webhook重複処理、ACME更新競合、Backup競合、ログ集約、設定形式、migration、downgrade、テスト条件を仕様改訂で確定する。
 - NFS連携を実装対象へ昇格する場合の対応NFS version、mount前提、lock方式、atomic rename前提、権限、障害時挙動、性能前提、複数インスタンス対応との関係、設定形式、migration、downgrade、テスト条件を仕様改訂で確定する。
 - 分散ストレージ連携を実装対象へ昇格する場合の保存対象、整合性モデル、書き込み順序、読み取り優先順位、障害時復旧、データ修復、複数インスタンス対応との関係、設定形式、migration、downgrade、テスト条件を仕様改訂で確定する。
