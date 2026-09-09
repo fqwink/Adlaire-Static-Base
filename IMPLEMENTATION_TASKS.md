@@ -6,7 +6,7 @@
 
 本ファイルは、`ASB-spec.md` に基づいて実装タスクを管理する。
 
-参照仕様バージョン: `ASB-spec.md Rev.55`
+参照仕様バージョン: `ASB-spec.md Rev.56`
 
 `ASB-spec.md` で仕様確定済みの事項のみを実装タスクとして扱う。
 
@@ -157,7 +157,7 @@
 - `204 No Content` を使用しない。
 - 配列レスポンスは対象データが空でも空配列を返す。
 - URL パラメータ `:id`、`:domain`、`:name` の URL decode、正規化、バリデーションを実装する。
-- `:id` は Rev.55 の UUID 正規表現に一致する値のみ許可する。
+- `:id` は Rev.56 の UUID 正規表現に一致する値のみ許可する。
 - `:domain` は小文字正規化後、label数、全体長、label正規表現、末尾 `.` 除去を仕様通り検証する。
 - `:name` は長さ、NUL、パス区切り、`.`、`..`、先頭 `.`、空白のみを仕様通り拒否する。
 - JSON ファイル更新時の読み込み検証、保存前再検証、同一ファイル排他書き込みを実装する。
@@ -173,9 +173,9 @@
 - 複数JSON更新の途中失敗時に更新済みJSON名、未更新JSON名、操作名、requestId をエラーログへ記録する。
 - 複数ファイル更新の途中失敗時に、更新予定JSON、更新済みJSON、`files.json` path、実ファイル、`projects.used` の整合性検証を実装する。
 - 整合性検証失敗時は `ERR_STORAGE_VALIDATION_FAILED` を error log へ記録する。
-- Rev.55 時点では複数JSON更新に外部トランザクション機構を導入しない。
-- Rev.55 時点の API エンドポイント固定表に記載されたメソッド、パス、成功ステータス、失敗コードを実装する。
-- Rev.55 API 成功レスポンス固定表に記載された JSON キーと型を実装する。
+- Rev.56 時点では複数JSON更新に外部トランザクション機構を導入しない。
+- Rev.56 時点の API エンドポイント固定表に記載されたメソッド、パス、成功ステータス、失敗コードを実装する。
+- Rev.56 API 成功レスポンス固定表に記載された JSON キーと型を実装する。
 - プロジェクト作成 API `POST /api/projects` を実装する。
 - プロジェクト一覧 API `GET /api/projects` を実装する。
 - プロジェクト削除 API `DELETE /api/projects/:id` を実装する。
@@ -265,7 +265,7 @@
 - `Last-Modified` を HTTP-date 形式で返す。
 - `Cache-Control` を既定で `public, max-age=60` とする。
 - `If-None-Match` と `If-Modified-Since` による `304 Not Modified` を実装する。
-- Range request は Rev.55 時点では実装せず、`Range` ヘッダーを無視して `206 Partial Content` を返さない。
+- Range request は Rev.56 時点では実装せず、`Range` ヘッダーを無視して `206 Partial Content` を返さない。
 - `Accept-Encoding: br` では Brotli 応答を返さない。
 - Brotli 用の `.br`、キャッシュ、一時ファイル、メタデータを開発リポジトリ内にも `storage.basePath` 配下にも生成しない。
 - 静的配信でディレクトリ一覧を返さない。
@@ -513,7 +513,7 @@
 - バックアップ作成用一時tarを `storage.basePath/backups/.tmp/` 配下に限定する。
 - atomic rename 後に履歴保存へ失敗した場合は、作成済みtar.gzを削除する。
 - バックアップ保存先を別障害領域へ複製する作業をASB外の運用責務として扱う。
-- 外部ストレージ連携を Rev.55 時点では実装対象外として扱う。
+- 外部ストレージ連携を Rev.56 時点では実装対象外として扱う。
 - Backup復旧前退避先を `storage.basePath/backups/restore-staging/{restoreId}/previous/` に固定する。
 - Backup復旧用展開先を `storage.basePath/backups/restore-staging/{restoreId}/next/` に固定する。
 - Backup履歴の `status` が `completed` でない場合は復旧を拒否する。
@@ -615,7 +615,9 @@
 - `--apply` では事前検証、事前バックアップ、変換後JSON生成、再検証、atomic rename、履歴保存、完了ログ記録の順に実装する。
 - マイグレーション作業ファイル、一時ファイル、退避ファイル、履歴ファイルを開発リポジトリ内に作成しない。
 - `config/migrations.json` の `schemaVersion`、`migrations[]`、`status`、`backupPath` スキーマを実装する。
-- `config/migrations.json` は `asb migrate --apply` 実行時のみ作成し、起動時、API、静的配信、Webhook、Backup、Log API、SSL 管理境界では作成しない。
+- `config/migrations.json` は起動時必須 JSON ファイルとして扱わない。
+- `config/migrations.json` は `asb init-runtime` の初期作成対象に含めない。
+- `config/migrations.json` は `asb migrate --apply` 実行時のみ初回作成し、起動時、API、静的配信、Webhook、Backup、Log API、SSL 管理境界では作成しない。
 - `config/migrations.json` 作成または更新失敗時はマイグレーション成功扱いにしない。
 - マイグレーション失敗時の事前バックアップからのロールバックを実装する。
 - ロールバック失敗時に標準エラー、エラーログ、`config/migrations.json` へ `failed` として記録する。
@@ -627,6 +629,8 @@
 - 未対応 `schemaVersion` の起動失敗テストが成功する。
 - `--dry-run` が実行時 JSON ファイルを変更しないテストが成功する。
 - `--apply` が対象 JSON ファイルを atomic rename で更新するテストが成功する。
+- `config/migrations.json` が `asb init-runtime` で作成されないテストが成功する。
+- `config/migrations.json` が `asb migrate --apply` 実行時のみ初回作成されるテストが成功する。
 - 事前バックアップ作成、途中失敗時の成功禁止、ロールバック成功、ロールバック失敗時の `failed` 記録テストが成功する。
 - 開発リポジトリ内に移行作業ファイルを作成しないテストが成功する。
 - `go test ./...` が成功する。
@@ -774,7 +778,7 @@
 - 認証 UI、ユーザー管理 UI、テナント管理 UI、課金 UI、契約管理 UI、FTP / FTPS / SFTP UI、クラウドサービス管理 UI、ウイルススキャン UI を実装しない。
 - ブラウザストレージ、cookie、Service Worker、Cache Storage、IndexedDB を永続状態として使用しない。
 - `package.json`、`node_modules/`、`deno.json`、`deno.lock`、`dist/`、`build/`、一時ファイル、ログファイル、ビルド成果物を生成しない。
-- Rev.55 時点では、ASB 標準Web UIに認証 UI を実装しない。
+- Rev.56 時点では、ASB 標準Web UIに認証 UI を実装しない。
 - 外部ネットワークから利用可能にする場合は、VPN、SSH tunnel、reverse proxy、ファイアウォール、IP制限等のASB外部の運用境界で保護する。
 - 外部開発者の独自Web UIまたは独自フロントエンドは、公式 ASB 標準Web UI の実装タスクとして扱わない。
 
@@ -809,18 +813,18 @@
 
 優先度: 低
 
-目的: Rev.55 時点で実装対象外の機能が混入していないことを確認する。
+目的: Rev.56 時点で実装対象外の機能が混入していないことを確認する。
 
 ### 実装タスク
 
-- 未確定のASB互換目標を将来の到達目標として扱い、Rev.55 時点の実装対象として扱わない。
+- 未確定のASB互換目標を将来の到達目標として扱い、Rev.56 時点の実装対象として扱わない。
 - `internal/asb_forbidden_test.go` を作成する。
 - XServer Static互換機能セットの実装対象が、静的配信、独自ドメイン、無料独自SSL、GitHub Webhookデプロイ、HTTPS JSON APIによるファイル管理、ログ・状態確認、バックアップ・復旧に限定されていることを確認する。
 - XServer Static互換機能セットを理由に、XServer Static完全互換、管理画面再現、内部実装再現、DNS管理、DNS provider API、DNS-01、wildcard、複数CA、CDN完全互換、課金・契約・アカウント管理、クラウドサービス化、ウイルススキャンを追加しない。
 - ASB互換目標に含まれることを、未確定機能の実装根拠として扱わない。
 - ASB互換目標を理由に `.gitignore`、外部DB、未承認外部ライブラリ、未承認外部サービス連携、開発リポジトリ内実行時データ、起動時自動生成、ビルド成果物自動生成を追加しない。
 - ASB互換目標を理由に APIキー管理、ユーザー認証、Rate limiting、Brotli圧縮、CA選定、SDK専用通信を実装しない。
-- 将来計画、保留事項、検討・調査中事項を Rev.55 時点の実装対象として扱わない。
+- 将来計画、保留事項、検討・調査中事項を Rev.56 時点の実装対象として扱わない。
 - GUIという曖昧カテゴリ、ASB本体へのWeb UI内包、デスクトップアプリ、モバイルアプリ、ユーザー管理、マルチテナント、課金管理、契約管理、複数インスタンス管理、クラスタ管理、分散ロック、NFS専用連携、分散ストレージ専用連携、外部ストレージサービス連携、ログファイル暗号化、HTTP/2実装詳細、FTP、FTPS、SFTPをASB本体に実装しない。
 - 将来計画機能または転送プロトコル互換を理由に ASB本体内包Web UI用API、モバイル専用API、テナント用API、課金用API、契約用API、外部ストレージ用API、ログ暗号化用API、FTP / FTPS / SFTP 用 APIを追加しない。
 - 将来計画機能または転送プロトコル互換を理由に `ui.*`、`webui.*`、`desktop.*`、`mobile.*`、`tenant.*`、`billing.*`、`nfs.*`、`cluster.*`、`distributedStorage.*`、`externalStorage.*`、`logEncryption.*`、`ftp.*`、`ftps.*`、`sftp.*` 設定項目を追加しない。
@@ -862,7 +866,7 @@
 
 ## 17. 実装フェーズ外の仕様未確定タスク
 
-以下は Rev.55 時点では実装フェーズに含めない。
+以下は Rev.56 時点では実装フェーズに含めない。
 
 - ASB SDK の認証仕様、デスクトップアプリ向け利用、モバイルアプリ向け利用を確定する。
 - HTTP/2 実装詳細を実装対象へ昇格する場合の API、設定項目、テスト条件を仕様改訂で確定する。
