@@ -6,7 +6,7 @@
 
 本ファイルは、`ASB-spec.md` に基づいて実装タスクを管理する。
 
-参照仕様バージョン: `ASB-spec.md Rev.51`
+参照仕様バージョン: `ASB-spec.md Rev.54`
 
 `ASB-spec.md` で仕様確定済みの事項のみを実装タスクとして扱う。
 
@@ -145,7 +145,7 @@
 - `204 No Content` を使用しない。
 - 配列レスポンスは対象データが空でも空配列を返す。
 - URL パラメータ `:id`、`:domain`、`:name` の URL decode、正規化、バリデーションを実装する。
-- `:id` は Rev.51 の UUID 正規表現に一致する値のみ許可する。
+- `:id` は Rev.54 の UUID 正規表現に一致する値のみ許可する。
 - `:domain` は小文字正規化後、label数、全体長、label正規表現、末尾 `.` 除去を仕様通り検証する。
 - `:name` は長さ、NUL、パス区切り、`.`、`..`、先頭 `.`、空白のみを仕様通り拒否する。
 - JSON ファイル更新時の読み込み検証、保存前再検証、同一ファイル排他書き込みを実装する。
@@ -161,9 +161,9 @@
 - 複数JSON更新の途中失敗時に更新済みJSON名、未更新JSON名、操作名、requestId をエラーログへ記録する。
 - 複数ファイル更新の途中失敗時に、更新予定JSON、更新済みJSON、`files.json` path、実ファイル、`projects.used` の整合性検証を実装する。
 - 整合性検証失敗時は `ERR_STORAGE_VALIDATION_FAILED` を error log へ記録する。
-- Rev.51 時点では複数JSON更新に外部トランザクション機構を導入しない。
-- Rev.51 時点の API エンドポイント固定表に記載されたメソッド、パス、成功ステータス、失敗コードを実装する。
-- Rev.51 API 成功レスポンス固定表に記載された JSON キーと型を実装する。
+- Rev.54 時点では複数JSON更新に外部トランザクション機構を導入しない。
+- Rev.54 時点の API エンドポイント固定表に記載されたメソッド、パス、成功ステータス、失敗コードを実装する。
+- Rev.54 API 成功レスポンス固定表に記載された JSON キーと型を実装する。
 - プロジェクト作成 API `POST /api/projects` を実装する。
 - プロジェクト一覧 API `GET /api/projects` を実装する。
 - プロジェクト削除 API `DELETE /api/projects/:id` を実装する。
@@ -245,7 +245,7 @@
 - `Last-Modified` を HTTP-date 形式で返す。
 - `Cache-Control` を既定で `public, max-age=60` とする。
 - `If-None-Match` と `If-Modified-Since` による `304 Not Modified` を実装する。
-- Range request は Rev.51 時点では実装せず、`Range` ヘッダーを無視して `206 Partial Content` を返さない。
+- Range request は Rev.54 時点では実装せず、`Range` ヘッダーを無視して `206 Partial Content` を返さない。
 - `Accept-Encoding: br` では Brotli 応答を返さない。
 - Brotli 用の `.br`、キャッシュ、一時ファイル、メタデータを開発リポジトリ内にも `storage.basePath` 配下にも生成しない。
 - 静的配信でディレクトリ一覧を返さない。
@@ -329,15 +329,43 @@
 - 無料独自SSL 状態確認 API `GET /api/projects/:id/domains/:domain/ssl` を実装する。
 - 無料独自SSL 更新 API `POST /api/projects/:id/domains/:domain/ssl/renew` を実装する。
 - 無料独自SSL 無効化 API `POST /api/projects/:id/domains/:domain/ssl/disable` を実装する。
+- 無料独自SSL API の成功レスポンスを SSLStatus object に統一する。
+- SSLStatus object の `domain`、`projectId`、`status`、`enabled`、`issuer`、`challenge`、`certificatePath`、`privateKeyPath`、`expiresAt`、`renewAfter`、`nextRetryAt`、`lastErrorCode`、`lastErrorMessage`、`updatedAt` を実装する。
+- SSLStatus object に仕様外キーを含めない。
+- SSLStatus の `issuer` は `LetsEncrypt`、`challenge` は `http-01` に固定する。
+- SSLStatus の `status` ごとに、証明書パス、有効期限、更新予定、次回再試行時刻、失敗理由の空文字条件を仕様通りに実装する。
+- `renewAfter` を `expiresAt - ssl.renewBefore` で算出する。
+- 無料独自SSL 更新 API は対象 Domain が `disabled`、`pending`、`challenge_ready`、`renewing` の場合に `409 Conflict` と `ERR_SSL_OPERATION_CONFLICT` を返す。
 - 無料独自SSLの有効化、無効化、状態確認、証明書取得、証明書自動更新を実装する。
+- Domain 単位の無料独自SSL状態 `disabled`、`pending`、`challenge_ready`、`issued`、`renewing`、`failed`、`expired` を実装する。
+- 有効化 API は対象 Domain が `disabled` または `failed` の場合のみ新規 ACME order を作成する。
+- 有効化 API は対象 Domain が `pending`、`challenge_ready`、`issued`、`renewing` の場合に重複 ACME order を作成せず既存状態を返す。
+- 無効化 API は無料独自SSL状態を `disabled` に変更し、既存証明書ファイルを即時削除しない。
 - Let’s Encrypt ACME v2 client を実装する。
 - ACME account 登録、account key 生成・保存、directory 取得、nonce 管理、order 作成、authorization 取得、HTTP-01 challenge 応答、finalize、certificate download を実装する。
 - HTTP-01 challenge 応答を通常の静的ファイル配信より優先する。
 - `/.well-known/acme-challenge/{token}` を ASB の challenge handler で応答する。
+- HTTP-01 challenge handler は token が存在しない場合に通常の静的ファイル探索へ fallback せず `404 Not Found` を返す。
 - ASB 前段にリバースプロキシを置く場合、`/.well-known/acme-challenge/` が ASB へ転送される構成を前提として検証する。
+- HTTP-01 challenge token を `storage.basePath/acme/challenges/{domain}/{token}` に保存し、開発リポジトリ内に生成しない。
+- HTTP-01 challenge token の内容を ACME key authorization 文字列のみにする。
+- authorization が `valid`、`invalid`、`expired` になった場合に HTTP-01 challenge token を削除対象にする。
 - 証明書ファイルを `storage.basePath/certs/{domain}/fullchain.pem` と `storage.basePath/certs/{domain}/privkey.pem` に保存する。
-- ACME 内部状態を `config/acme_accounts.json`、`config/acme_orders.json`、`config/acme_authorizations.json`、`config/acme_challenges.json`、`config/acme_renewals.json` に保存する。
+- 証明書本文と秘密鍵本文の対応確認、有効期限確認を Go 標準ライブラリ `crypto/x509`、`encoding/pem`、`crypto/tls` で実装する。
+- ACME 内部状態を `storage.basePath` 配下の `config/acme_accounts.json`、`config/acme_orders.json`、`config/acme_authorizations.json`、`config/acme_challenges.json`、`config/acme_renewals.json` に保存する。
+- `config/acme_accounts.json` の `schemaVersion`、`accounts` と account の `id`、`ca`、`directoryUrl`、`accountUrl`、`email`、`privateKeyPem`、`status`、`createdAt`、`updatedAt` を実装する。
+- `config/acme_orders.json` の `schemaVersion`、`orders` と order の `id`、`domain`、`accountId`、`orderUrl`、`finalizeUrl`、`certificateUrl`、`status`、`expiresAt`、`createdAt`、`updatedAt` を実装する。
+- `config/acme_authorizations.json` の `schemaVersion`、`authorizations` と authorization の `id`、`orderId`、`domain`、`authorizationUrl`、`status`、`expiresAt`、`createdAt`、`updatedAt` を実装する。
+- `config/acme_challenges.json` の `schemaVersion`、`challenges` と challenge の `id`、`authorizationId`、`domain`、`type`、`challengeUrl`、`token`、`keyAuthorizationPath`、`status`、`createdAt`、`updatedAt` を実装する。
+- `config/acme_renewals.json` の `schemaVersion`、`renewals` と renewal の `id`、`domain`、`kind`、`status`、`attemptCount`、`lastErrorCode`、`lastErrorMessage`、`nextRetryAt`、`notBefore`、`notAfter`、`createdAt`、`updatedAt` を実装する。
+- 無料独自SSLの新規取得状態遷移を `disabled` / `failed` から `pending`、`challenge_ready`、`issued` または `failed` へ進める実装にする。
+- 証明書更新状態遷移を `issued` から `renewing`、`challenge_ready`、`issued`、`expired` へ進める実装にする。
 - 証明書自動更新スケジューラー、`ssl.renewBefore`、`ssl.renewCheckInterval`、retry / backoff、Let’s Encrypt rate limit 配慮を実装する。
+- 証明書自動更新は、証明書有効期限の `ssl.renewBefore` 秒前から対象にする。
+- `ssl.renewBefore` は `86400` 以上 `15552000` 以下の秒数整数のみ許可する。
+- `ssl.renewCheckInterval` は `3600` 以上 `86400` 以下の秒数整数のみ許可する。
+- retry / backoff は Domain 単位で管理し、`attemptCount` に基づき最小 `3600` 秒、最大 `86400` 秒の範囲で `nextRetryAt` を決定する。
+- `nextRetryAt` より前に同一 Domain の自動更新を再実行しない。
 - 複数 CA、CA 選定、CA failover、任意 ACME directory URL を実装しない。
 - DNS-01 challenge、TLS-ALPN-01 challenge、wildcard 証明書、DNS provider API 連携、手動 TXT 登録、EAB、ARI、OCSP stapling を実装しない。
 - `internal/management/acme_test.go`、`internal/management/ssl_acme_test.go` を作成する。
@@ -345,7 +373,15 @@
 ### 完了条件
 
 - 無料独自SSLの有効化、無効化、状態確認、証明書取得、証明書自動更新のテストが成功する。
+- 無料独自SSL 有効化、状態確認、更新、無効化 API が SSLStatus object を仕様通り返す。
+- SSLStatus の状態別空文字条件、`enabled`、`issuer`、`challenge`、`renewAfter`、`nextRetryAt`、`lastErrorCode` が仕様通りである。
+- 無料独自SSL 更新 API の競合状態で `409 Conflict` と `ERR_SSL_OPERATION_CONFLICT` が返る。
 - Let’s Encrypt ACME v2 のHTTP-01 challengeフローをテスト用ACMEサーバーまたはモックで検証する。
+- ACME account、order、authorization、challenge、renewal の JSON 保存スキーマが仕様通りである。
+- 新規取得、更新、失敗、backoff、期限切れの状態遷移が仕様通りである。
+- `nextRetryAt` より前に自動更新が再実行されない。
+- HTTP-01 challenge token が通常静的ファイル配信へ fallback しない。
+- 既存有効証明書が更新失敗で削除されない。
 - DNS-01、TLS-ALPN-01、wildcard、DNS provider API、複数CA、CA選定、CA failoverが実装されていないことを確認する。
 - `go test ./...` が成功する。
 - `.gitignore` が存在しない。
@@ -455,7 +491,7 @@
 - バックアップ作成用一時tarを `storage.basePath/backups/.tmp/` 配下に限定する。
 - atomic rename 後に履歴保存へ失敗した場合は、作成済みtar.gzを削除する。
 - バックアップ保存先を別障害領域へ複製する作業をASB外の運用責務として扱う。
-- 外部ストレージ連携を Rev.51 時点では実装対象外として扱う。
+- 外部ストレージ連携を Rev.54 時点では実装対象外として扱う。
 - Backup復旧前退避先を `storage.basePath/backups/restore-staging/{restoreId}/previous/` に固定する。
 - Backup復旧用展開先を `storage.basePath/backups/restore-staging/{restoreId}/next/` に固定する。
 - Backup履歴の `status` が `completed` でない場合は復旧を拒否する。
@@ -630,42 +666,44 @@
 
 優先度: 低
 
-目的: ASB 管理 HTTPS JSON API を呼び出すための、Browser JavaScript SDK、Deno専用 TypeScript SDK、Go SDK を実装する。
+目的: ASB 管理 HTTPS JSON API を呼び出すための、ASB SDK とその Browser JavaScript、Deno専用 TypeScript、Go 対応実装を実装する。
 
 ### 実装タスク
 
-- Browser JavaScript SDK をブラウザ専用 JavaScript SDK として実装する。
-- Browser JavaScript SDK の標準ファイルを `asb-sdk.js` として実装する。
-- Browser JavaScript SDK をブラウザ標準 ES module として読み込める形式にする。
-- Browser JavaScript SDK は package 名を持たない構成にする。
-- Browser JavaScript SDK は Web 標準 API の `fetch`、`URL`、`URLSearchParams`、`Headers`、`FormData`、`Blob`、`AbortController`、`Promise` の範囲で実装する。
-- TypeScript SDK を Deno 専用ランタイムの TypeScript module として実装する。
-- TypeScript SDK の標準ファイルを `asb-sdk.ts` として実装する。
-- TypeScript SDK は Deno runtime API と Web 標準 API の範囲で実装する。
-- TypeScript SDK は Node.js、npm、package manager、`package.json`、`node_modules/`、`deno.json`、`deno.lock`、bundler、transpiler、generated client、外部ライブラリを前提にしない。
-- Go SDK を Go 1.21 以上の ASB 管理 HTTPS JSON API クライアントとして実装する。
-- Go SDK は `net/http`、`net/url`、`encoding/json`、`context`、`time`、`mime/multipart` を中心に Go標準ライブラリで実装する。
-- Go SDK は ASB 本体の `internal/` package を import しない。
-- Go SDK は外部HTTP client library、外部JSON library、generated client を前提にしない。
-- すべての ASB SDK は ASB 管理 HTTPS JSON API の method、path、query parameter、path parameter、request JSON、multipart upload、success response JSON、error response JSON、HTTP status code、error code、pagination、UTC RFC3339 timestamp を扱う。
-- すべての ASB SDK は `baseUrl`、timeout、request cancellation、JSON request、JSON response、multipart upload、error response の扱いを提供する。
-- すべての ASB SDK の自動 retry 回数は `0` とし、失敗した HTTP request を自動再送しない。
-- すべての ASB SDK は ASB 本体の内部 JSON、Service、Repository、Storage を直接参照または呼び出さない。
+- ASB SDK を単一の公式SDKとして実装する。
+- ASB SDK を別製品名または別プロジェクト名として分割しない。
+- ASB SDK の Browser JavaScript 実装をブラウザ専用 JavaScript 実装として実装する。
+- ASB SDK の Browser JavaScript 実装の標準ファイルを `asb-sdk.js` として実装する。
+- ASB SDK の Browser JavaScript 実装をブラウザ標準 ES module として読み込める形式にする。
+- ASB SDK の Browser JavaScript 実装は package 名を持たない構成にする。
+- ASB SDK の Browser JavaScript 実装は Web 標準 API の `fetch`、`URL`、`URLSearchParams`、`Headers`、`FormData`、`Blob`、`AbortController`、`Promise` の範囲で実装する。
+- ASB SDK の Deno専用 TypeScript 実装を Deno 専用ランタイムの TypeScript module として実装する。
+- ASB SDK の Deno専用 TypeScript 実装の標準ファイルを `asb-sdk.ts` として実装する。
+- ASB SDK の Deno専用 TypeScript 実装は Deno runtime API と Web 標準 API の範囲で実装する。
+- ASB SDK の Deno専用 TypeScript 実装は Node.js、npm、package manager、`package.json`、`node_modules/`、`deno.json`、`deno.lock`、bundler、transpiler、generated client、外部ライブラリを前提にしない。
+- ASB SDK の Go 実装を Go 1.21 以上の ASB 管理 HTTPS JSON API クライアント実装として実装する。
+- ASB SDK の Go 実装は `net/http`、`net/url`、`encoding/json`、`context`、`time`、`mime/multipart` を中心に Go標準ライブラリで実装する。
+- ASB SDK の Go 実装は ASB 本体の `internal/` package を import しない。
+- ASB SDK の Go 実装は外部HTTP client library、外部JSON library、generated client を前提にしない。
+- ASB SDK の各対応実装は ASB 管理 HTTPS JSON API の method、path、query parameter、path parameter、request JSON、multipart upload、success response JSON、error response JSON、HTTP status code、error code、pagination、UTC RFC3339 timestamp を扱う。
+- ASB SDK の各対応実装は `baseUrl`、timeout、request cancellation、JSON request、JSON response、multipart upload、error response の扱いを提供する。
+- ASB SDK の各対応実装の自動 retry 回数は `0` とし、失敗した HTTP request を自動再送しない。
+- ASB SDK の各対応実装は ASB 本体の内部 JSON、Service、Repository、Storage を直接参照または呼び出さない。
 - SDK 専用 HTTPS API、SDK 専用 URL prefix、SDK 専用 request body、SDK 専用 response body、SDK 専用 error format、SDK 専用 pagination、SDK 専用 upload protocol を作らない。
 - SDK 専用 session、token、cookie、handshake、protocol negotiation、version negotiation を作らない。
 - SDK 専用 JSON ファイル、SDK 専用ディレクトリ、SDK 専用設定項目、SDK 専用実行時データを作らない。
-- Browser JavaScript SDK はブラウザストレージ、cookie、Service Worker、Cache Storage、IndexedDB を SDK 通信用の永続状態として使用しない。
+- ASB SDK の Browser JavaScript 実装はブラウザストレージ、cookie、Service Worker、Cache Storage、IndexedDB を SDK 通信用の永続状態として使用しない。
 - `package.json`、`node_modules/`、`deno.json`、`deno.lock`、`dist/`、`build/` を SDK 実装理由で追加しない。
 - SDK のユニットテストまたはレビューで、Node.js、npm、bundler、外部ライブラリへの依存がないことを確認する。
 
 ### 完了条件
 
-- Browser JavaScript SDK、Deno専用 TypeScript SDK、Go SDK が実装されている。
-- すべての SDK が ASB 管理 HTTPS JSON API と同一規格で通信する。
+- ASB SDK の Browser JavaScript、Deno専用 TypeScript、Go 対応実装が実装されている。
+- ASB SDK の各対応実装が ASB 管理 HTTPS JSON API と同一規格で通信する。
 - SDK 専用 API、SDK 専用保存データ、SDK 専用実行時データが存在しない。
-- Browser JavaScript SDK と TypeScript SDK が Node.js、npm、package manager、bundler、外部ライブラリを前提にしていない。
-- TypeScript SDK が Deno 専用である。
-- Go SDK が ASB 本体の `internal/` package を import していない。
+- ASB SDK の Browser JavaScript 実装と Deno専用 TypeScript 実装が Node.js、npm、package manager、bundler、外部ライブラリを前提にしていない。
+- ASB SDK の Deno専用 TypeScript 実装が Deno 専用である。
+- ASB SDK の Go 実装が ASB 本体の `internal/` package を import していない。
 - `.gitignore` が存在しない。
 - 開発リポジトリ内に実行時データ、ログ、一時ファイル、ビルド成果物が残っていない。
 - `go test ./...` が成功する。
@@ -696,10 +734,10 @@
 - ASB 本体は `webui/` を起動時に読み込まない。
 - ASB 本体は `webui/` を静的配信対象として自動公開しない。
 - ASB 標準Web UI は ASB 本体の release artifact とは別 artifact として配布する。
-- ASB 標準Web UI の配布 artifact は静的 HTML / CSS / JavaScript と Browser JavaScript SDK を含むファイル集合にする。
-- ASB 標準Web UI はブラウザ標準 API と Browser JavaScript SDK のみを使用する。
+- ASB 標準Web UI の配布 artifact は静的 HTML / CSS / JavaScript と ASB SDK の Browser JavaScript 実装を含むファイル集合にする。
+- ASB 標準Web UI はブラウザ標準 API と ASB SDK の Browser JavaScript 実装のみを使用する。
 - ASB 標準Web UI は `asb-sdk.js` をブラウザ標準 ES module として読み込む。
-- ASB 標準Web UI は Browser JavaScript SDK 経由で ASB 管理 HTTPS JSON API のみを呼び出す。
+- ASB 標準Web UI は ASB SDK の Browser JavaScript 実装経由で ASB 管理 HTTPS JSON API のみを呼び出す。
 - ASB 標準Web UI は ASB 本体の内部 JSON、Service、Repository、Storage を直接参照または呼び出さない。
 - Dashboard 画面を実装し、システム状態、プロジェクト数、ドメイン数、SSL状態、デプロイ状態、ストレージ使用量、直近ログを表示する。
 - Projects 画面を実装し、Project の一覧、作成、詳細確認、削除を行う。
@@ -714,14 +752,14 @@
 - 認証 UI、ユーザー管理 UI、テナント管理 UI、課金 UI、契約管理 UI、FTP / FTPS / SFTP UI、クラウドサービス管理 UI、ウイルススキャン UI を実装しない。
 - ブラウザストレージ、cookie、Service Worker、Cache Storage、IndexedDB を永続状態として使用しない。
 - `package.json`、`node_modules/`、`deno.json`、`deno.lock`、`dist/`、`build/`、一時ファイル、ログファイル、ビルド成果物を生成しない。
-- Rev.51 時点では、ASB 標準Web UIに認証 UI を実装しない。
+- Rev.54 時点では、ASB 標準Web UIに認証 UI を実装しない。
 - 外部ネットワークから利用可能にする場合は、VPN、SSH tunnel、reverse proxy、ファイアウォール、IP制限等のASB外部の運用境界で保護する。
 - 外部開発者の独自Web UIまたは独自フロントエンドは、公式 ASB 標準Web UI の実装タスクとして扱わない。
 
 ### 完了条件
 
 - Dashboard、Projects、Domains、SSL、Files、Deployments、Backups、Logs、Settings の各画面が実装されている。
-- 全画面が Browser JavaScript SDK 経由で ASB 管理 HTTPS JSON API のみを呼び出す。
+- 全画面が ASB SDK の Browser JavaScript 実装経由で ASB 管理 HTTPS JSON API のみを呼び出す。
 - ASB 標準Web UI が `webui/` 配下に配置されている。
 - ASB 標準Web UI が ASB 本体 release artifact とは別 artifact として配布できる。
 - ASB 本体に Web UI 画面、テンプレート、フロントエンドビルド、Web UI 専用保存 JSON、Web UI 専用実行時データが追加されていない。
@@ -749,18 +787,18 @@
 
 優先度: 低
 
-目的: Rev.51 時点で実装対象外の機能が混入していないことを確認する。
+目的: Rev.54 時点で実装対象外の機能が混入していないことを確認する。
 
 ### 実装タスク
 
-- 未確定のASB互換目標を将来の到達目標として扱い、Rev.51 時点の実装対象として扱わない。
+- 未確定のASB互換目標を将来の到達目標として扱い、Rev.54 時点の実装対象として扱わない。
 - `internal/asb_forbidden_test.go` を作成する。
 - XServer Static互換機能セットの実装対象が、静的配信、独自ドメイン、無料独自SSL、GitHub Webhookデプロイ、HTTPS JSON APIによるファイル管理、ログ・状態確認、バックアップ・復旧に限定されていることを確認する。
 - XServer Static互換機能セットを理由に、XServer Static完全互換、管理画面再現、内部実装再現、DNS管理、DNS provider API、DNS-01、wildcard、複数CA、CDN完全互換、課金・契約・アカウント管理、クラウドサービス化、ウイルススキャンを追加しない。
 - ASB互換目標に含まれることを、未確定機能の実装根拠として扱わない。
 - ASB互換目標を理由に `.gitignore`、外部DB、未承認外部ライブラリ、未承認外部サービス連携、開発リポジトリ内実行時データ、起動時自動生成、ビルド成果物自動生成を追加しない。
 - ASB互換目標を理由に APIキー管理、ユーザー認証、Rate limiting、Brotli圧縮、CA選定、SDK専用通信を実装しない。
-- 将来計画、保留事項、検討・調査中事項を Rev.51 時点の実装対象として扱わない。
+- 将来計画、保留事項、検討・調査中事項を Rev.54 時点の実装対象として扱わない。
 - GUIという曖昧カテゴリ、ASB本体へのWeb UI内包、デスクトップアプリ、モバイルアプリ、ユーザー管理、マルチテナント、課金管理、契約管理、複数インスタンス管理、クラスタ管理、分散ロック、NFS専用連携、分散ストレージ専用連携、外部ストレージサービス連携、ログファイル暗号化、HTTP/2実装詳細、FTP、FTPS、SFTPをASB本体に実装しない。
 - 将来計画機能または転送プロトコル互換を理由に ASB本体内包Web UI用API、モバイル専用API、テナント用API、課金用API、契約用API、外部ストレージ用API、ログ暗号化用API、FTP / FTPS / SFTP 用 APIを追加しない。
 - 将来計画機能または転送プロトコル互換を理由に `ui.*`、`webui.*`、`desktop.*`、`mobile.*`、`tenant.*`、`billing.*`、`nfs.*`、`cluster.*`、`distributedStorage.*`、`externalStorage.*`、`logEncryption.*`、`ftp.*`、`ftps.*`、`sftp.*` 設定項目を追加しない。
@@ -773,7 +811,7 @@
 - 管理 API、静的配信、Webhook 受信が Rate limiting 関連条件でレスポンスを変えないことをテストする。
 - `config/config.json` に Rate limiting 関連フィールドが存在する場合に未知フィールドとして起動失敗することをテストする。
 - SDK 通信が ASB 管理 HTTPS JSON API と同一規格であることをテストする。
-- ASB 標準Web UI が Browser JavaScript SDK を経由して ASB 管理 HTTPS JSON API と通信する設計になっていることを確認する。
+- ASB 標準Web UI が ASB SDK の Browser JavaScript 実装を経由して ASB 管理 HTTPS JSON API と通信する設計になっていることを確認する。
 - ASB 標準Web UI が ASB 本体の内部 JSON、Service、Repository、Storage を直接参照しないことを確認する。
 - ASB 本体に Web UI 画面、Web UI テンプレート、Web UI フロントエンドビルド、Web UI 専用保存 JSON、Web UI 専用実行時データが追加されていないことを確認する。
 - SDK 専用プロトコル、SDK 専用エンドポイント、SDK 専用セッション、SDK 専用 JSON ファイルまたはディレクトリを生成しないことをテストする。
@@ -802,7 +840,7 @@
 
 ## 17. 実装フェーズ外の仕様未確定タスク
 
-以下は Rev.51 時点では実装フェーズに含めない。
+以下は Rev.54 時点では実装フェーズに含めない。
 
 - ASB SDK の認証仕様、デスクトップアプリ向け利用、モバイルアプリ向け利用を確定する。
 - HTTP/2 実装詳細を実装対象へ昇格する場合の API、設定項目、テスト条件を仕様改訂で確定する。
