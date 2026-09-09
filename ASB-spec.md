@@ -39,7 +39,7 @@ ASB は仕様駆動システムである。
 | 提供形態 | HTTPS サーバー（単一バイナリ） |
 | データ保存 | JSON ファイルベース（外部DB不使用） |
 | ライセンス | クローズドライセンス |
-| 本書バージョン | Rev.54 |
+| 本書バージョン | Rev.60 |
 
 ---
 
@@ -88,7 +88,7 @@ ASB互換目標における「参考」「相当」「目標」は、実装対�
 
 ASB互換目標は将来の到達目標であり、個別の確定仕様へ昇格した項目のみ実装対象とする。
 
-Rev.54 時点では、無料独自SSLのみを XServer Static 互換目標から確定仕様へ昇格する。
+Rev.60 時点では、無料独自SSLのみを XServer Static 互換目標から確定仕様へ昇格する。
 
 ASB互換目標に含まれることは、未確定機能を実装してよい根拠にならない。
 
@@ -107,7 +107,7 @@ ASB互換目標に含まれる機能を実装対象へ昇格する場合は、�
 - ファイルアップロードおよびフォルダ階層を保持したファイル管理を提供する
 - SSL更新状態、デプロイ状態、ログを確認できる
 
-**Rev.54 時点で ASB互換目標に含めないもの**
+**Rev.60 時点で ASB互換目標に含めないもの**
 
 - 外部サービスとのAPI完全互換
 - 外部サービスの管理画面互換
@@ -120,7 +120,7 @@ ASB互換目標に含まれる機能を実装対象へ昇格する場合は、�
 
 **XServer Static互換機能セット**
 
-Rev.54 時点の ASB は、XServer Static 互換性を以下の利用者向け機能表面に限定する。
+Rev.60 時点の ASB は、XServer Static 互換性を以下の利用者向け機能表面に限定する。
 
 | 機能 | ASBでの扱い |
 |-----|------------|
@@ -137,7 +137,7 @@ Rev.54 時点の ASB は、XServer Static 互換性を以下の利用者向け�
 | ログ・状態確認 | 実装対象。アクセスログ、エラーログ、デプロイ状態、SSL状態、ストレージ使用量を確認可能にする。 |
 | バックアップ・復旧 | 実装対象。ASB独自の運用補強としてJSONファイルベースのバックアップ・復旧を提供する。 |
 
-Rev.54 時点の ASB は、XServer Static 互換性に以下を含めない。
+Rev.60 時点の ASB は、XServer Static 互換性に以下を含めない。
 
 | 対象 | ASBでの扱い |
 |-----|------------|
@@ -153,8 +153,6 @@ Rev.54 時点の ASB は、XServer Static 互換性に以下を含めない。
 | CA選定 / CA failover | 対象外。CA選択を利用者向け機能にしない。 |
 | CDN完全互換 | 対象外。静的配信はASB本体またはASB外部の運用境界で扱う。 |
 | 課金・契約・アカウント管理 | 対象外。セルフホスト・スタンドアロン運用とする。 |
-| クラウドサービス化 | 対象外。将来計画にも含めない。 |
-| ウイルススキャン | 対象外。将来計画にも含めない。 |
 
 **ASB互換目標による実装禁止**
 
@@ -418,7 +416,7 @@ ASB 起動時には、設定された保存先に以下の実行時データ領�
 - 最大容量：1GB/プロジェクト（設定可能）
 - 形式：制限なし（HTML, CSS, JavaScript, 画像等）
 - 圧縮：Gzip による自動圧縮
-- Brotli は Rev.54 時点では ASB 本体に実装しない
+- Brotli は Rev.60 時点では ASB 本体に実装しない
 
 **ファイル削除**
 - 個別削除、一括削除に対応
@@ -977,6 +975,16 @@ Webhook の `ignored` と `duplicate` は正常応答であり、エラーコー
 
 ### 10.7 config/migrations.json
 
+`config/migrations.json` はマイグレーション履歴専用 JSON ファイルである。
+
+`config/migrations.json` は起動時必須 JSON ファイルではない。
+
+`config/migrations.json` は `asb init-runtime` の初期作成対象に含めない。
+
+`config/migrations.json` は通常の API 処理、静的配信、Webhook、Backup、Log API、SSL 管理境界では作成してはならない。
+
+`config/migrations.json` は `asb migrate --apply` 実行時のみ、`storage.basePath/config/` 配下へ初回作成できる。
+
 ```json
 {
   "schemaVersion": 1,
@@ -1028,7 +1036,7 @@ Delivery Domain は、ファイル管理・GitHub Webhook の責務を担う。
 
 Webhook 処理失敗は、システムログおよび `config/webhooks.json` へ記録する。
 
-Rev.54 時点では、Webhook失敗時の自動リトライスケジュールを実装しない。
+Rev.60 時点では、Webhook失敗時の自動リトライスケジュールを実装しない。
 
 ### 11.3 Data Domain ポリシー
 
@@ -1044,8 +1052,8 @@ Data Domain は、バックアップ・ストレージの責務を担う。
 **バックアップ・復旧方針**
 - バックアップ取得後はハッシュ検証を実施
 - ASB標準バックアップ保存先は `storage.basePath/backups/` とする
-- バックアップ保存先を別障害領域へ複製する作業は Rev.54 時点ではASB外の運用責務とする
-- 外部ストレージ連携は Rev.54 時点では実装対象外とする
+- バックアップ保存先を別障害領域へ複製する作業は Rev.60 時点ではASB外の運用責務とする
+- 外部ストレージ連携は Rev.60 時点では実装対象外とする
 - 復旧は対象バックアップの存在、SHA-256、JSON構文、スキーマ検証後に実施
 - バックアップ・復旧・検証失敗・復旧操作は監査ログへ記録
 
@@ -1060,7 +1068,7 @@ System Domain は、監視・ログ管理の責務を担う。
 - 標準構成では `storage.basePath/logs/` 配下へ JSON Lines として保存する
 - アクセスログは `storage.basePath/logs/access.log` に保存する
 - エラーログは `storage.basePath/logs/error.log` に保存する
-- 標準出力（stdout）への通常ログ出力は Rev.54 時点では実装しない
+- 標準出力（stdout）への通常ログ出力は Rev.60 時点では実装しない
 - 起動失敗時のみ標準エラー（stderr）へ単一行の起動エラーを出力する
 
 **必須フィールド**
@@ -1079,7 +1087,7 @@ System Domain は、監視・ログ管理の責務を担う。
 
 ASB はヘッドレスアーキテクチャを採用し、UI層に依存しない。
 
-Rev.54 時点の確定対象は、ASB 本体が提供する HTTPS JSON API、ASB SDK が使用する通信規格、ASB SDK の Browser JavaScript 実装、Deno専用 TypeScript 実装、Go 実装、ASB 標準Web UI、および ASB 標準Web UI が ASB SDK を利用して ASB と通信する構成である。
+Rev.60 時点の確定対象は、ASB 本体が提供する HTTPS JSON API、ASB SDK が使用する通信規格、ASB SDK の Browser JavaScript 実装、Deno専用 TypeScript 実装、Go 実装、ASB 標準Web UI、および ASB 標準Web UI が ASB SDK を利用して ASB と通信する構成である。
 
 ASB SDK は、単一の公式SDKとして扱う。
 
@@ -1113,7 +1121,7 @@ ASB SDK の Deno専用 TypeScript 実装は、Node.js、npm、package manager、
 
 ASB SDK の Go 実装は、Go標準ライブラリで実装可能な部分を Go標準ライブラリで実装する。
 
-SDK 認証仕様、デスクトップアプリ向け SDK 利用、モバイルアプリ向け SDK 利用は Rev.54 時点では未定とする。
+SDK 認証仕様、デスクトップアプリ向け SDK 利用、モバイルアプリ向け SDK 利用は Rev.60 時点では未定とする。
 
 SDK 通信規格は、ASB 本体が提供する HTTPS JSON API と同一とする。
 
@@ -1127,9 +1135,9 @@ SDK 通信規格は、ASB 本体が提供する HTTPS JSON API と同一とす�
 
 **API 設計原則**
 - HTTPS + JSON を使用する
-- HTTP/2 対応は ASB互換目標として扱い、Rev.54 時点では実装詳細を確定しない
+- HTTP/2 対応は ASB互換目標として扱い、Rev.60 時点では実装詳細を確定しない
 - デフォルト接続境界は `https://localhost:3000` とする
-- 管理 API は Rev.54 時点では認証なしとする
+- 管理 API は Rev.60 時点では認証なしとする
 - ASB SDK の Browser JavaScript 実装はブラウザ Web 標準 API のみを使用する
 - ASB SDK の Deno専用 TypeScript 実装は Deno runtime API と Web 標準 API の範囲で実装する
 - ASB SDK の Go 実装は Go標準ライブラリを中心に実装する
@@ -1204,13 +1212,13 @@ E2E テスト
 - ASB 本体の標準管理 API URL は `https://localhost:3000` とする
 - 開発ローカルおよび本番環境の管理 API は HTTPS JSON API とする
 - ASB 本体は HTTPS による管理 API 提供を実装する
-- ASB 本体は Rev.54 時点ではインターネット公開用 listen 設定を既定値として提供しない
+- ASB 本体は Rev.60 時点ではインターネット公開用 listen 設定を既定値として提供しない
 - リモートアクセス制御はファイアウォール、VPN、SSH tunnel、IP制限等の運用境界で補強する
-- ASB 本体は Rev.54 時点ではリバースプロキシ設定ファイルを生成しない
+- ASB 本体は Rev.60 時点ではリバースプロキシ設定ファイルを生成しない
 - SSL/TLS：開発ローカルおよび本番環境の管理 API で必須とする
 
 **レート制限**
-- Rev.54 時点では ASB 本体に実装しない
+- Rev.60 時点では ASB 本体に実装しない
 - Rate limiting は、本番公開時に ASB 外部のリバースプロキシ、WAF、CDN、ファイアウォール等で扱う
 
 **タイムアウト**
@@ -1226,7 +1234,7 @@ E2E テスト
 **ログ出力**
 - アクセスログ：全HTTP リクエスト（JSON形式）
 - エラーログ：エラー・例外・警告
-- ログファイル暗号化：Rev.54 時点では ASB 本体に実装しない
+- ログファイル暗号化：Rev.60 時点では ASB 本体に実装しない
 - ログ暗号化用の鍵管理、鍵生成、鍵保存、暗号化ログ形式、復号API、外部KMS連携を追加してはならない
 
 ### 11.9 ライセンス・バージョンポリシー
@@ -1339,11 +1347,11 @@ ASB の実装フェーズ管理は、`IMPLEMENTATION_TASKS.md` に限定する�
 
 ### 11.10 将来計画管理ポリシー
 
-将来計画は、Rev.54 時点の実装対象ではない。
+将来計画は、Rev.60 時点の実装対象ではない。
 
 将来計画に記載された項目は、実装、設定追加、API追加、JSON追加、ディレクトリ追加、外部依存追加、実行時データ生成の根拠として扱ってはならない。
 
-Rev.54 時点で実装対象外とする将来計画は以下とする。
+Rev.60 時点で実装対象外とする将来計画は以下とする。
 
 - デスクトップアプリ（詳細未定、ASB SDK 利用クライアント候補）
 - モバイルアプリ（詳細未定、ASB SDK 利用クライアント候補）
@@ -1524,7 +1532,7 @@ ASB の初回インストールとアップデートを自動化するため、`
 | `--version` | 必須 | 更新対象の安定版バージョン |
 | `--arch` | 任意 | `amd64` または `arm64`。未指定時は `uname -m` から判定 |
 
-`latest` 指定、自動最新版選択、未指定バージョンでの実行は Rev.54 時点では禁止する。
+`latest` 指定、自動最新版選択、未指定バージョンでの実行は Rev.60 時点では禁止する。
 
 `--arch` 未指定時の自動判定は `uname -m` の結果のみを使用する。
 
@@ -1635,11 +1643,11 @@ $ sudo systemctl stop asb
 
 ### 12.1 段階的対応対象
 
-本章は将来計画の記録であり、Rev.54 時点の実装対象を増やすものではない。
+本章は将来計画の記録であり、Rev.60 時点の実装対象を増やすものではない。
 
-以下は Rev.54 時点では実装対象外とする。
+以下は Rev.60 時点では実装対象外とする。
 
-| 対象 | Rev.54 時点の扱い | 実装禁止範囲 |
+| 対象 | Rev.60 時点の扱い | 実装禁止範囲 |
 |-----|------------------|------------|
 | デスクトップアプリ | 将来計画・詳細未定 | ASB SDK 利用クライアント候補、GUIライブラリ採否、配布方式、OS対応 |
 | モバイルアプリ | 将来計画・詳細未定 | ASB SDK 利用クライアント候補、GUIライブラリ採否、配布方式、iOS/Android対応 |
@@ -1665,7 +1673,7 @@ $ sudo systemctl stop asb
 
 ### 12.2 保留事項
 
-以下は Rev.54 時点では実装対象外とする。
+以下は Rev.60 時点では実装対象外とする。
 
 - ユーザー認証
 - マルチテナント対応
@@ -1680,7 +1688,7 @@ $ sudo systemctl stop asb
 
 ### 12.3 検討・調査中事項
 
-Rev.54 時点では、検討・調査中事項を実装へ反映してはならない。
+Rev.60 時点では、検討・調査中事項を実装へ反映してはならない。
 
 以下は調査対象としてのみ記録し、実装対象外とする。
 
@@ -1708,7 +1716,7 @@ Rev.54 時点では、検討・調査中事項を実装へ反映してはなら�
 
 ### 13.1 実装対象の基準
 
-Rev.54 時点の ASB 本体の実装対象は、ASB のセルフホスト型静的コンテンツ配信ホスティングに必要なバックエンド機能に限定する。
+Rev.60 時点の ASB 本体の実装対象は、ASB のセルフホスト型静的コンテンツ配信ホスティングに必要なバックエンド機能に限定する。
 
 ASB 本体外の実装対象は、ASB SDK と ASB Web UI に限定する。
 
@@ -1894,7 +1902,7 @@ JSON ファイル更新は以下の方針で行う：
 **圧縮**
 
 - Gzip 圧縮を実装対象とする
-- Brotli 圧縮は Rev.54 時点では ASB 本体に実装しない
+- Brotli 圧縮は Rev.60 時点では ASB 本体に実装しない
 - `Accept-Encoding: br` を受信しても Brotli 応答へ切り替えない
 
 ### 13.8 ドメイン管理詳細
@@ -1906,15 +1914,42 @@ JSON ファイル更新は以下の方針で行う：
 - 既に別プロジェクトへ割り当て済みの場合は `ERR_DOMAIN_ALREADY_ASSIGNED` を返す
 - プロジェクト削除時は関連ドメインを削除する
 
+Domain追加処理は以下の順序で実行する。
+
+1. 対象 Project の存在を検証する
+2. 入力 domain を小文字へ正規化する
+3. 正規化後 domain の構文、長さ、階層数を検証する
+4. `config/domains.json` を読み込み、構文、`schemaVersion: 1`、必須キー、未知フィールド不在を検証する
+5. 同一 domain が同一 Project または別 Project に登録済みでないことを検証する
+6. Domain object を `domains[]` に追加する
+7. `domain` 昇順で保存する
+
+Domain object の追加時は `isCustom: true` とし、`sslCert` は空文字とする。
+
+Domain一覧は対象 Project に属する Domain のみを返し、`domain` 昇順に固定する。
+
+Domain削除処理は以下の順序で実行する。
+
+1. 対象 Project の存在を検証する
+2. 対象 Domain の存在と Project 所属を検証する
+3. 無料独自SSL状態を確認する
+4. SSL状態が `pending`、`challenge_ready`、`renewing` の場合は `409 Conflict` と `ERR_SSL_OPERATION_CONFLICT` を返す
+5. `config/domains.json` から対象 Domain object を削除する
+6. `domain` 昇順で保存する
+
+Domain削除時に既存証明書ファイル、秘密鍵ファイル、ACME関連JSON、ACME challenge token を即時削除してはならない。
+
+Domain追加、一覧、削除は、開発リポジトリ内に実行時データ、一時ファイル、ログファイルを作成してはならない。
+
 ### 13.9 SSL 管理詳細
 
-Rev.54 時点では、SSL 管理は XServer Static 互換目標として無料独自SSLを提供する。
+Rev.60 時点では、SSL 管理は XServer Static 互換目標として無料独自SSLを提供する。
 
 無料独自SSLは、独自ドメイン単位で有効化し、証明書取得、証明書更新、状態確認を ASB 本体が自動実行する。
 
 ACME は利用者向け機能名ではなく、無料独自SSLを実現する内部実装方式である。
 
-Rev.54 時点の ACME は Let’s Encrypt ACME v2 のみに対応する。
+Rev.60 時点の ACME は Let’s Encrypt ACME v2 のみに対応する。
 
 domain validation は HTTP-01 challenge のみに限定する。
 
@@ -1959,6 +1994,20 @@ domain validation は HTTP-01 challenge のみに限定する。
 - ARI
 - OCSP stapling
 
+P3 の SSL状態基盤は、Domain と証明書メタデータの検証境界に限定する。
+
+P3 では Let’s Encrypt との通信、ACME account 登録、ACME order 作成、challenge 応答、証明書取得、証明書自動更新を実行してはならない。
+
+SSL状態確認では、対象 Domain の存在、Project 所属、SSL状態参照、証明書パス、秘密鍵パス、有効期限、証明書本文と秘密鍵本文の対応を検証する。
+
+証明書ファイルの保存先は `storage.basePath/certs/{domain}/fullchain.pem`、秘密鍵ファイルの保存先は `storage.basePath/certs/{domain}/privkey.pem` に固定する。
+
+証明書パスと秘密鍵パスは `storage.basePath` 配下の相対管理対象として扱い、`storage.basePath` 外を参照するパスを許可してはならない。
+
+SSL状態が `issued`、`renewing`、`expired` の場合に証明書ファイルまたは秘密鍵ファイルが存在しない、読み込めない、対応しない、期限情報を検証できない場合は `ERR_SSL_CERT_GENERATION_FAILED` とする。
+
+SSL状態が `disabled`、`pending`、`challenge_ready`、`failed` の場合、証明書ファイルまたは秘密鍵ファイルが存在しないことだけを理由に起動失敗または状態確認失敗としてはならない。
+
 ### 13.10 Webhook 詳細
 
 GitHub Webhook は Push イベントのみを対象とする。
@@ -1979,8 +2028,18 @@ GitHub Webhook は Push イベントのみを対象とする。
 - デプロイ処理に失敗した場合は `ERR_WEBHOOK_PROCESSING_FAILED` を返す
 - 同一 GitHub Push イベントを重複受信した場合は、同一 commit hash と対象ブランチの組み合わせを冪等キーとして扱い、二重デプロイを避ける
 - 冪等キーの保存方式は JSON ファイルベースとし、保存先は `storage.basePath` 配下に限定する
-- Webhook失敗時の自動リトライは Rev.54 時点では実装しない
+- Webhook失敗時の自動リトライは Rev.60 時点では実装しない
 - GitHub側からの再送は通常のWebhook受信として扱い、冪等キーで重複判定する
+
+Webhook署名検証は、JSON decode 前のリクエストBody生バイト列に対して行う。
+
+署名検証に失敗したリクエスト、payload形式不正のリクエスト、対象外event、対象外branchは、`config/webhooks.json` に冪等履歴を追加してはならない。
+
+デプロイ対象ファイルを `contents/` へ反映した後は、反映後のファイル集合から `files.json` を再生成する。
+
+Webhookデプロイで生成する `files.json` の各 File object は、`name`、`path`、`size`、`uploadedAt` を必須とし、`path` 昇順で保存する。
+
+Webhookデプロイでは、開発リポジトリ、GitHub payload 内 URL、外部ネットワークをデプロイ先または一時作業先として使用してはならない。
 
 ### 13.11 バックアップ・復旧詳細
 
@@ -1998,11 +2057,21 @@ GitHub Webhook は Push イベントのみを対象とする。
 - バックアップ作成用の一時tarは `storage.basePath/backups/.tmp/` 配下にのみ作成できる
 - 開発リポジトリ内にバックアップtar、一時tar、checksum、退避データを作成してはならない
 
+バックアップは静的配信復旧に必要な Project 単位データのみを対象とし、`logs/`、`certs/`、`config/acme_*.json`、`config/webhooks.json`、`config/domains.json`、`config/projects.json` を含めてはならない。
+
+atomic rename 後に `config/backups.json` への履歴保存へ失敗した場合は、作成済みtar.gzを削除し、削除失敗時は error log に記録する。
+
+作成済みtar.gzの削除に失敗した場合でも、バックアップ作成APIは成功レスポンスを返してはならない。
+
 **復旧**
 
 - 復旧前にバックアップファイルの存在と SHA-256 ハッシュを検証する
 - 復旧前退避先は `storage.basePath/backups/restore-staging/{restoreId}/previous/` とする
 - 復旧用展開先は `storage.basePath/backups/restore-staging/{restoreId}/next/` とする
+- 復旧対象 Project が存在しない場合は `ERR_PROJECT_NOT_FOUND` を返す
+- 同一 `restoreId` の `restore-staging/{restoreId}/` が既に存在する場合は `409 Conflict` と `ERR_BACKUP_RESTORE_CONFLICT` を返す
+- 復旧処理は `files.json` と `contents/` のみを置換対象とし、Project定義、Domain定義、SSL証明書、ACME状態、Webhook履歴、ログを置換してはならない
+- 復旧成功後に `restore-staging/{restoreId}/` の削除へ失敗した場合は WARN ログへ記録し、復旧成功を取り消してはならない
 - 既存データを退避してから復旧する
 - 復旧後に JSON ファイル構文と必須フィールドを検証する
 - 復旧失敗時は `ERR_BACKUP_RESTORE_FAILED` を返す
@@ -2055,7 +2124,7 @@ GitHub Webhook は Push イベントのみを対象とする。
 
 ### 13.14 実装契約
 
-本節は Rev.54 時点の実装契約である。実装者は本節に反する判断をコード側で独自に行ってはならない。
+本節は Rev.60 時点の実装契約である。実装者は本節に反する判断をコード側で独自に行ってはならない。
 
 #### 13.14.1 パッケージ境界
 
@@ -2161,7 +2230,7 @@ multipart の file part が 1GiB を超える場合は `413 Payload Too Large` �
 
 `Content-Type` を持つ JSON レスポンスでは `application/json; charset=utf-8` のみを返す。
 
-`204 No Content` は Rev.54 時点では使用しない。
+`204 No Content` は Rev.60 時点では使用しない。
 
 `HEAD` と `304 Not Modified` ではレスポンスボディを返してはならない。
 
@@ -2200,6 +2269,64 @@ atomic rename 後に directory `fsync` が失敗した場合は、対象操作�
 #### 13.14.6 起動時検証契約
 
 起動時検証は HTTPS サーバー起動前に完了する。
+
+ASB サーバー起動コマンドは `asb start` とする。
+
+`asb start` は、起動時検証の途中で不足したディレクトリ、JSON ファイル、証明書ファイル、ログファイル、一時ファイルを作成してはならない。
+
+実行時データ領域の初期化コマンドは `asb init-runtime` とする。
+
+`asb init-runtime` は、`storage.basePath` 配下の必須ディレクトリと必須 JSON ファイルを初期作成する唯一の標準コマンドである。
+
+`asb init-runtime` は開発リポジトリ内へディレクトリ、JSON ファイル、一時ファイル、ログファイル、証明書ファイルを作成してはならない。
+
+`asb init-runtime` は、`storage.basePath` が開発リポジトリの絶対パスと同一、またはその配下を指す場合、初期化を開始せず `ERR_STORAGE_VALIDATION_FAILED` で失敗しなければならない。
+
+`asb init-runtime` は、既存の通常ファイルまたはディレクトリを上書き、削除、移動、truncate してはならない。
+
+`asb init-runtime` は、既存 JSON ファイルが存在する場合、JSON 構文、`schemaVersion: 1`、必須トップレベルキー、未知フィールド不在を検証し、妥当な場合は変更しない。
+
+`asb init-runtime` は、既存 JSON ファイルが不正な場合、自動修復または上書きを行わず `ERR_STORAGE_VALIDATION_FAILED` で失敗しなければならない。
+
+`asb init-runtime` は、必要なディレクトリと JSON ファイルを作成する前に、作成予定パスがすべて `storage.basePath` 配下に収まることを検証しなければならない。
+
+`asb init-runtime` は、以下の順序で初期化する。
+
+1. `config/config.json` を読み込む
+2. 設定未知フィールド、型、値範囲を検証する
+3. `storage.basePath` を絶対パスへ正規化する
+4. `storage.basePath` が開発リポジトリ配下でないことを検証する
+5. 作成予定パスがすべて `storage.basePath` 配下であることを検証する
+6. `storage.basePath/` を検証し、存在しない場合は作成する
+7. `storage.basePath/config/` を検証し、存在しない場合は作成する
+8. `storage.basePath/storage/` を検証し、存在しない場合は作成する
+9. `storage.basePath/storage/projects/` を検証し、存在しない場合は作成する
+10. `storage.basePath/logs/` を検証し、存在しない場合は作成する
+11. `storage.basePath/certs/` を検証し、存在しない場合は作成する
+12. 必須 JSON ファイルを同一ディレクトリ内の一時ファイル、`fsync`、atomic rename で作成する
+13. 作成済みディレクトリと JSON ファイルを起動時検証と同じ条件で再検証する
+
+`asb init-runtime` が作成する必須 JSON ファイルは以下に限定する。
+
+- `storage.basePath/config/projects.json`
+- `storage.basePath/config/domains.json`
+- `storage.basePath/config/backups.json`
+- `storage.basePath/config/webhooks.json`
+- `storage.basePath/config/acme_accounts.json`
+- `storage.basePath/config/acme_orders.json`
+- `storage.basePath/config/acme_authorizations.json`
+- `storage.basePath/config/acme_challenges.json`
+- `storage.basePath/config/acme_renewals.json`
+
+`asb init-runtime` は、Project 作成前の初期化では `storage.basePath/storage/projects/{projectId}/` および `storage.basePath/storage/projects/{projectId}/files.json` を作成してはならない。
+
+Project 作成 API は、Project 作成処理の一部として `storage.basePath/storage/projects/{projectId}/`、`storage.basePath/storage/projects/{projectId}/contents/`、`storage.basePath/storage/projects/{projectId}/files.json` を作成する。
+
+Project 作成 API は、作成済み Project ディレクトリまたは `files.json` が既に存在する場合、既存ファイルを上書きせず `ERR_STORAGE_VALIDATION_FAILED` で失敗しなければならない。
+
+`asb init-runtime` の成功時は標準出力へ `ASB_RUNTIME_INITIALIZED storageBasePath="..."` の単一行を出力し、終了コード `0` とする。
+
+`asb init-runtime` の失敗時は標準エラーへ `ASB_RUNTIME_INIT_ERROR code=... message="..."` の単一行を出力し、終了コード `1` とする。
 
 以下のいずれかに該当する場合、ASB は起動失敗とする。
 
@@ -2258,7 +2385,7 @@ ID 生成、時刻取得、保存処理は Service に注入された依存関�
 
 #### 13.14.9 保留機能の実装禁止契約
 
-Rev.54 時点では以下を実装してはならない。
+Rev.60 時点では以下を実装してはならない。
 
 - SDK
 - SDK 専用プロトコル
@@ -2307,7 +2434,7 @@ Rev.54 時点では以下を実装してはならない。
 
 ### 13.15 実装詳細固定仕様
 
-本節は Rev.54 時点で実装時に固定する詳細仕様である。
+本節は Rev.60 時点で実装時に固定する詳細仕様である。
 
 #### 13.15.1 API エンドポイント固定表
 
@@ -2458,6 +2585,12 @@ boolean、array、object を設定値として要求しない項目に指定し�
 
 ASB は上記 JSON ファイルを起動時に作成しない。
 
+`asb init-runtime` は、上記 JSON ファイルのうち `storage/projects/:projectId/files.json` を除く全ファイルを空状態で作成できる。
+
+`storage/projects/:projectId/files.json` は Project 作成 API によって Project ディレクトリと同時に作成する。
+
+`asb init-runtime`、Project 作成 API、マイグレーション以外の処理は、必須 JSON ファイルの初回作成を行ってはならない。
+
 `config/webhooks.json` は Webhook 冪等性管理に使用する実行時 JSON ファイルであり、外部DBを使用しない。
 
 上記 JSON ファイルのトップレベルには、表に記載された必須トップレベルキー以外を保存してはならない。
@@ -2512,9 +2645,17 @@ Domain が存在しても対象 Project が存在しない場合は整合性エ�
 
 正規化後の相対パスを `contents/` に結合した結果が、`contents/` 配下に収まらない場合は `404 Not Found` とする。
 
+静的配信は、対象 Project の `files.json` に記録された `path` のみを配信対象とする。
+
+正規化後の相対パスが `files.json` の `files[].path` と一致しない場合、`contents/` 配下に実ファイルが存在しても `404 Not Found` とする。
+
+`contents/` 配下に `files.json` 未記録の通常ファイルが存在する状態は整合性不備であり、起動時検証または整合性検証で `ERR_STORAGE_VALIDATION_FAILED` として扱う。
+
 ディレクトリ自体は配信しない。正規化後の対象がディレクトリの場合、末尾 `/` の有無にかかわらず `index.html` を探索する。
 
 存在しない静的ファイルは `404 Not Found` とする。
+
+`files.json` にメタデータが存在するが実ファイルが存在しない場合は、整合性不備として `500 Internal Server Error` とし、`ERR_STORAGE_VALIDATION_FAILED` を error log へ記録する。
 
 読み込み権限不足、ファイル情報取得失敗、読み込み途中失敗は `500 Internal Server Error` とする。
 
@@ -2538,15 +2679,21 @@ Domain が存在しても対象 Project が存在しない場合は整合性エ�
 
 `If-None-Match` が `ETag` と一致する場合は `304 Not Modified` を返す。
 
-`If-Modified-Since` が `Last-Modified` 以降の場合は `304 Not Modified` を返す。
+`If-None-Match` と `If-Modified-Since` の両方が存在する場合は、`If-None-Match` を優先する。
+
+`If-None-Match` が存在せず、`If-Modified-Since` が `Last-Modified` 以降の場合は `304 Not Modified` を返す。
 
 `304 Not Modified` ではレスポンスボディを返してはならない。
 
-Range request は Rev.54 時点では実装しない。
+`304 Not Modified` では `Content-Type`、`ETag`、`Last-Modified`、`Cache-Control` を返し、`Content-Encoding` を返してはならない。
+
+Range request は Rev.60 時点では実装しない。
 
 `Range` ヘッダーを受信した場合も無視し、通常の `200 OK` または `304 Not Modified` 判定を行う。
 
 Gzip 圧縮済みファイルを返す場合は `Content-Encoding: gzip` を設定する。
+
+Gzip 圧縮済みレスポンスでは `Vary: Accept-Encoding` を返す。
 
 Gzip 圧縮は、`Accept-Encoding` の comma 区切り token に `gzip` が含まれる場合のみ行う。
 
@@ -2555,6 +2702,8 @@ Gzip 圧縮は、`Accept-Encoding` の comma 区切り token に `gzip` が含�
 `gzip;q=0` は gzip 不許可として扱う。
 
 `gzip` の q 値が省略された場合は許可として扱う。
+
+不正な q 値は gzip 不許可として扱う。
 
 Gzip 圧縮対象は `GET` の `200 OK` レスポンスのみとする。
 
@@ -2624,7 +2773,7 @@ Webhook処理中に `deploy.sourcePath` の branch checkout、fetch、pull、res
 
 静的コンテンツ反映元は `deploy.sourcePath` の `after` commit 時点のファイルツリーとする。
 
-Rev.54 時点では、Webhookデプロイ時の対象ファイルパスはリポジトリルート配下の全静的ファイルとする。
+Rev.60 時点では、Webhookデプロイ時の対象ファイルパスはリポジトリルート配下の全静的ファイルとする。
 
 `.git/`、`.github/`、`AGENTS.md`、`ASB-spec.md`、`ASB-spec.html`、`IMPLEMENTATION_TASKS.md`、`DOCUMENT_INDEX.md`、`README.md` は配信対象から除外する。
 
@@ -2650,7 +2799,7 @@ Webhook 処理完了後に処理状態を `config/webhooks.json` へ保存する
 
 失敗時の `status` は `failed` とし、`errorCode` を保存する。
 
-Webhook失敗時の自動リトライは Rev.54 時点では実装しない。
+Webhook失敗時の自動リトライは Rev.60 時点では実装しない。
 
 GitHub側から同一イベントが再送された場合は、`config/webhooks.json` の既存イベントにより重複判定する。
 
@@ -2728,7 +2877,7 @@ Webhook固定仕様のテスト項目は以下とする。
 
 ### 13.16 入出力契約固定仕様
 
-本節は Rev.54 時点で API、JSON保存、ログ、起動時検証の入出力を固定する仕様である。
+本節は Rev.60 時点で API、JSON保存、ログ、起動時検証の入出力を固定する仕様である。
 
 #### 13.16.1 共通成功レスポンス契約
 
@@ -3103,7 +3252,7 @@ HTTP リクエスト処理中に発生したエラーでは、エラーログの
 
 `ERROR` はすべての `log.level` 設定で出力する。
 
-`log.format` は Rev.54 時点では `json` のみ許可する。
+`log.format` は Rev.60 時点では `json` のみ許可する。
 
 通常運用ログを stdout へ出力してはならない。
 
@@ -3121,7 +3270,7 @@ ASB_STARTUP_ERROR code=ERR_STORAGE_VALIDATION_FAILED message="Storage validation
 
 ログローテーション失敗時は対象ログ書き込みを失敗扱いとし、HTTP レスポンスが未送信の場合は `500 Internal Server Error` を返す。
 
-ログ API は `access.log` または `error.log` の現行ファイルのみを読む。ローテーション済みログは Rev.54 時点ではログ API の対象外とする。
+ログ API は `access.log` または `error.log` の現行ファイルのみを読む。ローテーション済みログは Rev.60 時点ではログ API の対象外とする。
 
 ログ API は対象ログファイルを先頭から読み、JSON Lines を1行ずつ decode する。
 
@@ -3137,9 +3286,25 @@ ASB_STARTUP_ERROR code=ERR_STORAGE_VALIDATION_FAILED message="Storage validation
 
 ログには内部ファイルパス、スタックトレース、環境変数、シークレットを含めてはならない。
 
+`storage.basePath/logs/` と現行ログファイルは、LogService の書き込み処理または起動時検証で明示的に必要と判断した場合のみ作成できる。
+
+ログAPI、監視API、静的配信、File API、Domain API、SSL状態確認API、Backup一覧APIは、ログファイルを初回作成する契機として扱ってはならない。
+
+アクセスログ書き込みはレスポンスステータス確定後、レスポンス送信前に実行する。
+
+成功レスポンス送信前にアクセスログ書き込みまたはローテーションへ失敗した場合は、`500 Internal Server Error` と `ERR_LOG_WRITE_FAILED` を返す。
+
+エラーレスポンス生成中に error log 書き込みへ失敗した場合は、レスポンス本文へ内部パスまたは詳細原因を含めず、既定のエラーレスポンスを返す。
+
+監視APIは既存の実行時JSON、プロセス情報、OS情報、`storage.basePath` の状態から値を計算する。
+
+監視APIはメトリクス保存用JSON、キャッシュファイル、一時ファイルを作成してはならない。
+
+OS差異により取得できない監視値は `null` とし、取得不可だけを理由に失敗レスポンスへしてはならない。
+
 #### 13.16.9 テスト固定項目
 
-Rev.54 の実装では、以下のテストを必須とする。
+Rev.60 の実装では、以下のテストを必須とする。
 
 - 全API成功レスポンスの固定JSONキー検証
 - 全APIエラーレスポンスの固定JSONキー検証
@@ -3151,7 +3316,7 @@ Rev.54 の実装では、以下のテストを必須とする。
 
 ### 13.17 実装境界とファイル操作固定仕様
 
-本節は Rev.54 時点で package 境界、公開 interface、Repository、Storage、複数ファイル更新の実装契約を固定する仕様である。
+本節は Rev.60 時点で package 境界、公開 interface、Repository、Storage、複数ファイル更新の実装契約を固定する仕様である。
 
 #### 13.17.1 package 公開 interface 固定
 
@@ -3206,12 +3371,15 @@ Static delivery は以下の順序で実行する。
 12. 空パス、`/`、ディレクトリパスは `index.html` を探索対象とする
 13. `storage.basePath/storage/projects/{projectId}/contents/` と相対パスを結合する
 14. 結合後パスが `contents/` 配下に収まることを検証する
-15. 対象ファイルの存在と通常ファイルであることを検証する
-16. 存在しない場合は `404 Not Found` を返す
-17. `Content-Type`、`ETag`、`Last-Modified`、`Cache-Control` を決定する
-18. `If-None-Match` または `If-Modified-Since` により未変更と判定できる場合は `304 Not Modified` を返す
-19. `HEAD` の場合はヘッダーのみを返す
-20. `GET` の場合はファイル内容をレスポンスボディとして返す
+15. 正規化後の相対パスが `files.json` の `files[].path` に記録されていることを検証する
+16. 未記録の場合は `404 Not Found` を返す
+17. 対象ファイルの存在、通常ファイル、サイズ一致を検証する
+18. 記録済みファイルの不整合は `ERR_STORAGE_VALIDATION_FAILED` をログに記録し、`500 Internal Server Error` を返す
+19. `Content-Type`、`ETag`、`Last-Modified`、`Cache-Control` を決定する
+20. `If-None-Match` を優先し、未指定時のみ `If-Modified-Since` により未変更判定を行う
+21. 未変更と判定できる場合は `304 Not Modified` を返す
+22. `HEAD` の場合はヘッダーのみを返す
+23. `GET` の場合はファイル内容をレスポンスボディとして返す
 
 静的配信では `Range` ヘッダーを無視し、`206 Partial Content` を返してはならない。
 
@@ -3225,26 +3393,44 @@ File upload は以下の順序で実行する。
 
 1. URL `:id` を検証する
 2. Project の存在を検証する
-3. multipart field `file` の存在を検証する
-4. ファイル名、サイズ、quota を検証する
-5. 既存 `files.json` を読み込み検証する
-6. 保存先相対パスを決定する
-7. ファイル実体を `contents/` 配下の一時ファイルへ書き込む
-8. 書き込み内容を `fsync` する
-9. 一時ファイルを公開先へ atomic rename する
-10. `files.json` を更新する
-11. `projects.json` の `used` を更新する
-12. 成功レスポンスを返す
+3. `Content-Type` が `multipart/form-data` であることを検証する
+4. multipart field `file` が1つだけ存在することを検証する
+5. ファイル名、サイズ、quota を検証する
+6. `name` と保存先 `path` の対応を決定し、`contents/` 配下に収まることを検証する
+7. 同名ファイルの既存有無により、新規作成または上書き処理へ分岐する
+8. 既存 `files.json` を読み込み検証する
+9. ファイル実体を `contents/` 配下の一時ファイルへ書き込む
+10. 書き込み内容を `fsync` する
+11. 一時ファイルを公開先へ atomic rename する
+12. `files.json` を更新する
+13. `projects.json` の `used` を更新する
+14. 成功レスポンスを返す
 
-7-11 の途中で失敗した場合、成功レスポンスを返してはならない。
+upload API は `multipart/form-data` 以外を `400 Bad Request` とし、`ERR_INVALID_REQUEST` を返す。
+
+multipart field `file` が存在しない場合、または複数存在する場合は `400 Bad Request` とし、`ERR_INVALID_REQUEST` を返す。
+
+upload file part の filename は必須とする。
+
+filename は `/`、`\`、NUL、`.`、`..`、先頭 `.`, 空白のみを拒否する。
+
+フォルダ階層を含む upload path を扱う場合、各 path segment に同じ検証を適用する。
+
+保存先 `path` は `contents/` で始まる相対パスとし、`files.json` には `storage.basePath` からの絶対パスを保存してはならない。
+
+新規 upload では、同一 `name` または同一 `path` が既に `files.json` に存在する場合、同名ファイル上書き処理として扱う。
+
+新規 upload では、公開先ファイルが存在するにもかかわらず `files.json` に記録がない場合、上書きせず `ERR_STORAGE_VALIDATION_FAILED` を返す。
+
+9-13 の途中で失敗した場合、成功レスポンスを返してはならない。
 
 公開先への rename 後に JSON 更新が失敗した場合は、エラーログを記録し、次回起動時検証または整合性検証で検出できる状態にする。
 
-7-9 の途中で失敗した場合は、作成済みの一時ファイルを削除し、削除に失敗した場合は `code` を空文字、`message` を `Operational warning`、`level` を `WARN` として error log へ記録する。
+9-11 の途中で失敗した場合は、作成済みの一時ファイルを削除し、削除に失敗した場合は `code` を空文字、`message` を `Operational warning`、`level` を `WARN` として error log へ記録する。
 
-10 の `files.json` 更新に失敗した場合は、公開先ファイルを削除してよい。ただし削除失敗時でも成功レスポンスを返してはならない。
+12 の `files.json` 更新に失敗した場合は、公開先ファイルを削除してよい。ただし削除失敗時でも成功レスポンスを返してはならない。
 
-11 の `projects.json` 更新に失敗した場合は、`files.json` とファイル実体を自動ロールバックしてはならない。
+13 の `projects.json` 更新に失敗した場合は、`files.json` とファイル実体を自動ロールバックしてはならない。
 
 File upload 失敗時に、開発リポジトリ内へ退避ファイル、比較ファイル、復旧用ファイル、一時ファイルを作成してはならない。
 
@@ -3310,6 +3496,12 @@ JSON 更新失敗時は成功レスポンスを返してはならない。
 - `files[]` に記録された `size` と実ファイルサイズが一致しない
 - `contents/` 配下に `files[]` へ記録されていない通常ファイルが存在する
 
+上記不整合を検出した場合、静的配信では `ERR_STORAGE_VALIDATION_FAILED` を error log へ記録し、対象リクエストを `500 Internal Server Error` とする。
+
+上記不整合を検出した場合、File API の list、upload、overwrite、delete は成功レスポンスを返してはならない。
+
+整合性検証は、不整合を自動修復してはならない。
+
 不整合を検出した場合は、成功レスポンスを返さず、`ERR_STORAGE_VALIDATION_FAILED` を返す。ただし File delete で削除対象の実体のみが存在しない場合は `ERR_FILE_NOT_FOUND` を返す。
 
 #### 13.17.7 Project削除処理順序固定
@@ -3345,7 +3537,11 @@ Backup 作成は以下の順序で実行する。
 8. `config/backups.json` に `status: "completed"` の履歴を保存する
 9. 成功レスポンスを返す
 
+Backup作成は Project 単位で実行し、対象 Project が存在しない場合は `ERR_PROJECT_NOT_FOUND` を返す。
+
 バックアップtar.gzに `logs/`、`certs/`、他Projectの `contents/` を含めてはならない。
+
+バックアップtar.gzに `config/projects.json`、`config/domains.json`、`config/webhooks.json`、`config/acme_accounts.json`、`config/acme_orders.json`、`config/acme_authorizations.json`、`config/acme_challenges.json`、`config/acme_renewals.json`、`config/migrations.json` を含めてはならない。
 
 バックアップtar.gzには symlink、hardlink、device file、FIFO、socket、絶対パス、`..` セグメント、NUL 文字を含む path を含めてはならない。
 
@@ -3371,15 +3567,17 @@ Backup restore は以下の順序で実行する。
 
 1. Backup 履歴の存在を検証する
 2. Backup 履歴の `status` が `completed` であることを検証する
-3. Backup ファイルの存在を検証する
-4. SHA-256 を検証する
-5. `storage.basePath/backups/restore-staging/{restoreId}/previous/` を作成する
-6. `storage.basePath/backups/restore-staging/{restoreId}/next/` を作成する
-7. 復旧対象Projectの現行 `files.json` と `contents/` を `previous/` へ退避する
-8. Backup を `next/` へ展開する
-9. 展開後の JSON 構文とスキーマを検証する
-10. `next/` の内容を復旧対象へ atomic rename する
-11. 成功レスポンスを返す
+3. 復旧対象 Project の存在を検証する
+4. Backup ファイルの存在を検証する
+5. SHA-256 を検証する
+6. `restore-staging/{restoreId}/` が存在しないことを検証する
+7. `storage.basePath/backups/restore-staging/{restoreId}/previous/` を作成する
+8. `storage.basePath/backups/restore-staging/{restoreId}/next/` を作成する
+9. 復旧対象Projectの現行 `files.json` と `contents/` を `previous/` へ退避する
+10. Backup を `next/` へ展開する
+11. 展開後の JSON 構文とスキーマを検証する
+12. `next/` の内容を復旧対象へ atomic rename する
+13. 成功レスポンスを返す
 
 Backup 展開時は、tar.gz 内の各エントリを展開前に検証する。
 
@@ -3389,7 +3587,7 @@ Backup 展開時は、tar.gz 内の各エントリを展開前に検証する。
 
 展開後に `next/contents/` 配下の実ファイルと `next/files.json` の整合性検証に失敗した場合は `ERR_BACKUP_RESTORE_FAILED` を返す。
 
-7-10 の途中で失敗した場合、以下の順序で `previous/` から復元する。
+9-12 の途中で失敗した場合、以下の順序で `previous/` から復元する。
 
 1. 復旧対象Projectの `contents/` が存在する場合は `restore-staging/{restoreId}/failed-contents/` へ rename する
 2. 復旧対象Projectの `files.json` が存在する場合は `restore-staging/{restoreId}/failed-files.json` へ rename する
@@ -3421,7 +3619,7 @@ Backup 展開時は、tar.gz 内の各エントリを展開前に検証する。
 
 途中失敗時に自動ロールバックを実装する場合も、ロールバック失敗時は成功扱いにしてはならない。
 
-Rev.54 時点では、複数JSON更新に外部トランザクション機構を導入してはならない。
+Rev.60 時点では、複数JSON更新に外部トランザクション機構を導入してはならない。
 
 #### 13.17.11 最低テスト分類固定
 
@@ -3438,7 +3636,7 @@ Rev.54 時点では、複数JSON更新に外部トランザクション機構を
 
 #### 13.17.12 実装ファイル構成固定
 
-Rev.54 の初期実装では、Go 実装ファイルを以下の構成で作成する。
+Rev.60 の初期実装では、Go 実装ファイルを以下の構成で作成する。
 
 ```text
 cmd/asb/main.go
@@ -3504,7 +3702,7 @@ Go package 名はディレクトリ名と一致させる。
 
 #### 13.17.14 エラーコード固定表
 
-Rev.54 の実装では、API と起動時検証が返すエラーコードを以下に固定する。
+Rev.60 の実装では、API と起動時検証が返すエラーコードを以下に固定する。
 
 | code | HTTP | 用途 |
 |------|------|------|
@@ -3539,7 +3737,7 @@ HTTP ステータスは上記表と `13.15.1 API エンドポイント固定表`
 
 #### 13.17.15 テストファイル配置固定
 
-Rev.54 の実装では、実装 package と同じ責務単位でテストファイルを配置する。
+Rev.60 の実装では、実装 package と同じ責務単位でテストファイルを配置する。
 
 テストファイル名は、対象ファイル名または対象責務名に `_test.go` を付与した名前に固定する。
 
@@ -3573,7 +3771,7 @@ Rev.54 の実装では、実装 package と同じ責務単位でテストファ�
 
 ### 13.18 APIキー管理・認証固定仕様
 
-Rev.54 時点では、ASB 本体の管理 API に認証機能を実装しない。
+Rev.60 時点では、ASB 本体の管理 API に認証機能を実装しない。
 
 管理 API とは `/api/` で始まる全 HTTPS JSON API を指す。
 
@@ -3587,7 +3785,7 @@ ASB 本体は、管理 API 用 TLS 証明書ファイルまたは秘密鍵ファ
 
 ASB 本体は、管理 API 用 TLS 証明書ファイルまたは秘密鍵ファイルを起動時に自動生成してはならない。
 
-ASB 本体は Rev.54 時点では以下を実装してはならない。
+ASB 本体は Rev.60 時点では以下を実装してはならない。
 
 - APIキー発行
 - APIキー保存
@@ -3606,7 +3804,7 @@ ASB 本体は Rev.54 時点では以下を実装してはならない。
 
 `Authorization` ヘッダーまたは `X-API-Key` ヘッダーを受信しても、ASB は認証判断に使用してはならない。
 
-Rev.54 時点では、`Authorization` ヘッダーまたは `X-API-Key` ヘッダーの有無により、成功・失敗・レスポンス内容を変えてはならない。
+Rev.60 時点では、`Authorization` ヘッダーまたは `X-API-Key` ヘッダーの有無により、成功・失敗・レスポンス内容を変えてはならない。
 
 ASB は APIキー管理のために以下の JSON ファイル、ディレクトリ、設定項目を作成してはならない。
 
@@ -3633,17 +3831,17 @@ APIキー管理を将来実装する場合は、実装前に `ASB-spec.md` を�
 - 監査ログ
 - 既存の認証なし管理 API からの移行手順
 
-SDK 認証仕様は Rev.54 の対象外とし、実装対象へ昇格する場合は事前に `ASB-spec.md` を改訂する。
+SDK 認証仕様は Rev.60 の対象外とし、実装対象へ昇格する場合は事前に `ASB-spec.md` を改訂する。
 
 ---
 
 ### 13.19 Rate limiting 固定仕様
 
-Rev.54 時点では、ASB 本体に Rate limiting を実装しない。
+Rev.60 時点では、ASB 本体に Rate limiting を実装しない。
 
 Rate limiting とは、送信元IP、Host、Domain、Project、APIキー、ユーザー、HTTPメソッド、URL path、リクエスト数、転送量、同時接続数、時間窓等に基づき、HTTP リクエストの受理、拒否、遅延、または優先度を制御する機能を指す。
 
-ASB 本体は Rev.54 時点では以下を実装してはならない。
+ASB 本体は Rev.60 時点では以下を実装してはならない。
 
 - Rate limiting middleware
 - IP別リクエスト制限
@@ -3702,13 +3900,13 @@ Rate limiting を将来実装する場合は、実装前に `ASB-spec.md` を改
 
 ### 13.20 Brotli 圧縮固定仕様
 
-Rev.54 時点では、ASB 本体に Brotli 圧縮を実装しない。
+Rev.60 時点では、ASB 本体に Brotli 圧縮を実装しない。
 
 ASB の標準圧縮機能は、Go 標準ライブラリ `compress/gzip` で実装できる Gzip に限定する。
 
-Brotli 圧縮は Go 標準ライブラリに含まれないため、Rev.54 時点では外部ライブラリ例外採用を行わない。
+Brotli 圧縮は Go 標準ライブラリに含まれないため、Rev.60 時点では外部ライブラリ例外採用を行わない。
 
-ASB 本体は Rev.54 時点では以下を実装してはならない。
+ASB 本体は Rev.60 時点では以下を実装してはならない。
 
 - Brotli 圧縮
 - Brotli 展開
@@ -3763,7 +3961,7 @@ Brotli を将来実装する場合は、実装前に `ASB-spec.md` を改訂し�
 
 ### 13.21 ASB SDK 通信層固定仕様
 
-Rev.54 時点では、公式SDK名称を ASB SDK に固定する。
+Rev.60 時点では、公式SDK名称を ASB SDK に固定する。
 
 ASB SDK は、別製品名または別プロジェクト名として分割しない。
 
@@ -3771,11 +3969,13 @@ ASB SDK は、以下の対応実装を持つ単一の公式SDKとして扱う。
 
 | 対応実装 | 実行環境 | 用途 | 標準ファイル/配置 | 実装方針 |
 |---------|----------|------|------------------|----------|
-| Browser JavaScript | Browser | ASB 標準Web UI 用通信層 | `asb-sdk.js` | 静的 ES module、ブラウザ Web 標準 API のみ |
-| Deno専用 TypeScript | Deno | Deno 利用者向け通信層 | `asb-sdk.ts` | Deno 専用、Web 標準 API と Deno runtime API の範囲 |
+| Browser JavaScript | Browser | ASB 標準Web UI 用通信層 | `webui/asb-sdk.js` | 静的 ES module、ブラウザ Web 標準 API のみ |
+| Deno専用 TypeScript | Deno | Deno 利用者向け通信層 | `sdk/deno/asb-sdk.ts` | Deno 専用、Web 標準 API と Deno runtime API の範囲 |
 | Go | Go | Go 利用者向け通信層 | `sdk/go/` | Go標準ライブラリ中心 |
 
 ASB SDK は、ASB 管理 HTTPS JSON API の request / response / error / pagination / upload 規約をクライアント側から扱うための共通部品である。
+
+ASB SDK は、ASB 本体を拡張する機構ではなく、ASB 管理 HTTPS JSON API の型付き呼び出し層である。
 
 ASB SDK の各対応実装は、ASB 本体の内部 JSON、Service、Repository、Storage を直接参照または呼び出してはならない。
 
@@ -3783,13 +3983,29 @@ ASB SDK の各対応実装は、ASB 管理 HTTPS JSON API に存在しない操�
 
 ASB SDK の各対応実装は、`baseUrl` を必須入力として ASB 管理 HTTPS JSON API の呼び出し先を決定する。
 
-ASB SDK の各対応実装の自動 retry 回数は Rev.54 時点では `0` とし、SDK は失敗した HTTP request を自動再送してはならない。
+`baseUrl` は `https://` scheme の URL のみ許可する。
+
+`http://`、相対URL、空文字、schemeなしURL、WebSocket URL、独自schemeを `baseUrl` として許可してはならない。
+
+ASB SDK は `baseUrl` 末尾の `/` の有無に依存せず、ASB 管理 API path を単一の `/` で結合する。
+
+ASB SDK の各対応実装の自動 retry 回数は Rev.60 時点では `0` とし、SDK は失敗した HTTP request を自動再送してはならない。
 
 ASB SDK は、SDK 固有の保存データ、設定ファイル、生成ファイル、生成ディレクトリを持たない。
 
-SDK 認証仕様、デスクトップアプリ向けSDK利用、モバイルアプリ向けSDK利用は Rev.54 時点では未定とする。
+SDK 認証仕様、デスクトップアプリ向けSDK利用、モバイルアプリ向けSDK利用は Rev.60 時点では未定とする。
 
 ASB SDK の通信規格は、ASB 本体が提供する HTTPS JSON API と同一に固定する。
+
+ASB SDK の公開APIは、ASB 管理 HTTPS JSON API の endpoint 単位に対応する関数または method とする。
+
+ASB SDK の公開API名、引数、戻り値は、ASB 管理 HTTPS JSON API の method、path、request、response、error に対応していなければならない。
+
+ASB SDK は、内部で受信した成功レスポンスJSONとエラーレスポンスJSONを仕様外キー追加なしで返す。
+
+ASB SDK は、通信エラー、timeout、JSON decode失敗、ASB error response を区別できる error 型または error object を提供する。
+
+ASB SDK は、ASB 本体が返した `code`、`message`、`requestId` を破棄、改名、翻訳してはならない。
 
 SDK 通信は、以下の ASB 管理 API 規約に従う。
 
@@ -3834,17 +4050,25 @@ ASB SDK の Browser JavaScript 実装の標準ファイル名は `asb-sdk.js` �
 
 ASB SDK の Browser JavaScript 実装は、ブラウザ標準の ES module として読み込む。
 
+ASB SDK の Browser JavaScript 実装は `webui/asb-sdk.js` に配置する。
+
 ASB SDK の Browser JavaScript 実装は、package 名を持たない。
 
 ASB SDK の Browser JavaScript 実装は、request timeout を `AbortController` で扱う。
 
 ASB SDK の Browser JavaScript 実装は、ブラウザストレージ、cookie、Service Worker、Cache Storage、IndexedDB を SDK 通信用の永続状態として使用してはならない。
 
+ASB SDK の Browser JavaScript 実装は、global object へ SDK API を自動登録してはならない。
+
+ASB SDK の Browser JavaScript 実装は、ES module の named export により公開APIを提供する。
+
 #### 13.21.2 ASB SDK Deno専用 TypeScript 実装固定仕様
 
 ASB SDK の Deno専用 TypeScript 実装は、Deno 専用ランタイムで動作する ASB 管理 HTTPS JSON API クライアントとして実装する。
 
 ASB SDK の Deno専用 TypeScript 実装の標準ファイル名は `asb-sdk.ts` とする。
+
+ASB SDK の Deno専用 TypeScript 実装は `sdk/deno/asb-sdk.ts` に配置する。
 
 ASB SDK の Deno専用 TypeScript 実装は、Deno から直接 import できる TypeScript module として実装する。
 
@@ -3878,6 +4102,8 @@ ASB SDK の Go 実装は、Go 利用者向けの ASB 管理 HTTPS JSON API ク�
 
 ASB SDK の Go 実装は、Go 1.21 以上を前提とする。
 
+ASB SDK の Go 実装は `sdk/go/` 配下に配置する。
+
 ASB SDK の Go 実装は、Go標準ライブラリで実装可能な部分を Go標準ライブラリで実装する。
 
 ASB SDK の Go 実装は、`net/http`、`net/url`、`encoding/json`、`context`、`time`、`mime/multipart` の範囲を中心に実装する。
@@ -3892,9 +4118,15 @@ ASB SDK の Go 実装は、HTTP request timeout と cancellation を `context.Co
 
 ASB SDK の Go 実装は、ASB 管理 HTTPS JSON API の型付き request / response / error を提供する。
 
+ASB SDK の Go 実装の package 名は `asb` とする。
+
+ASB SDK の Go 実装は、module path、tag、外部配布方式を Rev.60 時点では固定しない。
+
+ASB SDK の Go 実装は、`go.mod` を作成する場合でも外部 module dependency を追加してはならない。
+
 #### 13.21.4 SDK 共通禁止事項
 
-SDK 通信のために、ASB 本体は Rev.54 時点では以下を実装してはならない。
+SDK 通信のために、ASB 本体は Rev.60 時点では以下を実装してはならない。
 
 - SDK 専用 HTTPS API
 - SDK 専用 URL prefix
@@ -3914,7 +4146,7 @@ SDK 通信のために、ASB 本体は Rev.54 時点では以下を実装して�
 - SDK 専用 sessionStorage
 - SDK 専用 IndexedDB
 
-ASB 本体は Rev.54 時点では以下の通信方式を SDK 通信として実装してはならない。
+ASB 本体は Rev.60 時点では以下の通信方式を SDK 通信として実装してはならない。
 
 - WebSocket
 - gRPC
@@ -3946,7 +4178,7 @@ SDK 通信のために以下の JSON ファイル、ディレクトリ、設定�
 
 `config/config.json` に SDK 通信関連フィールドが存在する場合は、未知フィールドとして起動失敗とする。
 
-SDK から ASB 管理 API を呼び出す場合でも、Rev.54 時点では `Authorization` ヘッダー、`X-API-Key` ヘッダー、cookie、セッションIDを認証判断に使用してはならない。
+SDK から ASB 管理 API を呼び出す場合でも、Rev.60 時点では `Authorization` ヘッダー、`X-API-Key` ヘッダー、cookie、セッションIDを認証判断に使用してはならない。
 
 ASB 標準Web UI は、ASB SDK の Browser JavaScript 実装を経由して上記の ASB 管理 API 規約に従う。
 
@@ -3969,7 +4201,7 @@ ASB SDK の追加実装詳細を確定する場合は、実装前に `ASB-spec.m
 
 #### 13.21.5 ASB 標準Web UI 固定仕様
 
-Rev.54 時点では、ASB Web UI を対応必須とする。
+Rev.60 時点では、ASB Web UI を対応必須とする。
 
 ASB Web UI は、ASB 標準Web UIとして扱う。
 
@@ -3985,6 +4217,8 @@ ASB 標準Web UI は、ASB SDK の Browser JavaScript 実装である `asb-sdk.j
 
 ASB 標準Web UI は、ASB SDK の Browser JavaScript 実装を利用して ASB 管理 HTTPS JSON API と通信する。
 
+ASB 標準Web UI は、ASB SDK の Browser JavaScript 実装を経由せずに `fetch` または `XMLHttpRequest` で ASB 管理 API を直接呼び出してはならない。
+
 ASB 標準Web UI は、ASB 本体に内包してはならない。
 
 ASB 標準Web UI は、ASB 本体の内部 JSON、Service、Repository、Storage を直接参照または呼び出してはならない。
@@ -3992,6 +4226,14 @@ ASB 標準Web UI は、ASB 本体の内部 JSON、Service、Repository、Storage
 ASB 標準Web UI は、ASB 管理 HTTPS JSON API に存在しない操作を前提としてはならない。
 
 ASB 標準Web UI のリポジトリ境界は、ASB 本体と同一リポジトリ内の `webui/` 配下に固定する。
+
+ASB 標準Web UI の入口ファイルは `webui/index.html` とする。
+
+ASB 標準Web UI のスタイルは `webui/styles.css` に配置する。
+
+ASB 標準Web UI の画面制御は `webui/app.js` に配置する。
+
+ASB SDK Browser JavaScript 実装は `webui/asb-sdk.js` として同梱する。
 
 `webui/` は ASB 本体バイナリへ埋め込んではならない。
 
@@ -4005,9 +4247,15 @@ ASB 標準Web UI の配布 artifact は、静的 HTML / CSS / JavaScript と ASB
 
 ASB 標準Web UI の配布 artifact は、`node_modules/`、`dist/`、`build/`、`package.json`、`deno.json`、`deno.lock` を含んではならない。
 
-ASB 標準Web UI は、Rev.54 時点では認証 UI を持たない。
+ASB 標準Web UI は build step を持たない。
 
-ASB 標準Web UI は、ASB 管理 API が Rev.54 時点で認証なしである前提に従う。
+ASB 標準Web UI の配布 artifact は `webui/` 配下の静的ファイルをそのまま配布可能でなければならない。
+
+ASB 標準Web UI は、初期表示時に `baseUrl` を利用者入力または静的設定値として扱い、永続保存してはならない。
+
+ASB 標準Web UI は、Rev.60 時点では認証 UI を持たない。
+
+ASB 標準Web UI は、ASB 管理 API が Rev.60 時点で認証なしである前提に従う。
 
 ASB 標準Web UI を外部ネットワークから利用可能にする場合は、VPN、SSH tunnel、reverse proxy、ファイアウォール、IP制限等のASB外部の運用境界で保護する。
 
@@ -4027,7 +4275,11 @@ ASB 標準Web UI の画面一覧は以下に固定する。
 
 ASB 標準Web UI は、画面ごとに ASB SDK の Browser JavaScript 実装の公開関数のみを呼び出す。
 
-ASB 標準Web UI は、認証 UI、ユーザー管理 UI、テナント管理 UI、課金 UI、契約管理 UI、FTP / FTPS / SFTP UI、クラウドサービス管理 UI、ウイルススキャン UI を持たない。
+ASB 標準Web UI は、ASB SDK に存在しない操作を UI 操作として提供してはならない。
+
+ASB 標準Web UI は、ASB 管理 HTTPS JSON API が返した `requestId` をエラー表示または詳細表示で確認可能にする。
+
+ASB 標準Web UI は、認証 UI、ユーザー管理 UI、テナント管理 UI、課金 UI、契約管理 UI、FTP / FTPS / SFTP UI を持たない。
 
 ASB 標準Web UI は、ブラウザストレージ、cookie、Service Worker、Cache Storage、IndexedDB を永続状態として使用してはならない。
 
@@ -4068,7 +4320,7 @@ ASB 標準Web UI を理由に、ASB 本体へ以下を追加してはならな�
 
 ### 13.22 無料独自SSL / ACME 固定仕様
 
-Rev.54 時点では、ASB 本体に無料独自SSLを実装する。
+Rev.60 時点では、ASB 本体に無料独自SSLを実装する。
 
 無料独自SSLは、XServer Static 互換目標における利用者向け機能名である。
 
@@ -4152,7 +4404,11 @@ ACME 内部状態の保存先は以下に限定する。
 
 上記 JSON ファイルは起動時に自動生成してはならない。
 
-上記 JSON ファイルは `asb init-runtime` または無料独自SSL有効化 API の承認済み処理でのみ作成する。
+上記 JSON ファイルは `asb init-runtime` によって初期作成する。
+
+無料独自SSL有効化 API は、上記 JSON ファイルを初回作成してはならない。
+
+無料独自SSL有効化 API は、上記 JSON ファイルが存在し、構文、`schemaVersion: 1`、必須トップレベルキー、未知フィールド不在を満たす場合のみ更新できる。
 
 ACME account key は `config/acme_accounts.json` に保存する。
 
@@ -4321,7 +4577,7 @@ retry / backoff は `attemptCount` に基づき、最小 `3600` 秒、最大 `86
 
 Let’s Encrypt rate limit に到達した場合は、`ERR_SSL_CERT_GENERATION_FAILED` を返し、次回再試行可能時刻を renewal 履歴に保存する。
 
-Rev.54 時点で ASB 本体は以下を実装してはならない。
+Rev.60 時点で ASB 本体は以下を実装してはならない。
 
 - 複数 CA
 - CA 選定
@@ -4340,9 +4596,9 @@ Rev.54 時点で ASB 本体は以下を実装してはならない。
 
 ### 13.23 ASB互換目標固定仕様
 
-Rev.54 時点では、ASB互換目標は将来の到達目標であり、個別の確定仕様へ昇格した項目のみ実装対象とする。
+Rev.60 時点では、ASB互換目標は将来の到達目標であり、個別の確定仕様へ昇格した項目のみ実装対象とする。
 
-Rev.54 時点では、無料独自SSLのみを XServer Static 互換目標から確定仕様へ昇格する。
+Rev.60 時点では、無料独自SSLのみを XServer Static 互換目標から確定仕様へ昇格する。
 
 ASB互換目標は、XServer Static 等の静的コンテンツ専用ホスティングの利用体験を参考にした ASB 独自の目標である。
 
@@ -4354,7 +4610,7 @@ ASB互換目標における「参考」「相当」「目標」は、仕様確�
 
 ASB互換目標は、ASB の実装を外部サービスへ合わせる指示ではなく、ASB 独自仕様として将来比較可能な利用体験を整理するための境界である。
 
-Rev.54 時点で ASB互換目標に含める対象は以下とする。
+Rev.60 時点で ASB互換目標に含める対象は以下とする。
 
 - 静的コンテンツ専用ホスティング
 - HTML、CSS、JavaScript、画像等の静的ファイル配信
@@ -4369,7 +4625,7 @@ Rev.54 時点で ASB互換目標に含める対象は以下とする。
 - フォルダ階層を保持したファイル管理
 - SSL更新状態、デプロイ状態、ログの確認
 
-Rev.54 時点で XServer Static互換機能セットとして実装対象に固定する機能は以下とする。
+Rev.60 時点で XServer Static互換機能セットとして実装対象に固定する機能は以下とする。
 
 | 機能 | 実装境界 |
 |-----|----------|
@@ -4381,7 +4637,7 @@ Rev.54 時点で XServer Static互換機能セットとして実装対象に固�
 | ログ・状態確認 | Access log、Error log、Monitoring API、SSL状態、Webhook処理状態、ストレージ使用量。 |
 | バックアップ・復旧 | JSONファイルベースのバックアップ作成、検証、復旧。 |
 
-Rev.54 時点で ASB互換目標に含めない対象は以下とする。
+Rev.60 時点で ASB互換目標に含めない対象は以下とする。
 
 - XServer Static との完全互換
 - XServer Static の管理画面再現
@@ -4401,7 +4657,7 @@ Rev.54 時点で ASB互換目標に含めない対象は以下とする。
 - DNS provider API 連携
 - 手動 TXT 登録
 
-ASB互換目標に含まれる機能であっても、以下は Rev.54 時点では実装対象ではない。
+ASB互換目標に含まれる機能であっても、以下は Rev.60 時点では実装対象ではない。
 
 - HTTP/2 実装詳細
 - SDK 外部配布 / npm 配布
@@ -4441,11 +4697,11 @@ ASB互換目標に含まれる機能を実装対象へ昇格する場合は、�
 
 ### 13.24 将来計画機能固定仕様
 
-Rev.54 時点では、将来計画、保留事項、検討・調査中事項は実装対象ではない。
+Rev.60 時点では、将来計画、保留事項、検討・調査中事項は実装対象ではない。
 
 本節は、将来計画に含まれる機能を実装対象外として固定する。
 
-ASB 本体は Rev.54 時点では以下を実装してはならない。
+ASB 本体は Rev.60 時点では以下を実装してはならない。
 
 - GUI という曖昧カテゴリ
 - ASB 本体への Web UI 内包
@@ -4467,7 +4723,7 @@ ASB 本体は Rev.54 時点では以下を実装してはならない。
 - FTPS
 - SFTP
 
-将来計画機能を理由に、ASB 本体は Rev.54 時点では以下を追加、変更、生成してはならない。
+将来計画機能を理由に、ASB 本体は Rev.60 時点では以下を追加、変更、生成してはならない。
 
 - ASB 本体内包 Web UI 用 API
 - モバイル専用 API
@@ -4652,13 +4908,13 @@ ASB の開発版バージョンは累積連番 `v0.N` とし、メジャー/マ�
 | `config/acme_renewals.json` | ACME renewal スキーマ |
 | `storage/projects/:projectId/files.json` | File メタデータスキーマ |
 
-静的コンテンツ実体、ログファイル、証明書ファイル、ビルド済みバイナリは、Rev.54 時点のマイグレーション対象外とする。
+静的コンテンツ実体、ログファイル、証明書ファイル、ビルド済みバイナリは、Rev.60 時点のマイグレーション対象外とする。
 
 ### 16.3 schemaVersion 固定
 
 各実行時 JSON ファイルはトップレベルに `schemaVersion` を持つ。
 
-Rev.54 時点の `schemaVersion` は `1` とする。
+Rev.60 時点の `schemaVersion` は `1` とする。
 
 例：
 
@@ -4726,7 +4982,9 @@ asb migrate --storage /var/asb --from-schema 0 --to-schema 1 --apply
 
 マイグレーション履歴は `config/migrations.json` に保存する。
 
-`config/migrations.json` は起動時必須 JSON ファイルではなく、初回マイグレーション実行時に `storage.basePath/config/` 配下へ作成できる。
+`config/migrations.json` は起動時必須 JSON ファイルではなく、`asb init-runtime` の初期作成対象に含めない。
+
+`config/migrations.json` は `asb migrate --apply` 実行時のみ、`storage.basePath/config/` 配下へ初回作成できる。
 
 作成場所は実行時データ領域に限定し、開発リポジトリ内へ作成してはならない。
 
@@ -4777,7 +5035,7 @@ ASB サーバー起動時、通常の API 処理、静的配信、Webhook、Back
 
 ### 16.8 禁止事項
 
-Rev.54 時点では以下を禁止する。
+Rev.60 時点では以下を禁止する。
 
 - 起動時の自動マイグレーション
 - 開発リポジトリ内でのマイグレーション作業ファイル作成
@@ -4802,6 +5060,12 @@ Rev.54 時点では以下を禁止する。
 
 | バージョン | 日付 | 内容 |
 |-----------|------|------|
+| Rev.60 | 2026-09-09 | クラウドサービス化とウイルススキャンを現行のASB互換対象外、Web UI禁止UI、非実装確認対象から削除し、過去履歴のみへ限定 |
+| Rev.59 | 2026-09-09 | ASB SDK と ASB 標準Web UI の実装境界、配置、HTTPS baseUrl、公開API、直接API呼び出し禁止、配布条件を整理 |
+| Rev.58 | 2026-09-09 | P3〜P7のドメイン管理、SSL状態基盤、無料独自SSL/ACME、GitHub Webhook、バックアップ・復旧、ログ・監視の実装境界を一括整理 |
+| Rev.57 | 2026-09-09 | ファイル管理と静的配信の境界を整理し、files.json記録ファイルのみ配信、未記録ファイルの整合性不備、upload/overwrite/delete、MIME、Gzip、ETag、304、HEADの実装条件を固定 |
+| Rev.56 | 2026-09-09 | config/migrations.jsonを起動時必須JSONおよびasb init-runtime初期作成対象から分離し、asb migrate --applyのみ初回作成可能な履歴JSONとして整理 |
+| Rev.55 | 2026-09-09 | asb init-runtime、asb start、実行時データ初期化、起動時非生成、Project初期files.json作成境界を実装レベルで整理 |
 | Rev.54 | 2026-09-09 | SSLStatusレスポンス、無料独自SSL APIごとの返却条件、SSL操作競合エラーを実装レベルで整理 |
 | Rev.53 | 2026-09-09 | 無料独自SSL / Let’s Encrypt ACME v2 / HTTP-01の状態、JSON保存スキーマ、証明書取得・更新状態遷移、retry/backoffを実装レベルで整理 |
 | Rev.52 | 2026-09-09 | ASB SDKを単一の公式SDK名称として固定し、Browser JavaScript、Deno専用TypeScript、Goを対応実装として整理 |
