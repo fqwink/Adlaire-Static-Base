@@ -6,7 +6,7 @@
 
 本ファイルは、`ASB-spec.md` に基づいて実装タスクを管理する。
 
-参照仕様バージョン: `ASB-spec.md Rev.60`
+参照仕様バージョン: `ASB-spec.md Rev.64`
 
 `ASB-spec.md` で仕様確定済みの事項のみを実装タスクとして扱う。
 
@@ -49,6 +49,7 @@
 | 低 | P10 | v0.11 | ASB SDK | 未着手 |
 | 低 | P11 | v0.12 | ASB 標準Web UI | 未着手 |
 | 低 | P12 | v0.13 | 禁止機能・非実装確認 | 未着手 |
+| 高 | P13 | v0.14 | 単一システム管理者認証 | 未着手 |
 
 ## 3. P0 / v0.1 / 基盤
 
@@ -73,7 +74,7 @@
 - Entity は保存形式とレスポンス形式の型定義のみを持つ構造にする。
 - ドメイン間の接続を `cmd/asb/main.go` で一元管理する。
 - 責務間の循環依存を禁止する。
-- `config.Loader`、`server.Router`、`server.Responder`、`management.ProjectService`、`management.DomainService`、`management.SSLService`、`delivery.FileService`、`delivery.StaticService`、`delivery.WebhookService`、`data.JSONRepository`、`data.StorageService`、`data.BackupService`、`system.LogService`、`system.MonitoringService`、`system.Clock`、`system.IDGenerator` の公開 interface 境界を整備する。
+- `config.Loader`、`server.Router`、`server.Responder`、`management.ProjectService`、`management.DomainService`、`management.SSLService`、`delivery.FileService`、`delivery.StaticService`、`delivery.WebhookService`、`data.JSONRepository`、`data.StorageService`、`data.BackupService`、`system.AuthService`、`system.LogService`、`system.MonitoringService`、`system.Clock`、`system.IDGenerator` の公開 interface 境界を整備する。
 - Project、File、Backup の UUID 形式 ID 生成を `crypto/rand` で実装する。
 - UUID を RFC 4122 version 4、小文字16進、ハイフン付き36文字として生成・検証し、`crypto/rand` 失敗時は `ERR_INTERNAL` とする。
 - Clock 注入により時刻取得を行い、時刻取得失敗時の `ERR_INTERNAL` をテスト可能にする。
@@ -122,7 +123,7 @@
 - `asb init-runtime` は `storage.basePath` が開発リポジトリ配下の場合に初期化を開始せず `ERR_STORAGE_VALIDATION_FAILED` で失敗する。
 - `asb init-runtime` は作成予定パスがすべて `storage.basePath` 配下に収まることを検証する。
 - `asb init-runtime` は `storage.basePath/`、`config/`、`storage/`、`storage/projects/`、`logs/`、`certs/` を仕様順序で作成または検証する。
-- `asb init-runtime` は `config/projects.json`、`config/domains.json`、`config/backups.json`、`config/webhooks.json`、`config/acme_accounts.json`、`config/acme_orders.json`、`config/acme_authorizations.json`、`config/acme_challenges.json`、`config/acme_renewals.json` を空状態で作成する。
+- `asb init-runtime` は `config/projects.json`、`config/domains.json`、`config/backups.json`、`config/auth.json`、`config/webhooks.json`、`config/acme_accounts.json`、`config/acme_orders.json`、`config/acme_authorizations.json`、`config/acme_challenges.json`、`config/acme_renewals.json` を空状態で作成する。
 - `asb init-runtime` は `storage/projects/:projectId/files.json` を作成しない。
 - `asb init-runtime` は既存 JSON が妥当な場合は変更せず、既存 JSON が不正な場合は自動修復または上書きを行わない。
 - `asb init-runtime` は既存ファイルまたはディレクトリを上書き、削除、移動、truncate しない。
@@ -130,7 +131,7 @@
 - `asb init-runtime` 成功時は stdout へ `ASB_RUNTIME_INITIALIZED storageBasePath="..."` を単一行出力し、終了コード `0` とする。
 - `asb init-runtime` 失敗時は stderr へ `ASB_RUNTIME_INIT_ERROR code=... message="..."` を単一行出力し、終了コード `1` とする。
 - `storage.basePath` 配下の `config/`、`storage/`、`storage/projects/`、`logs/`、`certs/` の順序付き存在検証を実装する。
-- `config/projects.json`、`config/domains.json`、`config/backups.json`、`config/webhooks.json`、各 Project の `storage/projects/:projectId/files.json` の順序付き起動時存在検証を実装する。
+- `config/projects.json`、`config/domains.json`、`config/backups.json`、`config/auth.json`、`config/webhooks.json`、`config/acme_accounts.json`、`config/acme_orders.json`、`config/acme_authorizations.json`、`config/acme_challenges.json`、`config/acme_renewals.json`、各 Project の `storage/projects/:projectId/files.json` の順序付き起動時存在検証を実装する。
 - 必須 JSON ファイルの構文検証、必須フィールド検証、未知フィールド拒否を実装する。
 - `server.tlsCertFile` と `server.tlsKeyFile` の絶対パス、存在、通常ファイル、秘密鍵ファイルの group/world writable 禁止を検証する。
 - 管理 API 用 TLS 証明書ファイルまたは秘密鍵ファイルを開発リポジトリ内へ生成しない。
@@ -157,7 +158,7 @@
 - `204 No Content` を使用しない。
 - 配列レスポンスは対象データが空でも空配列を返す。
 - URL パラメータ `:id`、`:domain`、`:name` の URL decode、正規化、バリデーションを実装する。
-- `:id` は Rev.60 の UUID 正規表現に一致する値のみ許可する。
+- `:id` は Rev.64 の UUID 正規表現に一致する値のみ許可する。
 - `:domain` は小文字正規化後、label数、全体長、label正規表現、末尾 `.` 除去を仕様通り検証する。
 - `:name` は長さ、NUL、パス区切り、`.`、`..`、先頭 `.`、空白のみを仕様通り拒否する。
 - JSON ファイル更新時の読み込み検証、保存前再検証、同一ファイル排他書き込みを実装する。
@@ -173,9 +174,9 @@
 - 複数JSON更新の途中失敗時に更新済みJSON名、未更新JSON名、操作名、requestId をエラーログへ記録する。
 - 複数ファイル更新の途中失敗時に、更新予定JSON、更新済みJSON、`files.json` path、実ファイル、`projects.used` の整合性検証を実装する。
 - 整合性検証失敗時は `ERR_STORAGE_VALIDATION_FAILED` を error log へ記録する。
-- Rev.60 時点では複数JSON更新に外部トランザクション機構を導入しない。
-- Rev.60 時点の API エンドポイント固定表に記載されたメソッド、パス、成功ステータス、失敗コードを実装する。
-- Rev.60 API 成功レスポンス固定表に記載された JSON キーと型を実装する。
+- Rev.64 時点では複数JSON更新に外部トランザクション機構を導入しない。
+- Rev.64 時点の API エンドポイント固定表に記載されたメソッド、パス、成功ステータス、失敗コードを実装する。
+- Rev.64 API 成功レスポンス固定表に記載された JSON キーと型を実装する。
 - プロジェクト作成 API `POST /api/projects` を実装する。
 - プロジェクト一覧 API `GET /api/projects` を実装する。
 - プロジェクト削除 API `DELETE /api/projects/:id` を実装する。
@@ -277,7 +278,7 @@
 - `Cache-Control` を既定で `public, max-age=60` とする。
 - `If-None-Match` と `If-Modified-Since` による `304 Not Modified` を実装し、両方が存在する場合は `If-None-Match` を優先する。
 - `304 Not Modified` では `Content-Type`、`ETag`、`Last-Modified`、`Cache-Control` を返し、`Content-Encoding` を返さない。
-- Range request は Rev.60 時点では実装せず、`Range` ヘッダーを無視して `206 Partial Content` を返さない。
+- Range request は Rev.64 時点では実装せず、`Range` ヘッダーを無視して `206 Partial Content` を返さない。
 - `Accept-Encoding: br` では Brotli 応答を返さない。
 - Brotli 用の `.br`、キャッシュ、一時ファイル、メタデータを開発リポジトリ内にも `storage.basePath` 配下にも生成しない。
 - 静的配信でディレクトリ一覧を返さない。
@@ -550,7 +551,7 @@
 - atomic rename 後に履歴保存へ失敗した場合は、作成済みtar.gzを削除する。
 - 作成済みtar.gzの削除に失敗した場合でも、バックアップ作成APIは成功レスポンスを返さない。
 - バックアップ保存先を別障害領域へ複製する作業をASB外の運用責務として扱う。
-- 外部ストレージ連携を Rev.60 時点では実装対象外として扱う。
+- 外部ストレージ連携を Rev.64 時点では実装対象外として扱う。
 - Backup復旧前退避先を `storage.basePath/backups/restore-staging/{restoreId}/previous/` に固定する。
 - Backup復旧用展開先を `storage.basePath/backups/restore-staging/{restoreId}/next/` に固定する。
 - Backup履歴の `status` が `completed` でない場合は復旧を拒否する。
@@ -651,7 +652,7 @@
 
 ### 実装タスク
 
-- マイグレーション対象を `config/projects.json`、`config/domains.json`、`config/backups.json`、`config/webhooks.json`、`config/acme_accounts.json`、`config/acme_orders.json`、`config/acme_authorizations.json`、`config/acme_challenges.json`、`config/acme_renewals.json`、`storage/projects/:projectId/files.json` に限定する。
+- マイグレーション対象を `config/projects.json`、`config/domains.json`、`config/backups.json`、`config/auth.json`、`config/webhooks.json`、`config/acme_accounts.json`、`config/acme_orders.json`、`config/acme_authorizations.json`、`config/acme_challenges.json`、`config/acme_renewals.json`、`storage/projects/:projectId/files.json` に限定する。
 - `internal/data/migration_test.go` を作成する。
 - 各実行時 JSON ファイルのトップレベル `schemaVersion` を実装する。
 - `schemaVersion` 未指定の JSON ファイルを `0` として扱う。
@@ -761,6 +762,9 @@
 - ASB SDK の Deno専用 TypeScript 実装は Node.js、npm、package manager、`package.json`、`node_modules/`、`deno.json`、`deno.lock`、bundler、transpiler、generated client、外部ライブラリを前提にしない。
 - ASB SDK の Go 実装を Go 1.21 以上の ASB 管理 HTTPS JSON API クライアント実装として実装する。
 - ASB SDK の Go 実装を `sdk/go/` 配下に配置し、package 名を `asb` とする。
+- ASB SDK の Go 実装で `go.mod` を作成する場合、module path を `github.com/fqwink/Adlaire-Static-Base/sdk/go` に固定する。
+- ASB SDK の Go 実装の tag を ASB 本体の安定版リリースタグと同一にする。
+- ASB SDK の Go 実装を Rev.64 時点では外部配布サービスへ登録しない。
 - ASB SDK の Go 実装は `net/http`、`net/url`、`encoding/json`、`context`、`time`、`mime/multipart` を中心に Go標準ライブラリで実装する。
 - ASB SDK の Go 実装は ASB 本体の `internal/` package を import しない。
 - ASB SDK の Go 実装は外部HTTP client library、外部JSON library、generated client を前提にしない。
@@ -770,6 +774,9 @@
 - ASB SDK の各対応実装は `baseUrl` に `https://` scheme の URL のみを許可する。
 - ASB SDK の各対応実装は `http://`、相対URL、空文字、schemeなしURL、WebSocket URL、独自schemeを `baseUrl` として拒否する。
 - ASB SDK の各対応実装は `baseUrl` 末尾の `/` の有無に依存せず、ASB 管理 API path を単一の `/` で結合する。
+- ASB SDK の各対応実装は、管理API呼び出し時に単一システム管理者パスワードを request 単位の引数または呼び出しオプションとして受け取る。
+- ASB SDK の各対応実装は、管理API呼び出し時に `X-ASB-Admin-Password` ヘッダーを設定する。
+- ASB SDK の各対応実装は、管理者パスワードをファイル、環境変数、ブラウザストレージ、cookie、セッション、global変数、cache、SDK専用実行時データへ保存しない。
 - ASB SDK の公開APIを ASB 管理 HTTPS JSON API の endpoint 単位に対応する関数または method として実装する。
 - ASB SDK の公開API名、引数、戻り値を ASB 管理 HTTPS JSON API の method、path、request、response、error に対応させる。
 - ASB SDK の各対応実装の自動 retry 回数は `0` とし、失敗した HTTP request を自動再送しない。
@@ -792,12 +799,15 @@
 - SDK公開APIが ASB 管理 HTTPS JSON API endpoint と対応していることを確認する。
 - SDK error 型または error object が通信エラー、timeout、JSON decode失敗、ASB error response を区別できる。
 - SDK が ASB error response の `code`、`message`、`requestId` を保持する。
+- SDK が `X-ASB-Admin-Password` を request 単位で送信し、管理者パスワードを永続保存しない。
 - SDK 専用 API、SDK 専用保存データ、SDK 専用実行時データが存在しない。
 - ASB SDK の Browser JavaScript 実装と Deno専用 TypeScript 実装が Node.js、npm、package manager、bundler、外部ライブラリを前提にしていない。
 - ASB SDK の Deno専用 TypeScript 実装が Deno 専用である。
 - ASB SDK の Go 実装が ASB 本体の `internal/` package を import していない。
+- ASB SDK の Go 実装の module path と tag 方針が仕様通りである。
 - ASB SDK の Browser JavaScript 実装が global object へ自動登録されていない。
 - ASB SDK の Go 実装が外部 module dependency を追加していない。
+- ASB SDK が SDK認証拡張用の login、logout、refreshToken、session、API key、credential store API を公開していない。
 - `.gitignore` が存在しない。
 - 開発リポジトリ内に実行時データ、ログ、一時ファイル、ビルド成果物が残っていない。
 - `go test ./...` が成功する。
@@ -809,7 +819,7 @@
 - npm 配布
 - Deno 以外の TypeScript runtime 対応
 - bundler 前提の配布
-- SDK 認証仕様
+- SDK 認証拡張仕様
 - デスクトップアプリ向け SDK 対応
 - モバイルアプリ向け SDK 対応
 
@@ -850,12 +860,15 @@
 - Deployments 画面を実装し、GitHub Webhookデプロイ結果、重複判定、失敗理由を表示する。
 - Backups 画面を実装し、Backup の作成、一覧、検証、復旧を行う。
 - Logs 画面を実装し、Access log と Error log を表示する。
-- Settings 画面を実装し、ASB の読み取り専用設定値と実行時状態を表示する。
+- Settings 画面を実装し、ASB の読み取り専用設定値、実行時状態、システム管理者パスワード変更を扱う。
+- システム管理画面へのアクセスまたは管理操作のたびに、システム管理者パスワード入力を要求する。
+- 入力されたシステム管理者パスワードを ASB SDK の Browser JavaScript 実装へ request 単位で渡す。
+- システム管理者パスワードをメモリ上で request 完了までの一時値としてのみ扱い、request 完了後に参照を破棄する。
+- `ERR_AUTH_PASSWORD_CHANGE_REQUIRED` を受け取った場合、管理者パスワード変更画面または変更フォームを表示する。
 - Node.js 実行環境、npm 配布、package manager、bundler、transpiler、外部フレームワーク、外部ライブラリを前提にしない。
-- 認証 UI、ユーザー管理 UI、テナント管理 UI、課金 UI、契約管理 UI、FTP / FTPS / SFTP UI を実装しない。
+- ユーザー管理 UI、ロール管理 UI、テナント管理 UI、課金 UI、契約管理 UI、FTP / FTPS / SFTP UI を実装しない。
 - ブラウザストレージ、cookie、Service Worker、Cache Storage、IndexedDB を永続状態として使用しない。
 - `package.json`、`node_modules/`、`deno.json`、`deno.lock`、`dist/`、`build/`、一時ファイル、ログファイル、ビルド成果物を生成しない。
-- Rev.60 時点では、ASB 標準Web UIに認証 UI を実装しない。
 - 外部ネットワークから利用可能にする場合は、VPN、SSH tunnel、reverse proxy、ファイアウォール、IP制限等のASB外部の運用境界で保護する。
 - 外部開発者の独自Web UIまたは独自フロントエンドは、公式 ASB 標準Web UI の実装タスクとして扱わない。
 
@@ -866,6 +879,8 @@
 - Web UI が `fetch` または `XMLHttpRequest` で ASB 管理 API を直接呼び出していないことを確認する。
 - Web UI が ASB SDK に存在しない操作を提供していないことを確認する。
 - Web UI の `baseUrl` が永続保存されないことを確認する。
+- Web UI がシステム管理者パスワードを毎回入力として扱い、ブラウザストレージ、cookie、IndexedDB、Cache Storage、Service Worker、URL、ログ、画面表示へ保存または出力しないことを確認する。
+- Web UI が `ERR_AUTH_PASSWORD_CHANGE_REQUIRED` を受け取った場合に管理者パスワード変更を実行できる。
 - Web UI がエラー時に `requestId` を確認可能にする。
 - ASB 標準Web UI が `webui/` 配下に配置されている。
 - `webui/index.html`、`webui/styles.css`、`webui/app.js`、`webui/asb-sdk.js` が存在する。
@@ -889,50 +904,66 @@
 - bundler 前提の配布
 - 外部フレームワーク採用
 - 外部ライブラリ採用
-- 認証 UI
 - 外部開発者の独自Web UIまたは独自フロントエンドの実装
 
 ## 15. P12 / v0.13 / 禁止機能・非実装確認
 
 優先度: 低
 
-目的: Rev.60 時点で実装対象外の機能が混入していないことを確認する。
+目的: Rev.64 時点で実装対象外の機能が混入していないことを確認する。
 
 ### 実装タスク
 
-- 未確定のASB互換目標を将来の到達目標として扱い、Rev.60 時点の実装対象として扱わない。
+- 未昇格のASB互換目標を将来の到達目標として扱い、Rev.64 時点の実装対象として扱わない。
 - `internal/asb_forbidden_test.go` を作成する。
 - XServer Static互換機能セットの実装対象が、静的配信、独自ドメイン、無料独自SSL、GitHub Webhookデプロイ、HTTPS JSON APIによるファイル管理、ログ・状態確認、バックアップ・復旧に限定されていることを確認する。
 - XServer Static互換機能セットを理由に、XServer Static完全互換、管理画面再現、内部実装再現、DNS管理、DNS provider API、DNS-01、wildcard、複数CA、CDN完全互換、課金・契約・アカウント管理を追加しない。
-- ASB互換目標に含まれることを、未確定機能の実装根拠として扱わない。
+- ASB互換目標に含まれることを、未昇格機能の実装根拠として扱わない。
 - ASB互換目標を理由に `.gitignore`、外部DB、未承認外部ライブラリ、未承認外部サービス連携、開発リポジトリ内実行時データ、起動時自動生成、ビルド成果物自動生成を追加しない。
-- ASB互換目標を理由に APIキー管理、ユーザー認証、Rate limiting、Brotli圧縮、CA選定、SDK専用通信を実装しない。
-- 将来計画、保留事項、検討・調査中事項を Rev.60 時点の実装対象として扱わない。
-- GUIという曖昧カテゴリ、ASB本体へのWeb UI内包、デスクトップアプリ、モバイルアプリ、ユーザー管理、マルチテナント、課金管理、契約管理、複数インスタンス管理、クラスタ管理、分散ロック、NFS専用連携、分散ストレージ専用連携、外部ストレージサービス連携、ログファイル暗号化、HTTP/2実装詳細、FTP、FTPS、SFTPをASB本体に実装しない。
+- ASB互換目標を理由に APIキー管理、複数ユーザー管理、Rate limiting、Brotli圧縮、HTTP/2、CA選定、SDK専用通信を実装しない。
+- HTTP/2 が暗黙的に有効化されないよう、Rev.64 の実装では `http.Server.TLSNextProto` を空 map に設定する。
+- HTTP/2 専用設定項目、h2c、ALPN独自制御、server push、stream priority、専用handler、専用middleware、専用ログ項目を実装しない。
+- 将来計画、保留事項、検討・調査中事項を Rev.64 時点の実装対象として扱わない。
+- GUIという曖昧カテゴリ、ASB本体へのWeb UI内包、デスクトップアプリ、モバイルアプリ、複数ユーザー管理、ユーザー別権限管理、マルチテナント、課金管理、契約管理、複数インスタンス管理、クラスタ管理、分散ロック、NFS専用連携、分散ストレージ専用連携、外部ストレージサービス連携、ログファイル暗号化、HTTP/2実装詳細、FTP、FTPS、SFTPをASB本体に実装しない。
 - 将来計画機能または転送プロトコル互換を理由に ASB本体内包Web UI用API、モバイル専用API、テナント用API、課金用API、契約用API、外部ストレージ用API、ログ暗号化用API、FTP / FTPS / SFTP 用 APIを追加しない。
 - 将来計画機能または転送プロトコル互換を理由に `ui.*`、`webui.*`、`desktop.*`、`mobile.*`、`tenant.*`、`billing.*`、`nfs.*`、`cluster.*`、`distributedStorage.*`、`externalStorage.*`、`logEncryption.*`、`ftp.*`、`ftps.*`、`sftp.*` 設定項目を追加しない。
 - 将来計画機能または転送プロトコル互換を理由に ASB本体内包Web UI用JSON、モバイル用JSON、テナント用JSON、課金用JSON、外部ストレージ用JSON、ログ暗号化用JSON、FTP / FTPS / SFTP 用 JSONを追加しない。
 - 将来計画機能または転送プロトコル互換を理由に ASB本体内包Web UI用ディレクトリ、モバイル用ディレクトリ、テナント用ディレクトリ、課金用ディレクトリ、外部ストレージ用ディレクトリ、ログ暗号化用ディレクトリ、FTP / FTPS / SFTP 用ディレクトリを追加しない。
+- 複数インスタンス対応を理由に node 管理、leader election、distributed lock、cluster membership、node heartbeat、shared queue を実装しない。
+- NFS 連携を理由に NFS mount 管理、NFS lock 制御、NFS stale handle 検出、NFS 専用 retry、NFS 専用 health check を実装しない。
+- 分散ストレージ連携を理由に distributed storage driver、replica 管理、shard 管理、quorum 制御、repair job、rebalancing を実装しない。
+- 外部ストレージ連携を理由に S3、S3互換API、GCS、Azure Blob、Dropbox、Google Drive、Box、presigned URL、外部ストレージ credential 管理、外部SDK を実装しない。
+- ログファイル暗号化を理由にログ保存時暗号化、ログ復号 API、key 生成、key 保存、key rotation、KMS連携、暗号化ログ viewer を実装しない。
+- デスクトップアプリ向けSDK利用を理由に専用API、専用認証、専用token、callback URL、deep link、OS keychain、auto update、installer、desktop notification、tray integration、native menu、GUIライブラリ依存を追加しない。
+- モバイルアプリ向けSDK利用を理由に専用API、専用認証、専用token、device registration、push notification、biometric authentication、mobile deep link、offline cache、sync queue、app store 配布設定、モバイルGUIライブラリ依存を追加しない。
 - 管理 API が `Authorization` ヘッダーまたは `X-API-Key` ヘッダーの有無でレスポンスを変えないことをテストする。
-- APIキー、ユーザー、セッション、認証状態を表す JSON ファイルまたはディレクトリを生成しないことをテストする。
+- APIキー、複数ユーザー、ロール、セッションを表す JSON ファイルまたはディレクトリを生成しないことをテストする。
 - `config/config.json` に認証関連フィールドが存在する場合に未知フィールドとして起動失敗することをテストする。
 - Rate limiting 用 middleware、制限アルゴリズム、永続カウンタ、設定項目、JSON ファイルまたはディレクトリを生成しないことをテストする。
 - 管理 API、静的配信、Webhook 受信が Rate limiting 関連条件でレスポンスを変えないことをテストする。
 - `config/config.json` に Rate limiting 関連フィールドが存在する場合に未知フィールドとして起動失敗することをテストする。
+- Rate limiting を理由に `429 Too Many Requests`、`Retry-After`、Rate limiting 用 error code、監査イベント、メトリクスが返却または生成されないことをテストする。
+- Rate limiting を理由に管理 API、静的配信、Webhook 受信、ACME HTTP-01 challenge 応答、ヘルスチェックのルーティング順序が変わらないことを確認する。
+- HTTP/2 が無効化され、HTTP/2 関連設定項目が未知フィールドとして起動失敗することをテストする。
 - SDK 通信が ASB 管理 HTTPS JSON API と同一規格であることをテストする。
 - ASB 標準Web UI が ASB SDK の Browser JavaScript 実装を経由して ASB 管理 HTTPS JSON API と通信する設計になっていることを確認する。
 - ASB 標準Web UI が ASB 本体の内部 JSON、Service、Repository、Storage を直接参照しないことを確認する。
 - ASB 本体に Web UI 画面、Web UI テンプレート、Web UI フロントエンドビルド、Web UI 専用保存 JSON、Web UI 専用実行時データが追加されていないことを確認する。
 - SDK 専用プロトコル、SDK 専用エンドポイント、SDK 専用セッション、SDK 専用 JSON ファイルまたはディレクトリを生成しないことをテストする。
 - `config/config.json` に SDK 通信関連フィールドが存在する場合に未知フィールドとして起動失敗することをテストする。
-- 将来計画機能を理由に未確定 API、設定項目、JSONファイル、ディレクトリ、外部依存が追加されていないことをテストまたはレビューで確認する。
+- SDK認証拡張用の token、session、client registration、credential cache、scope、secret を表す JSON ファイル、ディレクトリ、設定項目、実行時データが生成されないことをテストする。
+- ASB SDK が単一システム管理者パスワード以外の認証入力を保持、更新、ローテーション、永続化しないことを確認する。
+- `config/config.json` に SDK認証拡張関連フィールドが存在する場合に未知フィールドとして起動失敗することをテストする。
+- 複数インスタンス、NFS、分散ストレージ、外部ストレージ、ログ暗号化、デスクトップアプリ、モバイルアプリ用の設定項目、JSON ファイル、ディレクトリ、実行時データが生成されないことをテストする。
+- `config/config.json` に `cluster.*`、`node.*`、`lock.*`、`nfs.*`、`distributedStorage.*`、`externalStorage.*`、`logEncryption.*`、`desktop.*`、`desktopSdk.*`、`mobile.*`、`mobileSdk.*` 相当の関連フィールドが存在する場合に未知フィールドとして起動失敗することをテストする。
+- 将来計画機能を理由に未昇格 API、設定項目、JSONファイル、ディレクトリ、外部依存が追加されていないことをテストまたはレビューで確認する。
 - 将来計画、保留事項、検討・調査中事項が個別確定仕様なしに実装対象へ昇格していないことを確認する。
 - XServer Static互換機能セット外の機能が、個別確定仕様なしに実装対象へ昇格していないことを確認する。
 
 ### 完了条件
 
 - 禁止機能の非生成テストまたはレビューが完了する。
-- 認証、Rate limiting、SDK専用通信、Brotli、ASB本体へのWeb UI内包、将来計画機能が実装されていないことを確認する。
+- 複数ユーザー管理、APIキー管理、セッション管理、Rate limiting、HTTP/2、SDK専用通信、Brotli、ASB本体へのWeb UI内包、将来計画機能が実装されていないことを確認する。
 - `.gitignore` が存在しない。
 - 開発リポジトリ内に実行時データ、ログ、一時ファイル、ビルド成果物が残っていない。
 - `go test ./...` が成功する。
@@ -943,18 +974,73 @@
 - 未確定タスクの実装
 - 将来計画機能の仕様昇格
 
-## 16. 実装済みフェーズ
+## 16. P13 / v0.14 / 単一システム管理者認証
+
+優先度: 高
+
+目的: ASB 管理 HTTPS JSON API に、単一システム管理者パスワード認証を実装する。
+
+### 実装タスク
+
+- `internal/system/auth.go` を作成し、単一システム管理者認証、パスワード検証、パスワード変更、ハッシュ処理を実装する。
+- `internal/system/auth_test.go` を作成する。
+- `config/auth.json` の `schemaVersion`、`admin.passwordHash`、`admin.passwordSalt`、`admin.passwordChanged`、`admin.updatedAt` を実装する。
+- `config/auth.json` の空状態を `{"schemaVersion":1,"admin":{"passwordHash":"","passwordSalt":"","passwordChanged":false,"updatedAt":""}}` に固定する。
+- 初期デフォルトパスワードを `asb-admin-change-me` として扱う。
+- 初期デフォルトパスワードが未変更の場合、`POST /api/auth/change-password` 以外の管理 API を `403 Forbidden`、`ERR_AUTH_PASSWORD_CHANGE_REQUIRED` で拒否する。
+- `POST /api/auth/change-password` を実装する。
+- 管理者パスワード変更 API は `currentPassword` と `newPassword` を受け取り、現在パスワード照合後に `config/auth.json` を atomic rename で更新する。
+- `newPassword` は12文字以上128文字以下、初期デフォルトパスワード不一致、NUL文字および制御文字なし、先頭末尾空白なしを検証する。
+- `POST /api/auth/change-password` を除く管理 API に `X-ASB-Admin-Password` ヘッダー検証 middleware を適用する。
+- `X-ASB-Admin-Password` が未指定、空文字、不一致の場合は `401 Unauthorized`、`ERR_AUTH_FAILED` を返す。
+- `POST /api/webhook/github` には `X-ASB-Admin-Password` を要求せず、GitHub Webhook 署名検証のみを認証境界とする。
+- 静的コンテンツ配信、ACME HTTP-01 challenge 応答、ヘルスチェックには `X-ASB-Admin-Password` を要求しない。
+- パスワードハッシュは Go 標準ライブラリのみで実装する。
+- PBKDF2-HMAC-SHA256 相当処理を `crypto/hmac`、`crypto/sha256`、`crypto/rand`、`crypto/subtle`、`encoding/base64` で内製実装する。
+- salt は32 bytes、hash は32 bytes、iteration は210000回とする。
+- `passwordHash` と `passwordSalt` は `base64.RawURLEncoding` で保存する。
+- パスワード照合は `crypto/subtle.ConstantTimeCompare` で行う。
+- 平文パスワードを JSON、ログ、標準出力、標準エラー、エラーレスポンスへ保存または出力しない。
+- APIキー、複数ユーザー、ロール、権限分離、組織、チーム、テナント、セッション、JWT、OAuth/OIDC、Basic認証、Bearer token、cookie認証を実装しない。
+- `Authorization` ヘッダーまたは `X-API-Key` ヘッダーを認証判断に使用しない。
+
+### 完了条件
+
+- `config/auth.json` の空状態、読み込み、未知フィールド拒否、atomic save のテストが成功する。
+- 初期デフォルトパスワードで管理者パスワード変更 API のみ実行できるテストが成功する。
+- `X-ASB-Admin-Password` 未指定、空文字、不一致で `ERR_AUTH_FAILED` を返すテストが成功する。
+- 管理者パスワード変更 API が `X-ASB-Admin-Password` ヘッダーを要求せず、`currentPassword` を認証入力として扱うテストが成功する。
+- 管理者パスワード変更後、変更後パスワードのみが有効になるテストが成功する。
+- Webhook、静的配信、ACME HTTP-01 challenge、ヘルスチェックが管理者パスワードを要求しないテストが成功する。
+- 平文パスワードが JSON、ログ、標準出力、標準エラー、エラーレスポンスへ出力されないことを確認する。
+- APIキー、複数ユーザー、ロール、セッション、token、cookie 認証の実装が追加されていないことを確認する。
+- `go test ./...` が成功する。
+- `.gitignore` が存在しない。
+- 開発リポジトリ内に実行時データ、ログ、一時ファイル、ビルド成果物が残っていない。
+
+### 非対象
+
+- 複数ユーザー管理
+- ユーザー別権限管理
+- APIキー管理
+- セッション管理
+- JWT / OAuth / OIDC / Basic / Bearer token / cookie 認証
+- SDK 認証拡張仕様
+
+## 17. 実装済みフェーズ
 
 現時点ではなし。
 
-## 17. 実装フェーズ外の仕様未確定タスク
+## 18. 実装フェーズ外の昇格待ちタスク
 
-以下は Rev.60 時点では実装フェーズに含めない。
+以下は Rev.64 時点では実装フェーズに含めない。
 
-- ASB SDK の認証仕様、デスクトップアプリ向け利用、モバイルアプリ向け利用を確定する。
-- HTTP/2 実装詳細を実装対象へ昇格する場合の API、設定項目、テスト条件を仕様改訂で確定する。
-- デスクトップアプリを実装対象へ昇格する場合のASB SDK利用、リポジトリ境界、API、設定項目、GUIライブラリ採否、外部依存、生成物を仕様改訂で確定する。
-- モバイルアプリを実装対象へ昇格する場合のASB SDK利用、API、認証、配布、設定項目、GUIライブラリ採否、外部依存、生成物を仕様改訂で確定する。
-- 複数インスタンス対応、NFS連携、分散ストレージ連携を実装対象へ昇格する場合のロック、整合性、障害時挙動、設定項目、外部依存を仕様改訂で確定する。
-- 外部ストレージサービス統合を実装対象へ昇格する場合のAPI、認証、保存JSON、バックアップ整合性、外部SDK採否を仕様改訂で確定する。
-- ログファイル暗号化を実装対象へ昇格する場合の鍵管理、暗号化形式、復号API、外部KMS採否、移行手順を仕様改訂で確定する。
+- SDK認証拡張を実装対象へ昇格する場合の認証方式、対象SDK実装、ASB管理APIとの関係、単一システム管理者認証との併存または置換、APIキー管理、複数ユーザー化、保存JSON、公開API、Web UI、監査ログ、migration、downgrade、テスト条件を仕様改訂で確定する。
+- 複数インスタンス対応を実装対象へ昇格する場合の node 識別子、共有ストレージ、lock方式、障害時復旧、同時書き込み整合性、Webhook重複処理、ACME更新競合、Backup競合、ログ集約、設定形式、migration、downgrade、テスト条件を仕様改訂で確定する。
+- NFS連携を実装対象へ昇格する場合の対応NFS version、mount前提、lock方式、atomic rename前提、権限、障害時挙動、性能前提、複数インスタンス対応との関係、設定形式、migration、downgrade、テスト条件を仕様改訂で確定する。
+- 分散ストレージ連携を実装対象へ昇格する場合の保存対象、整合性モデル、書き込み順序、読み取り優先順位、障害時復旧、データ修復、複数インスタンス対応との関係、設定形式、migration、downgrade、テスト条件を仕様改訂で確定する。
+- 外部ストレージ連携を実装対象へ昇格する場合の対象provider、外部SDK採否、credential保存方式、暗号化要否、保存対象、同期方式、整合性、失敗時再試行、Backupとの関係、設定形式、migration、downgrade、テスト条件を仕様改訂で確定する。
+- ログファイル暗号化を実装対象へ昇格する場合の暗号方式、key保存方式、key rotation、復号API、閲覧権限、既存ログ移行、Backupとの関係、外部KMS採否、設定形式、migration、downgrade、テスト条件を仕様改訂で確定する。
+- デスクトップアプリ向けSDK利用を実装対象へ昇格する場合の対象OS、配布方式、署名、更新方式、GUIライブラリ採否、SDK実装、認証方式、保存データ、ASB本体との責務分界、外部依存、migration、downgrade、テスト条件を仕様改訂で確定する。
+- モバイルアプリ向けSDK利用を実装対象へ昇格する場合の対象OS、配布方式、署名、更新方式、GUIライブラリ採否、SDK実装、認証方式、通知、offline cache採否、保存データ、ASB本体との責務分界、外部依存、migration、downgrade、テスト条件を仕様改訂で確定する。
+- HTTP/2 を実装対象へ昇格する場合の API、設定項目、ALPN、h2c採否、テスト条件を仕様改訂で確定する。
