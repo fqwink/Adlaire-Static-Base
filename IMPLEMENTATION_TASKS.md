@@ -6,7 +6,7 @@
 
 本ファイルは、`ASB-spec.md` に基づいて実装タスクを管理する。
 
-参照仕様バージョン: `ASB-spec.md Rev.47`
+参照仕様バージョン: `ASB-spec.md Rev.48`
 
 `ASB-spec.md` で仕様確定済みの事項のみを実装タスクとして扱う。
 
@@ -60,7 +60,7 @@
 - Go 1.21 以上による ASB 本体の単一バイナリ基盤を構築する。
 - `go.mod` を作成する。
 - `cmd/asb/main.go` を作成する。
-- `cmd/asb/main.go` は設定読み込み、依存関係生成、HTTPサーバー起動、signal受信、graceful shutdown のみに限定する。
+- `cmd/asb/main.go` は設定読み込み、依存関係生成、HTTPSサーバー起動、signal受信、graceful shutdown のみに限定する。
 - `config`、`server`、`management`、`delivery`、`data`、`system` の package 境界を作成する。
 - `internal/config/`、`internal/server/`、`internal/management/`、`internal/delivery/`、`internal/data/`、`internal/system/` を作成する。
 - Management Domain、Delivery Domain、Data Domain、System Domain の基本ディレクトリ構成を作成する。
@@ -101,7 +101,7 @@
 
 優先度: 最高
 
-目的: HTTP JSON API、設定、起動時検証、JSON保存の共通契約を実装する。
+目的: HTTPS JSON API、設定、起動時検証、JSON保存の共通契約を実装する。
 
 ### 実装タスク
 
@@ -109,7 +109,7 @@
 - `internal/config/config.go`、`internal/config/loader.go`、`internal/config/validate.go` を実装する。
 - `internal/server/router.go`、`internal/server/response.go`、`internal/server/middleware.go` を実装する。
 - `internal/data/json_repository.go` を実装する。
-- `server.port`、`server.host`、`server.shutdownTimeout`、`storage.basePath`、`storage.maxProjectSize`、`ssl.email`、`ssl.renewBefore`、`ssl.renewCheckInterval`、`log.level`、`log.format`、`log.maxSize` の起動時バリデーションを実装する。
+- `server.port`、`server.host`、`server.tlsCertFile`、`server.tlsKeyFile`、`server.shutdownTimeout`、`storage.basePath`、`storage.maxProjectSize`、`ssl.email`、`ssl.renewBefore`、`ssl.renewCheckInterval`、`log.level`、`log.format`、`log.maxSize` の起動時バリデーションを実装する。
 - 任意設定項目の未指定時、親 object 未指定時、空文字、型不一致、数値の小数・指数表記・負数・`null` 拒否を仕様通り実装する。
 - `storage.basePath` と `deploy.sourcePath` の絶対パス正規化、開発リポジトリ配下判定、Git worktree 判定を実装する。
 - 設定未知フィールド検出時の起動失敗を実装する。
@@ -119,7 +119,10 @@
 - `storage.basePath` 配下の `config/`、`storage/`、`storage/projects/`、`logs/`、`certs/` の順序付き存在検証を実装する。
 - `config/projects.json`、`config/domains.json`、`config/backups.json`、`config/webhooks.json`、各 Project の `storage/projects/:projectId/files.json` の順序付き起動時存在検証を実装する。
 - 必須 JSON ファイルの構文検証、必須フィールド検証、未知フィールド拒否を実装する。
-- Go標準 `net/http` によるHTTPサーバーを実装する。
+- `server.tlsCertFile` と `server.tlsKeyFile` の絶対パス、存在、通常ファイル、秘密鍵ファイルの group/world writable 禁止を検証する。
+- 管理 API 用 TLS 証明書ファイルまたは秘密鍵ファイルを開発リポジトリ内へ生成しない。
+- 管理 API 用 TLS 証明書ファイルまたは秘密鍵ファイルを起動時に自動生成しない。
+- Go標準 `net/http` によるHTTPSサーバーを実装する。
 - グレースフルシャットダウンと `shutdownTimeout` を実装する。
 - API パスを静的ファイル配信より優先して判定する。
 - API パス解析では URL path のみを使用し、query string と fragment をルーティング判定に使わない。
@@ -141,7 +144,7 @@
 - `204 No Content` を使用しない。
 - 配列レスポンスは対象データが空でも空配列を返す。
 - URL パラメータ `:id`、`:domain`、`:name` の URL decode、正規化、バリデーションを実装する。
-- `:id` は Rev.47 の UUID 正規表現に一致する値のみ許可する。
+- `:id` は Rev.48 の UUID 正規表現に一致する値のみ許可する。
 - `:domain` は小文字正規化後、label数、全体長、label正規表現、末尾 `.` 除去を仕様通り検証する。
 - `:name` は長さ、NUL、パス区切り、`.`、`..`、先頭 `.`、空白のみを仕様通り拒否する。
 - JSON ファイル更新時の読み込み検証、保存前再検証、同一ファイル排他書き込みを実装する。
@@ -157,9 +160,9 @@
 - 複数JSON更新の途中失敗時に更新済みJSON名、未更新JSON名、操作名、requestId をエラーログへ記録する。
 - 複数ファイル更新の途中失敗時に、更新予定JSON、更新済みJSON、`files.json` path、実ファイル、`projects.used` の整合性検証を実装する。
 - 整合性検証失敗時は `ERR_STORAGE_VALIDATION_FAILED` を error log へ記録する。
-- Rev.47 時点では複数JSON更新に外部トランザクション機構を導入しない。
-- Rev.47 時点の API エンドポイント固定表に記載されたメソッド、パス、成功ステータス、失敗コードを実装する。
-- Rev.47 API 成功レスポンス固定表に記載された JSON キーと型を実装する。
+- Rev.48 時点では複数JSON更新に外部トランザクション機構を導入しない。
+- Rev.48 時点の API エンドポイント固定表に記載されたメソッド、パス、成功ステータス、失敗コードを実装する。
+- Rev.48 API 成功レスポンス固定表に記載された JSON キーと型を実装する。
 - プロジェクト作成 API `POST /api/projects` を実装する。
 - プロジェクト一覧 API `GET /api/projects` を実装する。
 - プロジェクト削除 API `DELETE /api/projects/:id` を実装する。
@@ -214,7 +217,7 @@
 - multipart upload の request body 最大サイズ 1GiB + 1MiB、file part 複数拒否、0 byte 拒否、1GiB超過時 `413` を実装する。
 - File `path` は `contents/` で始まる相対パスのみ許可し、絶対パス、NUL、`\`、`.`、`..`、空白のみセグメントを拒否する。
 - ファイルアップロード処理順序を URL検証、Project検証、multipart検証、ファイル検証、既存JSON検証、一時ファイル書込、fsync、atomic rename、`files.json`更新、`projects.json`更新、成功応答の順に固定して実装する。
-- ファイル操作手段を HTTP JSON API、`multipart/form-data` upload、GitHub Webhook デプロイに限定する。
+- ファイル操作手段を HTTPS JSON API、`multipart/form-data` upload、GitHub Webhook デプロイに限定する。
 - FTP、FTPS、SFTP を実装しない。
 - FTP / FTPS / SFTP 用のユーザー、認証、接続管理、転送ログ、設定項目、JSONファイル、ディレクトリ、外部ライブラリを追加しない。
 - ファイル削除処理順序を URL検証、Project検証、`files.json`検出、ファイル実体削除、`files.json`更新、`projects.json` used更新、成功応答の順に固定して実装する。
@@ -241,7 +244,7 @@
 - `Last-Modified` を HTTP-date 形式で返す。
 - `Cache-Control` を既定で `public, max-age=60` とする。
 - `If-None-Match` と `If-Modified-Since` による `304 Not Modified` を実装する。
-- Range request は Rev.47 時点では実装せず、`Range` ヘッダーを無視して `206 Partial Content` を返さない。
+- Range request は Rev.48 時点では実装せず、`Range` ヘッダーを無視して `206 Partial Content` を返さない。
 - `Accept-Encoding: br` では Brotli 応答を返さない。
 - Brotli 用の `.br`、キャッシュ、一時ファイル、メタデータを開発リポジトリ内にも `storage.basePath` 配下にも生成しない。
 - 静的配信でディレクトリ一覧を返さない。
@@ -311,7 +314,6 @@
 - 複数 CA
 - CA 選定
 - CA failover
-- TLS 終端
 
 ## 7. P4 / v0.5 / 無料独自SSL / Let’s Encrypt ACME v2
 
@@ -356,7 +358,6 @@
 - 複数 CA
 - CA 選定
 - CA failover
-- TLS 終端
 
 ## 8. P5 / v0.6 / GitHub Webhook デプロイ
 
@@ -453,7 +454,7 @@
 - バックアップ作成用一時tarを `storage.basePath/backups/.tmp/` 配下に限定する。
 - atomic rename 後に履歴保存へ失敗した場合は、作成済みtar.gzを削除する。
 - バックアップ保存先を別障害領域へ複製する作業をASB外の運用責務として扱う。
-- 外部ストレージ連携を Rev.47 時点では実装対象外として扱う。
+- 外部ストレージ連携を Rev.48 時点では実装対象外として扱う。
 - Backup復旧前退避先を `storage.basePath/backups/restore-staging/{restoreId}/previous/` に固定する。
 - Backup復旧用展開先を `storage.basePath/backups/restore-staging/{restoreId}/next/` に固定する。
 - Backup履歴の `status` が `completed` でない場合は復旧を拒否する。
@@ -628,7 +629,7 @@
 
 優先度: 低
 
-目的: ASB Web UI から ASB 管理 HTTP JSON API を呼び出すための、ブラウザ専用 JavaScript SDK を実装する。
+目的: ASB Web UI から ASB 管理 HTTPS JSON API を呼び出すための、ブラウザ専用 JavaScript SDK を実装する。
 
 ### 実装タスク
 
@@ -637,14 +638,14 @@
 - SDK をブラウザ標準 ES module として読み込める形式にする。
 - SDK は package 名を持たない構成にする。
 - ASB SDK は ASB Web UI から使用する通信層に限定する。
-- ASB SDK は ASB 管理 HTTP JSON API の method、path、query parameter、path parameter、request JSON、multipart upload、success response JSON、error response JSON、HTTP status code、error code、pagination、UTC RFC3339 timestamp を扱う。
+- ASB SDK は ASB 管理 HTTPS JSON API の method、path、query parameter、path parameter、request JSON、multipart upload、success response JSON、error response JSON、HTTP status code、error code、pagination、UTC RFC3339 timestamp を扱う。
 - ASB SDK は Web 標準 API の `fetch`、`URL`、`URLSearchParams`、`Headers`、`FormData`、`Blob`、`AbortController`、`Promise` の範囲で実装する。
 - SDK API は `baseUrl`、timeout、request cancellation、JSON request、JSON response、multipart upload、error response の扱いを提供する。
 - SDK の timeout は `AbortController` で実装する。
 - SDK の自動 retry 回数は `0` とし、失敗した HTTP request を自動再送しない。
 - ASB SDK は ASB 本体の内部 JSON、Service、Repository、Storage を直接参照または呼び出さない。
 - Node.js 実行環境、npm 配布、package manager、bundler、transpiler、generated client、外部ライブラリを前提にしない。
-- SDK 専用 HTTP API、SDK 専用 URL prefix、SDK 専用 request body、SDK 専用 response body、SDK 専用 error format、SDK 専用 pagination、SDK 専用 upload protocol を作らない。
+- SDK 専用 HTTPS API、SDK 専用 URL prefix、SDK 専用 request body、SDK 専用 response body、SDK 専用 error format、SDK 専用 pagination、SDK 専用 upload protocol を作らない。
 - SDK 専用 session、token、cookie、handshake、protocol negotiation、version negotiation を作らない。
 - SDK 専用 JSON ファイル、SDK 専用ディレクトリ、SDK 専用設定項目、SDK 専用実行時データを作らない。
 - ブラウザストレージ、cookie、Service Worker、Cache Storage、IndexedDB を SDK 通信用の永続状態として使用しない。
@@ -654,7 +655,7 @@
 ### 完了条件
 
 - ASB Web UI が使用できるブラウザ専用 JavaScript SDK の通信層が実装されている。
-- SDK が ASB 管理 HTTP JSON API と同一規格で通信する。
+- SDK が ASB 管理 HTTPS JSON API と同一規格で通信する。
 - SDK 専用 API、SDK 専用保存データ、SDK 専用実行時データが存在しない。
 - Node.js、npm、bundler、外部ライブラリを前提にしていない。
 - `.gitignore` が存在しない。
@@ -676,18 +677,18 @@
 
 優先度: 低
 
-目的: Rev.47 時点で実装対象外の機能が混入していないことを確認する。
+目的: Rev.48 時点で実装対象外の機能が混入していないことを確認する。
 
 ### 実装タスク
 
-- 未確定のASB互換目標を将来の到達目標として扱い、Rev.47 時点の実装対象として扱わない。
+- 未確定のASB互換目標を将来の到達目標として扱い、Rev.48 時点の実装対象として扱わない。
 - `internal/asb_forbidden_test.go` を作成する。
-- XServer Static互換機能セットの実装対象が、静的配信、独自ドメイン、無料独自SSL、GitHub Webhookデプロイ、HTTP APIによるファイル管理、ログ・状態確認、バックアップ・復旧に限定されていることを確認する。
+- XServer Static互換機能セットの実装対象が、静的配信、独自ドメイン、無料独自SSL、GitHub Webhookデプロイ、HTTPS JSON APIによるファイル管理、ログ・状態確認、バックアップ・復旧に限定されていることを確認する。
 - XServer Static互換機能セットを理由に、XServer Static完全互換、管理画面再現、内部実装再現、DNS管理、DNS provider API、DNS-01、wildcard、複数CA、CDN完全互換、課金・契約・アカウント管理、クラウドサービス化、ウイルススキャンを追加しない。
 - ASB互換目標に含まれることを、未確定機能の実装根拠として扱わない。
 - ASB互換目標を理由に `.gitignore`、外部DB、未承認外部ライブラリ、未承認外部サービス連携、開発リポジトリ内実行時データ、起動時自動生成、ビルド成果物自動生成を追加しない。
 - ASB互換目標を理由に APIキー管理、ユーザー認証、Rate limiting、Brotli圧縮、CA選定、SDK専用通信を実装しない。
-- 将来計画、保留事項、検討・調査中事項を Rev.47 時点の実装対象として扱わない。
+- 将来計画、保留事項、検討・調査中事項を Rev.48 時点の実装対象として扱わない。
 - GUIという曖昧カテゴリ、ASB本体へのWeb UI内包、デスクトップアプリ、モバイルアプリ、ユーザー管理、マルチテナント、課金管理、契約管理、複数インスタンス管理、クラスタ管理、分散ロック、NFS専用連携、分散ストレージ専用連携、外部ストレージサービス連携、ログファイル暗号化、HTTP/2実装詳細、FTP、FTPS、SFTPをASB本体に実装しない。
 - 将来計画機能または転送プロトコル互換を理由に ASB本体内包Web UI用API、モバイル専用API、テナント用API、課金用API、契約用API、外部ストレージ用API、ログ暗号化用API、FTP / FTPS / SFTP 用 APIを追加しない。
 - 将来計画機能または転送プロトコル互換を理由に `ui.*`、`webui.*`、`desktop.*`、`mobile.*`、`tenant.*`、`billing.*`、`nfs.*`、`cluster.*`、`distributedStorage.*`、`externalStorage.*`、`logEncryption.*`、`ftp.*`、`ftps.*`、`sftp.*` 設定項目を追加しない。
@@ -699,8 +700,8 @@
 - Rate limiting 用 middleware、制限アルゴリズム、永続カウンタ、設定項目、JSON ファイルまたはディレクトリを生成しないことをテストする。
 - 管理 API、静的配信、Webhook 受信が Rate limiting 関連条件でレスポンスを変えないことをテストする。
 - `config/config.json` に Rate limiting 関連フィールドが存在する場合に未知フィールドとして起動失敗することをテストする。
-- SDK 通信が ASB 管理 HTTP JSON API と同一規格であることをテストする。
-- ASB Web UI が ASB SDK を経由して ASB 管理 HTTP JSON API と通信する設計になっていることを確認する。
+- SDK 通信が ASB 管理 HTTPS JSON API と同一規格であることをテストする。
+- ASB Web UI が ASB SDK を経由して ASB 管理 HTTPS JSON API と通信する設計になっていることを確認する。
 - ASB Web UI が ASB 本体の内部 JSON、Service、Repository、Storage を直接参照しないことを確認する。
 - ASB 本体に Web UI 画面、Web UI テンプレート、Web UI フロントエンドビルド、Web UI 専用保存 JSON、Web UI 専用実行時データが追加されていないことを確認する。
 - SDK 専用プロトコル、SDK 専用エンドポイント、SDK 専用セッション、SDK 専用 JSON ファイルまたはディレクトリを生成しないことをテストする。
@@ -729,7 +730,7 @@
 
 ## 16. 実装フェーズ外の仕様未確定タスク
 
-以下は Rev.47 時点では実装フェーズに含めない。
+以下は Rev.48 時点では実装フェーズに含めない。
 
 - ASB SDK の認証仕様、デスクトップアプリ向け利用、モバイルアプリ向け利用を確定する。
 - ASB Web UI のリポジトリ境界、配布方式、ASB SDK との依存関係、画面一覧、操作対象 API、認証方針、外部ライブラリ採否、生成物有無を確定する。
