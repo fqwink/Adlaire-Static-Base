@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ASB 仕様書 Rev.54</title>
+<title>ASB 仕様書 Rev.55</title>
 <style>
 :root { color-scheme: light; --bg: #f4f7f9; --panel: #ffffff; --panel-2: #f8fafc; --panel-3: #edf6f3; --line: #d8e1e7; --line-strong: #b7c6cf; --text: #162126; --muted: #5b6d76; --subtle: #83919a; --brand: #0f766e; --brand-2: #14532d; --ok: #16845f; --code-bg: #111827; --code-text: #e8eef4; --toc-w: 310px; --radius: 8px; }
 @media (prefers-color-scheme: dark) { :root { color-scheme: dark; --bg: #0e1416; --panel: #141d20; --panel-2: #101719; --panel-3: #16312d; --line: #27363b; --line-strong: #3d5057; --text: #e6eef0; --muted: #a7b6bb; --subtle: #7e8e94; --brand: #5eead4; --brand-2: #99f6e4; --ok: #6ee7b7; --code-bg: #080d10; --code-text: #edf7f8; } }
@@ -71,7 +71,7 @@ pre code { background: transparent; border: 0; color: inherit; padding: 0; }
     <div class="sidebar-header">
       <span class="logo">Adlaire-Static-Base</span>
       <h1 class="sidebar-title">ASB Developer Docs</h1>
-      <span class="version-pill">Rev.54</span>
+      <span class="version-pill">Rev.55</span>
     </div>
     <nav class="toc" id="asb-toc">
       <a class="toc-l1" href="#セルフホスト型静的コンテンツ配信ホスティングシステム仕様書">セルフホスト型静的コンテンツ配信ホスティングシステム仕様書</a>
@@ -284,14 +284,14 @@ pre code { background: transparent; border: 0; color: inherit; padding: 0; }
         <button class="sidebar-toggle" type="button" aria-label="サイドバーを折りたたむ" aria-expanded="true">☰</button>
         <span class="topbar-title">ASB 仕様書</span>
       </div>
-      <span class="version-pill">Rev.54</span>
+      <span class="version-pill">Rev.55</span>
     </div>
     <div class="content">
       <section class="doc-hero">
         <p class="eyebrow">Specification</p>
         <h1>セルフホスト型静的コンテンツ配信ホスティングシステム仕様書</h1>
         <p class="subtitle">ASB-spec.md に基づく HTML 版仕様書</p>
-        <div class="hero-meta"><span class="meta-chip">Rev.54</span><span class="meta-chip">Generated from ASB-spec.md</span></div>
+        <div class="hero-meta"><span class="meta-chip">Rev.55</span><span class="meta-chip">Generated from ASB-spec.md</span></div>
       </section>
       <h1 class="doc-title" id="セルフホスト型静的コンテンツ配信ホスティングシステム仕様書">セルフホスト型静的コンテンツ配信ホスティングシステム仕様書</h1>
 <h2 id="1-本書の位置づけ">1 本書の位置づけ</h2>
@@ -326,7 +326,7 @@ pre code { background: transparent; border: 0; color: inherit; padding: 0; }
 <tr><td>提供形態</td><td>HTTPS サーバー（単一バイナリ）</td></tr>
 <tr><td>データ保存</td><td>JSON ファイルベース（外部DB不使用）</td></tr>
 <tr><td>ライセンス</td><td>クローズドライセンス</td></tr>
-<tr><td>本書バージョン</td><td>Rev.54</td></tr>
+<tr><td>本書バージョン</td><td>Rev.55</td></tr>
 </table></div>
 <hr>
 <h2 id="3-asb-の責務範囲">3 ASB の責務範囲</h2>
@@ -364,7 +364,7 @@ pre code { background: transparent; border: 0; color: inherit; padding: 0; }
 <p>XServer Static 等の外部サービスは、利用体験を整理するための参考基準であり、仕様入力元、実装入力元、API互換元、設定互換元、保存形式互換元として扱ってはならない。</p>
 <p>ASB互換目標における「参考」「相当」「目標」は、実装対象、外部依存、API、設定項目、JSON保存形式、生成ファイル、生成ディレクトリを増やす根拠ではない。</p>
 <p>ASB互換目標は将来の到達目標であり、個別の確定仕様へ昇格した項目のみ実装対象とする。</p>
-<p>Rev.54 時点では、無料独自SSLのみを XServer Static 互換目標から確定仕様へ昇格する。</p>
+<p>Rev.55 時点では、無料独自SSLのみを XServer Static 互換目標から確定仕様へ昇格する。</p>
 <p>ASB互換目標に含まれることは、未確定機能を実装してよい根拠にならない。</p>
 <p>ASB互換目標に含まれる機能を実装対象へ昇格する場合は、事前に <code>ASB-spec.md</code> を改訂し、実装範囲、入出力、保存形式、副作用、生成物、テスト条件を確定しなければならない。</p>
 <p><strong>ASB互換目標</strong></p>
@@ -380,7 +380,7 @@ pre code { background: transparent; border: 0; color: inherit; padding: 0; }
 <li>ファイルアップロードおよびフォルダ階層を保持したファイル管理を提供する</li>
 <li>SSL更新状態、デプロイ状態、ログを確認できる</li>
 </ul>
-<p><strong>Rev.54 時点で ASB互換目標に含めないもの</strong></p>
+<p><strong>Rev.55 時点で ASB互換目標に含めないもの</strong></p>
 <ul>
 <li>外部サービスとのAPI完全互換</li>
 <li>外部サービスの管理画面互換</li>
@@ -392,7 +392,7 @@ pre code { background: transparent; border: 0; color: inherit; padding: 0; }
 <li>外部サービス固有の内部実装再現</li>
 </ul>
 <p><strong>XServer Static互換機能セット</strong></p>
-<p>Rev.54 時点の ASB は、XServer Static 互換性を以下の利用者向け機能表面に限定する。</p>
+<p>Rev.55 時点の ASB は、XServer Static 互換性を以下の利用者向け機能表面に限定する。</p>
 <div class="tbl-wrap"><table>
 <tr><th>機能</th><th>ASBでの扱い</th></tr>
 <tr><td>静的コンテンツ配信</td><td>実装対象。HTML、CSS、JavaScript、画像等の静的ファイルを配信する。</td></tr>
@@ -408,7 +408,7 @@ pre code { background: transparent; border: 0; color: inherit; padding: 0; }
 <tr><td>ログ・状態確認</td><td>実装対象。アクセスログ、エラーログ、デプロイ状態、SSL状態、ストレージ使用量を確認可能にする。</td></tr>
 <tr><td>バックアップ・復旧</td><td>実装対象。ASB独自の運用補強としてJSONファイルベースのバックアップ・復旧を提供する。</td></tr>
 </table></div>
-<p>Rev.54 時点の ASB は、XServer Static 互換性に以下を含めない。</p>
+<p>Rev.55 時点の ASB は、XServer Static 互換性に以下を含めない。</p>
 <div class="tbl-wrap"><table>
 <tr><th>対象</th><th>ASBでの扱い</th></tr>
 <tr><td>XServer Static 完全互換</td><td>対象外。利用体験の一部互換目標であり、完全互換ではない。</td></tr>
@@ -658,7 +658,7 @@ CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -o asb-linux-arm64 ./cmd/asb</cod
 <li>最大容量：1GB/プロジェクト（設定可能）</li>
 <li>形式：制限なし（HTML, CSS, JavaScript, 画像等）</li>
 <li>圧縮：Gzip による自動圧縮</li>
-<li>Brotli は Rev.54 時点では ASB 本体に実装しない</li>
+<li>Brotli は Rev.55 時点では ASB 本体に実装しない</li>
 </ul>
 <p><strong>ファイル削除</strong></p>
 <ul>
@@ -1179,7 +1179,7 @@ CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -o asb-linux-arm64 ./cmd/asb</cod
 <li>エラー時の通知とログ記録</li>
 </ul>
 <p>Webhook 処理失敗は、システムログおよび <code>config/webhooks.json</code> へ記録する。</p>
-<p>Rev.54 時点では、Webhook失敗時の自動リトライスケジュールを実装しない。</p>
+<p>Rev.55 時点では、Webhook失敗時の自動リトライスケジュールを実装しない。</p>
 <h3 id="11.3-data-domain-ポリシー">11.3 Data Domain ポリシー</h3>
 <p>Data Domain は、バックアップ・ストレージの責務を担う。</p>
 <p><strong>責務優先順位</strong></p>
@@ -1193,8 +1193,8 @@ CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -o asb-linux-arm64 ./cmd/asb</cod
 <ul>
 <li>バックアップ取得後はハッシュ検証を実施</li>
 <li>ASB標準バックアップ保存先は <code>storage.basePath/backups/</code> とする</li>
-<li>バックアップ保存先を別障害領域へ複製する作業は Rev.54 時点ではASB外の運用責務とする</li>
-<li>外部ストレージ連携は Rev.54 時点では実装対象外とする</li>
+<li>バックアップ保存先を別障害領域へ複製する作業は Rev.55 時点ではASB外の運用責務とする</li>
+<li>外部ストレージ連携は Rev.55 時点では実装対象外とする</li>
 <li>復旧は対象バックアップの存在、SHA-256、JSON構文、スキーマ検証後に実施</li>
 <li>バックアップ・復旧・検証失敗・復旧操作は監査ログへ記録</li>
 </ul>
@@ -1208,7 +1208,7 @@ CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -o asb-linux-arm64 ./cmd/asb</cod
 <li>標準構成では <code>storage.basePath/logs/</code> 配下へ JSON Lines として保存する</li>
 <li>アクセスログは <code>storage.basePath/logs/access.log</code> に保存する</li>
 <li>エラーログは <code>storage.basePath/logs/error.log</code> に保存する</li>
-<li>標準出力（stdout）への通常ログ出力は Rev.54 時点では実装しない</li>
+<li>標準出力（stdout）への通常ログ出力は Rev.55 時点では実装しない</li>
 <li>起動失敗時のみ標準エラー（stderr）へ単一行の起動エラーを出力する</li>
 </ul>
 <p><strong>必須フィールド</strong></p>
@@ -1227,7 +1227,7 @@ CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -o asb-linux-arm64 ./cmd/asb</cod
 </ul>
 <h3 id="11.5-apisdk-ポリシー">11.5 API/SDK ポリシー</h3>
 <p>ASB はヘッドレスアーキテクチャを採用し、UI層に依存しない。</p>
-<p>Rev.54 時点の確定対象は、ASB 本体が提供する HTTPS JSON API、ASB SDK が使用する通信規格、ASB SDK の Browser JavaScript 実装、Deno専用 TypeScript 実装、Go 実装、ASB 標準Web UI、および ASB 標準Web UI が ASB SDK を利用して ASB と通信する構成である。</p>
+<p>Rev.55 時点の確定対象は、ASB 本体が提供する HTTPS JSON API、ASB SDK が使用する通信規格、ASB SDK の Browser JavaScript 実装、Deno専用 TypeScript 実装、Go 実装、ASB 標準Web UI、および ASB 標準Web UI が ASB SDK を利用して ASB と通信する構成である。</p>
 <p>ASB SDK は、単一の公式SDKとして扱う。</p>
 <p>ASB SDK は、Browser JavaScript、Deno専用 TypeScript、Go の対応実装を持つ。</p>
 <p>ASB SDK の Browser JavaScript 実装は、ASB 標準Web UI から使用するブラウザ専用 JavaScript 実装として対応必須とする。</p>
@@ -1244,7 +1244,7 @@ CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -o asb-linux-arm64 ./cmd/asb</cod
 <p>ASB SDK の Deno専用 TypeScript 実装は、Deno 以外のランタイムを前提としてはならない。</p>
 <p>ASB SDK の Deno専用 TypeScript 実装は、Node.js、npm、package manager、<code>package.json</code>、<code>node_modules/</code>、<code>deno.json</code>、<code>deno.lock</code>、bundler、transpiler、外部ライブラリを前提としてはならない。</p>
 <p>ASB SDK の Go 実装は、Go標準ライブラリで実装可能な部分を Go標準ライブラリで実装する。</p>
-<p>SDK 認証仕様、デスクトップアプリ向け SDK 利用、モバイルアプリ向け SDK 利用は Rev.54 時点では未定とする。</p>
+<p>SDK 認証仕様、デスクトップアプリ向け SDK 利用、モバイルアプリ向け SDK 利用は Rev.55 時点では未定とする。</p>
 <p>SDK 通信規格は、ASB 本体が提供する HTTPS JSON API と同一とする。</p>
 <p>外部開発者は、ASB SDK を使用する限り、Web UI のカスタマイズまたは独自フロントエンド実装を自由に行える。</p>
 <p>外部開発者の独自フロントエンド実装では、外部フロントエンドフレームワーク、bundler、transpiler、package manager を採用できる。</p>
@@ -1253,9 +1253,9 @@ CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -o asb-linux-arm64 ./cmd/asb</cod
 <p><strong>API 設計原則</strong></p>
 <ul>
 <li>HTTPS + JSON を使用する</li>
-<li>HTTP/2 対応は ASB互換目標として扱い、Rev.54 時点では実装詳細を確定しない</li>
+<li>HTTP/2 対応は ASB互換目標として扱い、Rev.55 時点では実装詳細を確定しない</li>
 <li>デフォルト接続境界は <code>https://localhost:3000</code> とする</li>
-<li>管理 API は Rev.54 時点では認証なしとする</li>
+<li>管理 API は Rev.55 時点では認証なしとする</li>
 <li>ASB SDK の Browser JavaScript 実装はブラウザ Web 標準 API のみを使用する</li>
 <li>ASB SDK の Deno専用 TypeScript 実装は Deno runtime API と Web 標準 API の範囲で実装する</li>
 <li>ASB SDK の Go 実装は Go標準ライブラリを中心に実装する</li>
@@ -1328,14 +1328,14 @@ CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -o asb-linux-arm64 ./cmd/asb</cod
 <li>ASB 本体の標準管理 API URL は <code>https://localhost:3000</code> とする</li>
 <li>開発ローカルおよび本番環境の管理 API は HTTPS JSON API とする</li>
 <li>ASB 本体は HTTPS による管理 API 提供を実装する</li>
-<li>ASB 本体は Rev.54 時点ではインターネット公開用 listen 設定を既定値として提供しない</li>
+<li>ASB 本体は Rev.55 時点ではインターネット公開用 listen 設定を既定値として提供しない</li>
 <li>リモートアクセス制御はファイアウォール、VPN、SSH tunnel、IP制限等の運用境界で補強する</li>
-<li>ASB 本体は Rev.54 時点ではリバースプロキシ設定ファイルを生成しない</li>
+<li>ASB 本体は Rev.55 時点ではリバースプロキシ設定ファイルを生成しない</li>
 <li>SSL/TLS：開発ローカルおよび本番環境の管理 API で必須とする</li>
 </ul>
 <p><strong>レート制限</strong></p>
 <ul>
-<li>Rev.54 時点では ASB 本体に実装しない</li>
+<li>Rev.55 時点では ASB 本体に実装しない</li>
 <li>Rate limiting は、本番公開時に ASB 外部のリバースプロキシ、WAF、CDN、ファイアウォール等で扱う</li>
 </ul>
 <p><strong>タイムアウト</strong></p>
@@ -1354,7 +1354,7 @@ CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -o asb-linux-arm64 ./cmd/asb</cod
 <ul>
 <li>アクセスログ：全HTTP リクエスト（JSON形式）</li>
 <li>エラーログ：エラー・例外・警告</li>
-<li>ログファイル暗号化：Rev.54 時点では ASB 本体に実装しない</li>
+<li>ログファイル暗号化：Rev.55 時点では ASB 本体に実装しない</li>
 <li>ログ暗号化用の鍵管理、鍵生成、鍵保存、暗号化ログ形式、復号API、外部KMS連携を追加してはならない</li>
 </ul>
 <h3 id="11.9-ライセンスバージョンポリシー">11.9 ライセンス・バージョンポリシー</h3>
@@ -1442,9 +1442,9 @@ CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -o asb-linux-arm64 ./cmd/asb</cod
 <p><code>ASB-spec.md</code> には、API、JSON、エラー、保存、起動、ログ、通信、セキュリティ、禁止事項など、実装時に守る仕様契約のみを記載する。</p>
 <p><code>IMPLEMENTATION_TASKS.md</code> が <code>ASB-spec.md</code> と矛盾する場合は、仕様内容については <code>ASB-spec.md</code> を正とし、フェーズ管理については <code>IMPLEMENTATION_TASKS.md</code> を修正する。</p>
 <h3 id="11.10-将来計画管理ポリシー">11.10 将来計画管理ポリシー</h3>
-<p>将来計画は、Rev.54 時点の実装対象ではない。</p>
+<p>将来計画は、Rev.55 時点の実装対象ではない。</p>
 <p>将来計画に記載された項目は、実装、設定追加、API追加、JSON追加、ディレクトリ追加、外部依存追加、実行時データ生成の根拠として扱ってはならない。</p>
-<p>Rev.54 時点で実装対象外とする将来計画は以下とする。</p>
+<p>Rev.55 時点で実装対象外とする将来計画は以下とする。</p>
 <ul>
 <li>デスクトップアプリ（詳細未定、ASB SDK 利用クライアント候補）</li>
 <li>モバイルアプリ（詳細未定、ASB SDK 利用クライアント候補）</li>
@@ -1577,7 +1577,7 @@ $ sudo systemctl is-active --quiet asb</code></pre>
 <tr><td><code>--version</code></td><td>必須</td><td>更新対象の安定版バージョン</td></tr>
 <tr><td><code>--arch</code></td><td>任意</td><td><code>amd64</code> または <code>arm64</code>。未指定時は <code>uname -m</code> から判定</td></tr>
 </table></div>
-<p><code>latest</code> 指定、自動最新版選択、未指定バージョンでの実行は Rev.54 時点では禁止する。</p>
+<p><code>latest</code> 指定、自動最新版選択、未指定バージョンでの実行は Rev.55 時点では禁止する。</p>
 <p><code>--arch</code> 未指定時の自動判定は <code>uname -m</code> の結果のみを使用する。</p>
 <p><code>uname -m</code> が <code>x86_64</code> または <code>amd64</code> の場合は <code>amd64</code> とする。</p>
 <p><code>uname -m</code> が <code>aarch64</code> または <code>arm64</code> の場合は <code>arm64</code> とする。</p>
@@ -1653,10 +1653,10 @@ $ sudo systemctl stop asb</code></pre>
 <hr>
 <h2 id="12-将来計画">12 将来計画</h2>
 <h3 id="12.1-段階的対応対象">12.1 段階的対応対象</h3>
-<p>本章は将来計画の記録であり、Rev.54 時点の実装対象を増やすものではない。</p>
-<p>以下は Rev.54 時点では実装対象外とする。</p>
+<p>本章は将来計画の記録であり、Rev.55 時点の実装対象を増やすものではない。</p>
+<p>以下は Rev.55 時点では実装対象外とする。</p>
 <div class="tbl-wrap"><table>
-<tr><th>対象</th><th>Rev.54 時点の扱い</th><th>実装禁止範囲</th></tr>
+<tr><th>対象</th><th>Rev.55 時点の扱い</th><th>実装禁止範囲</th></tr>
 <tr><td>デスクトップアプリ</td><td>将来計画・詳細未定</td><td>ASB SDK 利用クライアント候補、GUIライブラリ採否、配布方式、OS対応</td></tr>
 <tr><td>モバイルアプリ</td><td>将来計画・詳細未定</td><td>ASB SDK 利用クライアント候補、GUIライブラリ採否、配布方式、iOS/Android対応</td></tr>
 <tr><td>複数インスタンス対応</td><td>実装対象外</td><td>分散ロック、クラスタ管理、ノード管理</td></tr>
@@ -1681,7 +1681,7 @@ $ sudo systemctl stop asb</code></pre>
 <li>実装前に、iOS/Android対応、配布方式、認証、通知、ASB SDK との関係を仕様で確定する</li>
 </ul>
 <h3 id="12.2-保留事項">12.2 保留事項</h3>
-<p>以下は Rev.54 時点では実装対象外とする。</p>
+<p>以下は Rev.55 時点では実装対象外とする。</p>
 <ul>
 <li>ユーザー認証</li>
 <li>マルチテナント対応</li>
@@ -1694,7 +1694,7 @@ $ sudo systemctl stop asb</code></pre>
 </ul>
 <p>上記を理由に、API、設定項目、保存 JSON、ディレクトリ、外部依存、実行時データを追加してはならない。</p>
 <h3 id="12.3-検討調査中事項">12.3 検討・調査中事項</h3>
-<p>Rev.54 時点では、検討・調査中事項を実装へ反映してはならない。</p>
+<p>Rev.55 時点では、検討・調査中事項を実装へ反映してはならない。</p>
 <p>以下は調査対象としてのみ記録し、実装対象外とする。</p>
 <ul>
 <li>複数インスタンス時の NFS / 分散ストレージ選定</li>
@@ -1718,7 +1718,7 @@ $ sudo systemctl stop asb</code></pre>
 <hr>
 <h2 id="13-実装詳細仕様">13 実装詳細仕様</h2>
 <h3 id="13.1-実装対象の基準">13.1 実装対象の基準</h3>
-<p>Rev.54 時点の ASB 本体の実装対象は、ASB のセルフホスト型静的コンテンツ配信ホスティングに必要なバックエンド機能に限定する。</p>
+<p>Rev.55 時点の ASB 本体の実装対象は、ASB のセルフホスト型静的コンテンツ配信ホスティングに必要なバックエンド機能に限定する。</p>
 <p>ASB 本体外の実装対象は、ASB SDK と ASB Web UI に限定する。</p>
 <p>実装は以下の順序で進める：</p>
 <ol>
@@ -1872,7 +1872,7 @@ $ sudo systemctl stop asb</code></pre>
 <p><strong>圧縮</strong></p>
 <ul>
 <li>Gzip 圧縮を実装対象とする</li>
-<li>Brotli 圧縮は Rev.54 時点では ASB 本体に実装しない</li>
+<li>Brotli 圧縮は Rev.55 時点では ASB 本体に実装しない</li>
 <li><code>Accept-Encoding: br</code> を受信しても Brotli 応答へ切り替えない</li>
 </ul>
 <h3 id="13.8-ドメイン管理詳細">13.8 ドメイン管理詳細</h3>
@@ -1885,10 +1885,10 @@ $ sudo systemctl stop asb</code></pre>
 <li>プロジェクト削除時は関連ドメインを削除する</li>
 </ul>
 <h3 id="13.9-ssl-管理詳細">13.9 SSL 管理詳細</h3>
-<p>Rev.54 時点では、SSL 管理は XServer Static 互換目標として無料独自SSLを提供する。</p>
+<p>Rev.55 時点では、SSL 管理は XServer Static 互換目標として無料独自SSLを提供する。</p>
 <p>無料独自SSLは、独自ドメイン単位で有効化し、証明書取得、証明書更新、状態確認を ASB 本体が自動実行する。</p>
 <p>ACME は利用者向け機能名ではなく、無料独自SSLを実現する内部実装方式である。</p>
-<p>Rev.54 時点の ACME は Let’s Encrypt ACME v2 のみに対応する。</p>
+<p>Rev.55 時点の ACME は Let’s Encrypt ACME v2 のみに対応する。</p>
 <p>domain validation は HTTP-01 challenge のみに限定する。</p>
 <p>実装対象：</p>
 <ul>
@@ -1950,7 +1950,7 @@ $ sudo systemctl stop asb</code></pre>
 <li>デプロイ処理に失敗した場合は <code>ERR_WEBHOOK_PROCESSING_FAILED</code> を返す</li>
 <li>同一 GitHub Push イベントを重複受信した場合は、同一 commit hash と対象ブランチの組み合わせを冪等キーとして扱い、二重デプロイを避ける</li>
 <li>冪等キーの保存方式は JSON ファイルベースとし、保存先は <code>storage.basePath</code> 配下に限定する</li>
-<li>Webhook失敗時の自動リトライは Rev.54 時点では実装しない</li>
+<li>Webhook失敗時の自動リトライは Rev.55 時点では実装しない</li>
 <li>GitHub側からの再送は通常のWebhook受信として扱い、冪等キーで重複判定する</li>
 </ul>
 <h3 id="13.11-バックアップ復旧詳細">13.11 バックアップ・復旧詳細</h3>
@@ -2022,7 +2022,7 @@ $ sudo systemctl stop asb</code></pre>
 <li>仕様上保留の機能が実装されていないことを確認する</li>
 </ul>
 <h3 id="13.14-実装契約">13.14 実装契約</h3>
-<p>本節は Rev.54 時点の実装契約である。実装者は本節に反する判断をコード側で独自に行ってはならない。</p>
+<p>本節は Rev.55 時点の実装契約である。実装者は本節に反する判断をコード側で独自に行ってはならない。</p>
 <h4 id="13.14.1-パッケージ境界">13.14.1 パッケージ境界</h4>
 <p>実装は以下の Go package 境界に固定する。</p>
 <div class="tbl-wrap"><table>
@@ -2081,7 +2081,7 @@ $ sudo systemctl stop asb</code></pre>
 <p>すべての HTTP レスポンスに <code>X-Request-Id</code> を設定する。</p>
 <p><code>X-Request-Id</code> はリクエスト受信時に生成した requestId と一致させる。</p>
 <p><code>Content-Type</code> を持つ JSON レスポンスでは <code>application/json; charset=utf-8</code> のみを返す。</p>
-<p><code>204 No Content</code> は Rev.54 時点では使用しない。</p>
+<p><code>204 No Content</code> は Rev.55 時点では使用しない。</p>
 <p><code>HEAD</code> と <code>304 Not Modified</code> ではレスポンスボディを返してはならない。</p>
 <h4 id="13.14.5-json-保存契約">13.14.5 JSON 保存契約</h4>
 <p>実行時データは <code>storage.basePath</code> 配下にのみ保存する。</p>
@@ -2106,6 +2106,49 @@ $ sudo systemctl stop asb</code></pre>
 <p>保存失敗時は成功レスポンスを返してはならない。</p>
 <h4 id="13.14.6-起動時検証契約">13.14.6 起動時検証契約</h4>
 <p>起動時検証は HTTPS サーバー起動前に完了する。</p>
+<p>ASB サーバー起動コマンドは <code>asb start</code> とする。</p>
+<p><code>asb start</code> は、起動時検証の途中で不足したディレクトリ、JSON ファイル、証明書ファイル、ログファイル、一時ファイルを作成してはならない。</p>
+<p>実行時データ領域の初期化コマンドは <code>asb init-runtime</code> とする。</p>
+<p><code>asb init-runtime</code> は、<code>storage.basePath</code> 配下の必須ディレクトリと必須 JSON ファイルを初期作成する唯一の標準コマンドである。</p>
+<p><code>asb init-runtime</code> は開発リポジトリ内へディレクトリ、JSON ファイル、一時ファイル、ログファイル、証明書ファイルを作成してはならない。</p>
+<p><code>asb init-runtime</code> は、<code>storage.basePath</code> が開発リポジトリの絶対パスと同一、またはその配下を指す場合、初期化を開始せず <code>ERR_STORAGE_VALIDATION_FAILED</code> で失敗しなければならない。</p>
+<p><code>asb init-runtime</code> は、既存の通常ファイルまたはディレクトリを上書き、削除、移動、truncate してはならない。</p>
+<p><code>asb init-runtime</code> は、既存 JSON ファイルが存在する場合、JSON 構文、<code>schemaVersion: 1</code>、必須トップレベルキー、未知フィールド不在を検証し、妥当な場合は変更しない。</p>
+<p><code>asb init-runtime</code> は、既存 JSON ファイルが不正な場合、自動修復または上書きを行わず <code>ERR_STORAGE_VALIDATION_FAILED</code> で失敗しなければならない。</p>
+<p><code>asb init-runtime</code> は、必要なディレクトリと JSON ファイルを作成する前に、作成予定パスがすべて <code>storage.basePath</code> 配下に収まることを検証しなければならない。</p>
+<p><code>asb init-runtime</code> は、以下の順序で初期化する。</p>
+<ol>
+<li><code>config/config.json</code> を読み込む</li>
+<li>設定未知フィールド、型、値範囲を検証する</li>
+<li><code>storage.basePath</code> を絶対パスへ正規化する</li>
+<li><code>storage.basePath</code> が開発リポジトリ配下でないことを検証する</li>
+<li>作成予定パスがすべて <code>storage.basePath</code> 配下であることを検証する</li>
+<li><code>storage.basePath/</code> を検証し、存在しない場合は作成する</li>
+<li><code>storage.basePath/config/</code> を検証し、存在しない場合は作成する</li>
+<li><code>storage.basePath/storage/</code> を検証し、存在しない場合は作成する</li>
+<li><code>storage.basePath/storage/projects/</code> を検証し、存在しない場合は作成する</li>
+<li><code>storage.basePath/logs/</code> を検証し、存在しない場合は作成する</li>
+<li><code>storage.basePath/certs/</code> を検証し、存在しない場合は作成する</li>
+<li>必須 JSON ファイルを同一ディレクトリ内の一時ファイル、<code>fsync</code>、atomic rename で作成する</li>
+<li>作成済みディレクトリと JSON ファイルを起動時検証と同じ条件で再検証する</li>
+</ol>
+<p><code>asb init-runtime</code> が作成する必須 JSON ファイルは以下に限定する。</p>
+<ul>
+<li><code>storage.basePath/config/projects.json</code></li>
+<li><code>storage.basePath/config/domains.json</code></li>
+<li><code>storage.basePath/config/backups.json</code></li>
+<li><code>storage.basePath/config/webhooks.json</code></li>
+<li><code>storage.basePath/config/acme_accounts.json</code></li>
+<li><code>storage.basePath/config/acme_orders.json</code></li>
+<li><code>storage.basePath/config/acme_authorizations.json</code></li>
+<li><code>storage.basePath/config/acme_challenges.json</code></li>
+<li><code>storage.basePath/config/acme_renewals.json</code></li>
+</ul>
+<p><code>asb init-runtime</code> は、Project 作成前の初期化では <code>storage.basePath/storage/projects/{projectId}/</code> および <code>storage.basePath/storage/projects/{projectId}/files.json</code> を作成してはならない。</p>
+<p>Project 作成 API は、Project 作成処理の一部として <code>storage.basePath/storage/projects/{projectId}/</code>、<code>storage.basePath/storage/projects/{projectId}/contents/</code>、<code>storage.basePath/storage/projects/{projectId}/files.json</code> を作成する。</p>
+<p>Project 作成 API は、作成済み Project ディレクトリまたは <code>files.json</code> が既に存在する場合、既存ファイルを上書きせず <code>ERR_STORAGE_VALIDATION_FAILED</code> で失敗しなければならない。</p>
+<p><code>asb init-runtime</code> の成功時は標準出力へ <code>ASB_RUNTIME_INITIALIZED storageBasePath=&quot;...&quot;</code> の単一行を出力し、終了コード <code>0</code> とする。</p>
+<p><code>asb init-runtime</code> の失敗時は標準エラーへ <code>ASB_RUNTIME_INIT_ERROR code=... message=&quot;...&quot;</code> の単一行を出力し、終了コード <code>1</code> とする。</p>
 <p>以下のいずれかに該当する場合、ASB は起動失敗とする。</p>
 <ul>
 <li>設定ファイルが存在しない</li>
@@ -2151,7 +2194,7 @@ $ sudo systemctl stop asb</code></pre>
 </ul>
 <p>整合性検証自体に失敗した場合は <code>ERR_STORAGE_VALIDATION_FAILED</code> を error log へ記録する。</p>
 <h4 id="13.14.9-保留機能の実装禁止契約">13.14.9 保留機能の実装禁止契約</h4>
-<p>Rev.54 時点では以下を実装してはならない。</p>
+<p>Rev.55 時点では以下を実装してはならない。</p>
 <ul>
 <li>SDK</li>
 <li>SDK 専用プロトコル</li>
@@ -2198,7 +2241,7 @@ $ sudo systemctl stop asb</code></pre>
 </ul>
 <p>上記を実装する場合は、先に <code>ASB-spec.md</code> を改訂し、確定仕様として昇格させる。</p>
 <h3 id="13.15-実装詳細固定仕様">13.15 実装詳細固定仕様</h3>
-<p>本節は Rev.54 時点で実装時に固定する詳細仕様である。</p>
+<p>本節は Rev.55 時点で実装時に固定する詳細仕様である。</p>
 <h4 id="13.15.1-api-エンドポイント固定表">13.15.1 API エンドポイント固定表</h4>
 <div class="tbl-wrap"><table>
 <tr><th>API</th><th>Method</th><th>Path</th><th>Body</th><th>Query</th><th>成功</th><th>主な失敗</th></tr>
@@ -2313,6 +2356,9 @@ $ sudo systemctl stop asb</code></pre>
 </table></div>
 <p>上記 JSON ファイルは起動時に存在していなければならない。</p>
 <p>ASB は上記 JSON ファイルを起動時に作成しない。</p>
+<p><code>asb init-runtime</code> は、上記 JSON ファイルのうち <code>storage/projects/:projectId/files.json</code> を除く全ファイルを空状態で作成できる。</p>
+<p><code>storage/projects/:projectId/files.json</code> は Project 作成 API によって Project ディレクトリと同時に作成する。</p>
+<p><code>asb init-runtime</code>、Project 作成 API、マイグレーション以外の処理は、必須 JSON ファイルの初回作成を行ってはならない。</p>
 <p><code>config/webhooks.json</code> は Webhook 冪等性管理に使用する実行時 JSON ファイルであり、外部DBを使用しない。</p>
 <p>上記 JSON ファイルのトップレベルには、表に記載された必須トップレベルキー以外を保存してはならない。</p>
 <p><code>schemaVersion</code> は整数 <code>1</code> のみ許可する。</p>
@@ -2370,7 +2416,7 @@ $ sudo systemctl stop asb</code></pre>
 <p><code>If-None-Match</code> が <code>ETag</code> と一致する場合は <code>304 Not Modified</code> を返す。</p>
 <p><code>If-Modified-Since</code> が <code>Last-Modified</code> 以降の場合は <code>304 Not Modified</code> を返す。</p>
 <p><code>304 Not Modified</code> ではレスポンスボディを返してはならない。</p>
-<p>Range request は Rev.54 時点では実装しない。</p>
+<p>Range request は Rev.55 時点では実装しない。</p>
 <p><code>Range</code> ヘッダーを受信した場合も無視し、通常の <code>200 OK</code> または <code>304 Not Modified</code> 判定を行う。</p>
 <p>Gzip 圧縮済みファイルを返す場合は <code>Content-Encoding: gzip</code> を設定する。</p>
 <p>Gzip 圧縮は、<code>Accept-Encoding</code> の comma 区切り token に <code>gzip</code> が含まれる場合のみ行う。</p>
@@ -2411,7 +2457,7 @@ $ sudo systemctl stop asb</code></pre>
 <p><code>after</code> commit の参照可否は <code>git -C deploy.sourcePath cat-file -e {after}^{commit}</code> の成功で判定する。</p>
 <p>Webhook処理中に <code>deploy.sourcePath</code> の branch checkout、fetch、pull、reset、clean、merge、rebase を実行してはならない。</p>
 <p>静的コンテンツ反映元は <code>deploy.sourcePath</code> の <code>after</code> commit 時点のファイルツリーとする。</p>
-<p>Rev.54 時点では、Webhookデプロイ時の対象ファイルパスはリポジトリルート配下の全静的ファイルとする。</p>
+<p>Rev.55 時点では、Webhookデプロイ時の対象ファイルパスはリポジトリルート配下の全静的ファイルとする。</p>
 <p><code>.git/</code>、<code>.github/</code>、<code>AGENTS.md</code>、<code>ASB-spec.md</code>、<code>ASB-spec.html</code>、<code>IMPLEMENTATION_TASKS.md</code>、<code>DOCUMENT_INDEX.md</code>、<code>README.md</code> は配信対象から除外する。</p>
 <p>Webhook デプロイ対象ファイルは、<code>git ls-tree -r --name-only {after}</code> 相当で列挙した通常ファイルに限定する。</p>
 <p>symlink、submodule、directory、Git 管理外ファイルはデプロイ対象外とする。</p>
@@ -2424,7 +2470,7 @@ $ sudo systemctl stop asb</code></pre>
 <p>Webhook 処理完了後に処理状態を <code>config/webhooks.json</code> へ保存する。</p>
 <p>成功時の <code>status</code> は <code>deployed</code> とする。</p>
 <p>失敗時の <code>status</code> は <code>failed</code> とし、<code>errorCode</code> を保存する。</p>
-<p>Webhook失敗時の自動リトライは Rev.54 時点では実装しない。</p>
+<p>Webhook失敗時の自動リトライは Rev.55 時点では実装しない。</p>
 <p>GitHub側から同一イベントが再送された場合は、<code>config/webhooks.json</code> の既存イベントにより重複判定する。</p>
 <p>Webhookデプロイ処理順序は以下に固定する。</p>
 <ol>
@@ -2487,7 +2533,7 @@ $ sudo systemctl stop asb</code></pre>
 </ol>
 <p>各段階は <code>go test ./...</code> が成功する状態で次へ進む。</p>
 <h3 id="13.16-入出力契約固定仕様">13.16 入出力契約固定仕様</h3>
-<p>本節は Rev.54 時点で API、JSON保存、ログ、起動時検証の入出力を固定する仕様である。</p>
+<p>本節は Rev.55 時点で API、JSON保存、ログ、起動時検証の入出力を固定する仕様である。</p>
 <h4 id="13.16.1-共通成功レスポンス契約">13.16.1 共通成功レスポンス契約</h4>
 <p>成功レスポンスは常に JSON object とする。</p>
 <p>成功レスポンスの <code>Content-Type</code> は <code>application/json; charset=utf-8</code> とする。</p>
@@ -2758,7 +2804,7 @@ $ sudo systemctl stop asb</code></pre>
 <p><code>INFO</code> は <code>debug</code> または <code>info</code> 設定時に出力する。</p>
 <p><code>WARN</code> は <code>debug</code>、<code>info</code>、<code>warn</code> 設定時に出力する。</p>
 <p><code>ERROR</code> はすべての <code>log.level</code> 設定で出力する。</p>
-<p><code>log.format</code> は Rev.54 時点では <code>json</code> のみ許可する。</p>
+<p><code>log.format</code> は Rev.55 時点では <code>json</code> のみ許可する。</p>
 <p>通常運用ログを stdout へ出力してはならない。</p>
 <p>起動時検証失敗時のみ、stderr へ以下の形式で単一行を出力する。</p>
 <pre><code class="language-text">ASB_STARTUP_ERROR code=ERR_STORAGE_VALIDATION_FAILED message=&quot;Storage validation failed&quot;</code></pre>
@@ -2766,7 +2812,7 @@ $ sudo systemctl stop asb</code></pre>
 <p>ローテーションでは現在ログファイルを <code>access.log.{unixTime}</code> または <code>error.log.{unixTime}</code> へ rename し、新しい <code>access.log</code> または <code>error.log</code> を作成する。</p>
 <p>ローテーション済みログの削除対象は、ファイル名末尾の unixTime が現在時刻から7日より古いものに限定する。</p>
 <p>ログローテーション失敗時は対象ログ書き込みを失敗扱いとし、HTTP レスポンスが未送信の場合は <code>500 Internal Server Error</code> を返す。</p>
-<p>ログ API は <code>access.log</code> または <code>error.log</code> の現行ファイルのみを読む。ローテーション済みログは Rev.54 時点ではログ API の対象外とする。</p>
+<p>ログ API は <code>access.log</code> または <code>error.log</code> の現行ファイルのみを読む。ローテーション済みログは Rev.55 時点ではログ API の対象外とする。</p>
 <p>ログ API は対象ログファイルを先頭から読み、JSON Lines を1行ずつ decode する。</p>
 <p>空行は壊れたログ行として扱い、<code>ERR_LOG_READ_FAILED</code> を返す。</p>
 <p>1行でも JSON decode に失敗した場合は <code>ERR_LOG_READ_FAILED</code> を返し、部分的な <code>logs</code> を成功レスポンスとして返してはならない。</p>
@@ -2775,7 +2821,7 @@ $ sudo systemctl stop asb</code></pre>
 <p>ログ API はログファイルを作成、更新、ローテーション、削除してはならない。</p>
 <p>ログには内部ファイルパス、スタックトレース、環境変数、シークレットを含めてはならない。</p>
 <h4 id="13.16.9-テスト固定項目">13.16.9 テスト固定項目</h4>
-<p>Rev.54 の実装では、以下のテストを必須とする。</p>
+<p>Rev.55 の実装では、以下のテストを必須とする。</p>
 <ul>
 <li>全API成功レスポンスの固定JSONキー検証</li>
 <li>全APIエラーレスポンスの固定JSONキー検証</li>
@@ -2786,7 +2832,7 @@ $ sudo systemctl stop asb</code></pre>
 <li>アクセスログとエラーログのJSON Linesフィールド検証</li>
 </ul>
 <h3 id="13.17-実装境界とファイル操作固定仕様">13.17 実装境界とファイル操作固定仕様</h3>
-<p>本節は Rev.54 時点で package 境界、公開 interface、Repository、Storage、複数ファイル更新の実装契約を固定する仕様である。</p>
+<p>本節は Rev.55 時点で package 境界、公開 interface、Repository、Storage、複数ファイル更新の実装契約を固定する仕様である。</p>
 <h4 id="13.17.1-package-公開-interface-固定">13.17.1 package 公開 interface 固定</h4>
 <p>各 package は以下の公開 interface を境界として実装する。</p>
 <div class="tbl-wrap"><table>
@@ -2986,7 +3032,7 @@ $ sudo systemctl stop asb</code></pre>
 <p>複数JSON更新では、最終JSONの保存が完了するまで成功レスポンスを返してはならない。</p>
 <p>途中失敗時は、更新済みJSON名、未更新JSON名、操作名、requestId をエラーログへ記録する。</p>
 <p>途中失敗時に自動ロールバックを実装する場合も、ロールバック失敗時は成功扱いにしてはならない。</p>
-<p>Rev.54 時点では、複数JSON更新に外部トランザクション機構を導入してはならない。</p>
+<p>Rev.55 時点では、複数JSON更新に外部トランザクション機構を導入してはならない。</p>
 <h4 id="13.17.11-最低テスト分類固定">13.17.11 最低テスト分類固定</h4>
 <p><code>go test ./...</code> に含める最低テスト分類は以下とする。</p>
 <div class="tbl-wrap"><table>
@@ -2999,7 +3045,7 @@ $ sudo systemctl stop asb</code></pre>
 <tr><td>Startup</td><td>起動時検証順序、終了コード、stderr</td></tr>
 </table></div>
 <h4 id="13.17.12-実装ファイル構成固定">13.17.12 実装ファイル構成固定</h4>
-<p>Rev.54 の初期実装では、Go 実装ファイルを以下の構成で作成する。</p>
+<p>Rev.55 の初期実装では、Go 実装ファイルを以下の構成で作成する。</p>
 <pre><code class="language-text">cmd/asb/main.go
 internal/config/
 internal/server/
@@ -3046,7 +3092,7 @@ internal/system/</code></pre>
 <p>上記ファイル分割は実装開始時の固定構成とする。</p>
 <p>責務が増えてファイル分割が必要な場合でも、package 境界と公開 interface を変更してはならない。</p>
 <h4 id="13.17.14-エラーコード固定表">13.17.14 エラーコード固定表</h4>
-<p>Rev.54 の実装では、API と起動時検証が返すエラーコードを以下に固定する。</p>
+<p>Rev.55 の実装では、API と起動時検証が返すエラーコードを以下に固定する。</p>
 <div class="tbl-wrap"><table>
 <tr><th>code</th><th>HTTP</th><th>用途</th></tr>
 <tr><td><code>ERR_INVALID_JSON</code></td><td>400</td><td>リクエスト JSON または保存 JSON の構文不正</td></tr>
@@ -3076,7 +3122,7 @@ internal/system/</code></pre>
 <p>HTTP ステータスは上記表と <code>13.15.1 API エンドポイント固定表</code> の範囲で決定する。</p>
 <p>保存JSONの起動時検証失敗では、構文不正を <code>ERR_INVALID_JSON</code>、未知フィールドを <code>ERR_UNKNOWN_FIELD</code>、ディレクトリ・権限・必須ファイル不備を <code>ERR_STORAGE_VALIDATION_FAILED</code> とする。</p>
 <h4 id="13.17.15-テストファイル配置固定">13.17.15 テストファイル配置固定</h4>
-<p>Rev.54 の実装では、実装 package と同じ責務単位でテストファイルを配置する。</p>
+<p>Rev.55 の実装では、実装 package と同じ責務単位でテストファイルを配置する。</p>
 <p>テストファイル名は、対象ファイル名または対象責務名に <code>_test.go</code> を付与した名前に固定する。</p>
 <p><code>internal/config/</code> は設定読み込み、未知フィールド拒否、デフォルト値、起動時検証をテストする。</p>
 <p><code>internal/server/</code> はルーティング、Content-Type、Body decode、成功レスポンス、エラーレスポンス、requestId をテストする。</p>
@@ -3093,14 +3139,14 @@ internal/system/</code></pre>
 <p>テスト fixture はテスト実行中に更新してはならない。</p>
 <p>テスト fixture から生成した出力は、OS の一時ディレクトリ配下にのみ作成し、テスト終了時に削除する。</p>
 <h3 id="13.18-apiキー管理認証固定仕様">13.18 APIキー管理・認証固定仕様</h3>
-<p>Rev.54 時点では、ASB 本体の管理 API に認証機能を実装しない。</p>
+<p>Rev.55 時点では、ASB 本体の管理 API に認証機能を実装しない。</p>
 <p>管理 API とは <code>/api/</code> で始まる全 HTTPS JSON API を指す。</p>
 <p>管理 API は、ASB の標準構成では <code>server.host=localhost</code> で待ち受け、外部公開を前提としない。</p>
 <p>本番環境で管理 API を外部ネットワークから利用可能にする場合も、ASB 管理 API は HTTPS JSON API として提供する。</p>
 <p>ASB 本体は、<code>server.tlsCertFile</code> と <code>server.tlsKeyFile</code> に指定された証明書ファイルと秘密鍵ファイルを用いて HTTPS 管理 API を起動する。</p>
 <p>ASB 本体は、管理 API 用 TLS 証明書ファイルまたは秘密鍵ファイルを開発リポジトリ内へ生成してはならない。</p>
 <p>ASB 本体は、管理 API 用 TLS 証明書ファイルまたは秘密鍵ファイルを起動時に自動生成してはならない。</p>
-<p>ASB 本体は Rev.54 時点では以下を実装してはならない。</p>
+<p>ASB 本体は Rev.55 時点では以下を実装してはならない。</p>
 <ul>
 <li>APIキー発行</li>
 <li>APIキー保存</li>
@@ -3118,7 +3164,7 @@ internal/system/</code></pre>
 <li>認証 middleware</li>
 </ul>
 <p><code>Authorization</code> ヘッダーまたは <code>X-API-Key</code> ヘッダーを受信しても、ASB は認証判断に使用してはならない。</p>
-<p>Rev.54 時点では、<code>Authorization</code> ヘッダーまたは <code>X-API-Key</code> ヘッダーの有無により、成功・失敗・レスポンス内容を変えてはならない。</p>
+<p>Rev.55 時点では、<code>Authorization</code> ヘッダーまたは <code>X-API-Key</code> ヘッダーの有無により、成功・失敗・レスポンス内容を変えてはならない。</p>
 <p>ASB は APIキー管理のために以下の JSON ファイル、ディレクトリ、設定項目を作成してはならない。</p>
 <ul>
 <li><code>config/api_keys.json</code></li>
@@ -3142,12 +3188,12 @@ internal/system/</code></pre>
 <li>監査ログ</li>
 <li>既存の認証なし管理 API からの移行手順</li>
 </ul>
-<p>SDK 認証仕様は Rev.54 の対象外とし、実装対象へ昇格する場合は事前に <code>ASB-spec.md</code> を改訂する。</p>
+<p>SDK 認証仕様は Rev.55 の対象外とし、実装対象へ昇格する場合は事前に <code>ASB-spec.md</code> を改訂する。</p>
 <hr>
 <h3 id="13.19-rate-limiting-固定仕様">13.19 Rate limiting 固定仕様</h3>
-<p>Rev.54 時点では、ASB 本体に Rate limiting を実装しない。</p>
+<p>Rev.55 時点では、ASB 本体に Rate limiting を実装しない。</p>
 <p>Rate limiting とは、送信元IP、Host、Domain、Project、APIキー、ユーザー、HTTPメソッド、URL path、リクエスト数、転送量、同時接続数、時間窓等に基づき、HTTP リクエストの受理、拒否、遅延、または優先度を制御する機能を指す。</p>
-<p>ASB 本体は Rev.54 時点では以下を実装してはならない。</p>
+<p>ASB 本体は Rev.55 時点では以下を実装してはならない。</p>
 <ul>
 <li>Rate limiting middleware</li>
 <li>IP別リクエスト制限</li>
@@ -3199,10 +3245,10 @@ internal/system/</code></pre>
 </ul>
 <hr>
 <h3 id="13.20-brotli-圧縮固定仕様">13.20 Brotli 圧縮固定仕様</h3>
-<p>Rev.54 時点では、ASB 本体に Brotli 圧縮を実装しない。</p>
+<p>Rev.55 時点では、ASB 本体に Brotli 圧縮を実装しない。</p>
 <p>ASB の標準圧縮機能は、Go 標準ライブラリ <code>compress/gzip</code> で実装できる Gzip に限定する。</p>
-<p>Brotli 圧縮は Go 標準ライブラリに含まれないため、Rev.54 時点では外部ライブラリ例外採用を行わない。</p>
-<p>ASB 本体は Rev.54 時点では以下を実装してはならない。</p>
+<p>Brotli 圧縮は Go 標準ライブラリに含まれないため、Rev.55 時点では外部ライブラリ例外採用を行わない。</p>
+<p>ASB 本体は Rev.55 時点では以下を実装してはならない。</p>
 <ul>
 <li>Brotli 圧縮</li>
 <li>Brotli 展開</li>
@@ -3250,7 +3296,7 @@ internal/system/</code></pre>
 </ul>
 <hr>
 <h3 id="13.21-asb-sdk-通信層固定仕様">13.21 ASB SDK 通信層固定仕様</h3>
-<p>Rev.54 時点では、公式SDK名称を ASB SDK に固定する。</p>
+<p>Rev.55 時点では、公式SDK名称を ASB SDK に固定する。</p>
 <p>ASB SDK は、別製品名または別プロジェクト名として分割しない。</p>
 <p>ASB SDK は、以下の対応実装を持つ単一の公式SDKとして扱う。</p>
 <div class="tbl-wrap"><table>
@@ -3263,9 +3309,9 @@ internal/system/</code></pre>
 <p>ASB SDK の各対応実装は、ASB 本体の内部 JSON、Service、Repository、Storage を直接参照または呼び出してはならない。</p>
 <p>ASB SDK の各対応実装は、ASB 管理 HTTPS JSON API に存在しない操作を公開 API として提供してはならない。</p>
 <p>ASB SDK の各対応実装は、<code>baseUrl</code> を必須入力として ASB 管理 HTTPS JSON API の呼び出し先を決定する。</p>
-<p>ASB SDK の各対応実装の自動 retry 回数は Rev.54 時点では <code>0</code> とし、SDK は失敗した HTTP request を自動再送してはならない。</p>
+<p>ASB SDK の各対応実装の自動 retry 回数は Rev.55 時点では <code>0</code> とし、SDK は失敗した HTTP request を自動再送してはならない。</p>
 <p>ASB SDK は、SDK 固有の保存データ、設定ファイル、生成ファイル、生成ディレクトリを持たない。</p>
-<p>SDK 認証仕様、デスクトップアプリ向けSDK利用、モバイルアプリ向けSDK利用は Rev.54 時点では未定とする。</p>
+<p>SDK 認証仕様、デスクトップアプリ向けSDK利用、モバイルアプリ向けSDK利用は Rev.55 時点では未定とする。</p>
 <p>ASB SDK の通信規格は、ASB 本体が提供する HTTPS JSON API と同一に固定する。</p>
 <p>SDK 通信は、以下の ASB 管理 API 規約に従う。</p>
 <ul>
@@ -3339,7 +3385,7 @@ internal/system/</code></pre>
 <p>ASB SDK の Go 実装は、HTTP request timeout と cancellation を <code>context.Context</code> と <code>http.Client</code> で扱う。</p>
 <p>ASB SDK の Go 実装は、ASB 管理 HTTPS JSON API の型付き request / response / error を提供する。</p>
 <h4 id="13.21.4-sdk-共通禁止事項">13.21.4 SDK 共通禁止事項</h4>
-<p>SDK 通信のために、ASB 本体は Rev.54 時点では以下を実装してはならない。</p>
+<p>SDK 通信のために、ASB 本体は Rev.55 時点では以下を実装してはならない。</p>
 <ul>
 <li>SDK 専用 HTTPS API</li>
 <li>SDK 専用 URL prefix</li>
@@ -3359,7 +3405,7 @@ internal/system/</code></pre>
 <li>SDK 専用 sessionStorage</li>
 <li>SDK 専用 IndexedDB</li>
 </ul>
-<p>ASB 本体は Rev.54 時点では以下の通信方式を SDK 通信として実装してはならない。</p>
+<p>ASB 本体は Rev.55 時点では以下の通信方式を SDK 通信として実装してはならない。</p>
 <ul>
 <li>WebSocket</li>
 <li>gRPC</li>
@@ -3389,7 +3435,7 @@ internal/system/</code></pre>
 </ul>
 <p>開発リポジトリ内にも、<code>storage.basePath</code> 配下にも、SDK 通信用のセッション、キャッシュ、handshake 状態、protocol negotiation 状態、client registration 状態を表す実行時データを生成してはならない。</p>
 <p><code>config/config.json</code> に SDK 通信関連フィールドが存在する場合は、未知フィールドとして起動失敗とする。</p>
-<p>SDK から ASB 管理 API を呼び出す場合でも、Rev.54 時点では <code>Authorization</code> ヘッダー、<code>X-API-Key</code> ヘッダー、cookie、セッションIDを認証判断に使用してはならない。</p>
+<p>SDK から ASB 管理 API を呼び出す場合でも、Rev.55 時点では <code>Authorization</code> ヘッダー、<code>X-API-Key</code> ヘッダー、cookie、セッションIDを認証判断に使用してはならない。</p>
 <p>ASB 標準Web UI は、ASB SDK の Browser JavaScript 実装を経由して上記の ASB 管理 API 規約に従う。</p>
 <p>ASB 標準Web UI は、SDK 専用プロトコル、SDK 専用エンドポイント、SDK 専用セッション、SDK 専用 JSON ファイル、SDK 専用ディレクトリを要求してはならない。</p>
 <p>SDK 認証仕様を将来実装する場合は、実装前に <code>ASB-spec.md</code> を改訂し、APIキー管理、ユーザー認証、SDK配布方針との関係を最低限確定する。</p>
@@ -3407,7 +3453,7 @@ internal/system/</code></pre>
 <li>テスト方法</li>
 </ul>
 <h4 id="13.21.5-asb-標準web-ui-固定仕様">13.21.5 ASB 標準Web UI 固定仕様</h4>
-<p>Rev.54 時点では、ASB Web UI を対応必須とする。</p>
+<p>Rev.55 時点では、ASB Web UI を対応必須とする。</p>
 <p>ASB Web UI は、ASB 標準Web UIとして扱う。</p>
 <p>ASB 標準Web UI は、ASB 本体外の内製管理画面クライアントである。</p>
 <p>ASB 標準Web UI は、ブラウザで動作する静的 HTML / CSS / JavaScript アプリケーションとして実装する。</p>
@@ -3425,8 +3471,8 @@ internal/system/</code></pre>
 <p>ASB 標準Web UI は、ASB 本体の release artifact とは別 artifact として配布する。</p>
 <p>ASB 標準Web UI の配布 artifact は、静的 HTML / CSS / JavaScript と ASB SDK の Browser JavaScript 実装を含むファイル集合とする。</p>
 <p>ASB 標準Web UI の配布 artifact は、<code>node_modules/</code>、<code>dist/</code>、<code>build/</code>、<code>package.json</code>、<code>deno.json</code>、<code>deno.lock</code> を含んではならない。</p>
-<p>ASB 標準Web UI は、Rev.54 時点では認証 UI を持たない。</p>
-<p>ASB 標準Web UI は、ASB 管理 API が Rev.54 時点で認証なしである前提に従う。</p>
+<p>ASB 標準Web UI は、Rev.55 時点では認証 UI を持たない。</p>
+<p>ASB 標準Web UI は、ASB 管理 API が Rev.55 時点で認証なしである前提に従う。</p>
 <p>ASB 標準Web UI を外部ネットワークから利用可能にする場合は、VPN、SSH tunnel、reverse proxy、ファイアウォール、IP制限等のASB外部の運用境界で保護する。</p>
 <p>ASB 標準Web UI の画面一覧は以下に固定する。</p>
 <div class="tbl-wrap"><table>
@@ -3471,7 +3517,7 @@ internal/system/</code></pre>
 <p>外部開発者は、ASB、ASB 標準Web UI、ASB SDK など、Adlaire Group が開発元の公式プロジェクトに関与できない。</p>
 <hr>
 <h3 id="13.22-無料独自ssl--acme-固定仕様">13.22 無料独自SSL / ACME 固定仕様</h3>
-<p>Rev.54 時点では、ASB 本体に無料独自SSLを実装する。</p>
+<p>Rev.55 時点では、ASB 本体に無料独自SSLを実装する。</p>
 <p>無料独自SSLは、XServer Static 互換目標における利用者向け機能名である。</p>
 <p>ACME は無料独自SSLを実現する内部実装方式であり、利用者向け機能名として扱わない。</p>
 <p>ASB は Let’s Encrypt ACME v2 のみに対応する。</p>
@@ -3522,7 +3568,9 @@ internal/system/</code></pre>
 <li><code>config/acme_renewals.json</code></li>
 </ul>
 <p>上記 JSON ファイルは起動時に自動生成してはならない。</p>
-<p>上記 JSON ファイルは <code>asb init-runtime</code> または無料独自SSL有効化 API の承認済み処理でのみ作成する。</p>
+<p>上記 JSON ファイルは <code>asb init-runtime</code> によって初期作成する。</p>
+<p>無料独自SSL有効化 API は、上記 JSON ファイルを初回作成してはならない。</p>
+<p>無料独自SSL有効化 API は、上記 JSON ファイルが存在し、構文、<code>schemaVersion: 1</code>、必須トップレベルキー、未知フィールド不在を満たす場合のみ更新できる。</p>
 <p>ACME account key は <code>config/acme_accounts.json</code> に保存する。</p>
 <p>ACME account key は PEM 形式で保存し、保存ファイルの group/world writable を禁止する。</p>
 <p>ACME nonce は永続保存しない。</p>
@@ -3661,7 +3709,7 @@ internal/system/</code></pre>
 <p>更新失敗は既存有効証明書を削除してはならない。</p>
 <p>新証明書の保存、証明書検証、秘密鍵権限検証がすべて成功した場合のみ、対象 Domain の SSL 状態を更新する。</p>
 <p>Let’s Encrypt rate limit に到達した場合は、<code>ERR_SSL_CERT_GENERATION_FAILED</code> を返し、次回再試行可能時刻を renewal 履歴に保存する。</p>
-<p>Rev.54 時点で ASB 本体は以下を実装してはならない。</p>
+<p>Rev.55 時点で ASB 本体は以下を実装してはならない。</p>
 <ul>
 <li>複数 CA</li>
 <li>CA 選定</li>
@@ -3678,14 +3726,14 @@ internal/system/</code></pre>
 </ul>
 <hr>
 <h3 id="13.23-asb互換目標固定仕様">13.23 ASB互換目標固定仕様</h3>
-<p>Rev.54 時点では、ASB互換目標は将来の到達目標であり、個別の確定仕様へ昇格した項目のみ実装対象とする。</p>
-<p>Rev.54 時点では、無料独自SSLのみを XServer Static 互換目標から確定仕様へ昇格する。</p>
+<p>Rev.55 時点では、ASB互換目標は将来の到達目標であり、個別の確定仕様へ昇格した項目のみ実装対象とする。</p>
+<p>Rev.55 時点では、無料独自SSLのみを XServer Static 互換目標から確定仕様へ昇格する。</p>
 <p>ASB互換目標は、XServer Static 等の静的コンテンツ専用ホスティングの利用体験を参考にした ASB 独自の目標である。</p>
 <p>ASB互換目標は、外部サービスとの完全互換、API互換、管理画面互換、内部実装互換を意味しない。</p>
 <p>ASB互換目標で参照する外部サービスの仕様、挙動、画面、名称、用語、API、設定、保存形式、証明書運用は、<code>ASB-spec.md</code> に明記されない限り ASB の確定仕様ではない。</p>
 <p>ASB互換目標における「参考」「相当」「目標」は、仕様確定済み事項を識別する語ではない。</p>
 <p>ASB互換目標は、ASB の実装を外部サービスへ合わせる指示ではなく、ASB 独自仕様として将来比較可能な利用体験を整理するための境界である。</p>
-<p>Rev.54 時点で ASB互換目標に含める対象は以下とする。</p>
+<p>Rev.55 時点で ASB互換目標に含める対象は以下とする。</p>
 <ul>
 <li>静的コンテンツ専用ホスティング</li>
 <li>HTML、CSS、JavaScript、画像等の静的ファイル配信</li>
@@ -3700,7 +3748,7 @@ internal/system/</code></pre>
 <li>フォルダ階層を保持したファイル管理</li>
 <li>SSL更新状態、デプロイ状態、ログの確認</li>
 </ul>
-<p>Rev.54 時点で XServer Static互換機能セットとして実装対象に固定する機能は以下とする。</p>
+<p>Rev.55 時点で XServer Static互換機能セットとして実装対象に固定する機能は以下とする。</p>
 <div class="tbl-wrap"><table>
 <tr><th>機能</th><th>実装境界</th></tr>
 <tr><td>静的コンテンツ配信</td><td>HTML、CSS、JavaScript、画像等の静的ファイル配信、<code>index.html</code>、404応答、MIME type、Gzip。</td></tr>
@@ -3711,7 +3759,7 @@ internal/system/</code></pre>
 <tr><td>ログ・状態確認</td><td>Access log、Error log、Monitoring API、SSL状態、Webhook処理状態、ストレージ使用量。</td></tr>
 <tr><td>バックアップ・復旧</td><td>JSONファイルベースのバックアップ作成、検証、復旧。</td></tr>
 </table></div>
-<p>Rev.54 時点で ASB互換目標に含めない対象は以下とする。</p>
+<p>Rev.55 時点で ASB互換目標に含めない対象は以下とする。</p>
 <ul>
 <li>XServer Static との完全互換</li>
 <li>XServer Static の管理画面再現</li>
@@ -3731,7 +3779,7 @@ internal/system/</code></pre>
 <li>DNS provider API 連携</li>
 <li>手動 TXT 登録</li>
 </ul>
-<p>ASB互換目標に含まれる機能であっても、以下は Rev.54 時点では実装対象ではない。</p>
+<p>ASB互換目標に含まれる機能であっても、以下は Rev.55 時点では実装対象ではない。</p>
 <ul>
 <li>HTTP/2 実装詳細</li>
 <li>SDK 外部配布 / npm 配布</li>
@@ -3769,9 +3817,9 @@ internal/system/</code></pre>
 </ul>
 <hr>
 <h3 id="13.24-将来計画機能固定仕様">13.24 将来計画機能固定仕様</h3>
-<p>Rev.54 時点では、将来計画、保留事項、検討・調査中事項は実装対象ではない。</p>
+<p>Rev.55 時点では、将来計画、保留事項、検討・調査中事項は実装対象ではない。</p>
 <p>本節は、将来計画に含まれる機能を実装対象外として固定する。</p>
-<p>ASB 本体は Rev.54 時点では以下を実装してはならない。</p>
+<p>ASB 本体は Rev.55 時点では以下を実装してはならない。</p>
 <ul>
 <li>GUI という曖昧カテゴリ</li>
 <li>ASB 本体への Web UI 内包</li>
@@ -3793,7 +3841,7 @@ internal/system/</code></pre>
 <li>FTPS</li>
 <li>SFTP</li>
 </ul>
-<p>将来計画機能を理由に、ASB 本体は Rev.54 時点では以下を追加、変更、生成してはならない。</p>
+<p>将来計画機能を理由に、ASB 本体は Rev.55 時点では以下を追加、変更、生成してはならない。</p>
 <ul>
 <li>ASB 本体内包 Web UI 用 API</li>
 <li>モバイル専用 API</li>
@@ -3966,10 +4014,10 @@ $ ./tests/e2e.sh</code></pre>
 <tr><td><code>config/acme_renewals.json</code></td><td>ACME renewal スキーマ</td></tr>
 <tr><td><code>storage/projects/:projectId/files.json</code></td><td>File メタデータスキーマ</td></tr>
 </table></div>
-<p>静的コンテンツ実体、ログファイル、証明書ファイル、ビルド済みバイナリは、Rev.54 時点のマイグレーション対象外とする。</p>
+<p>静的コンテンツ実体、ログファイル、証明書ファイル、ビルド済みバイナリは、Rev.55 時点のマイグレーション対象外とする。</p>
 <h3 id="16.3-schemaversion-固定">16.3 schemaVersion 固定</h3>
 <p>各実行時 JSON ファイルはトップレベルに <code>schemaVersion</code> を持つ。</p>
-<p>Rev.54 時点の <code>schemaVersion</code> は <code>1</code> とする。</p>
+<p>Rev.55 時点の <code>schemaVersion</code> は <code>1</code> とする。</p>
 <p>例：</p>
 <pre><code class="language-json">{
   &quot;schemaVersion&quot;: 1,
@@ -4040,7 +4088,7 @@ asb migrate --storage /var/asb --from-schema 0 --to-schema 1 --apply</code></pre
 <p>ロールバックに失敗した場合は、標準エラー、エラーログ、<code>config/migrations.json</code> に <code>failed</code> として記録する。</p>
 <p>ロールバック失敗時に成功扱いとしてはならない。</p>
 <h3 id="16.8-禁止事項">16.8 禁止事項</h3>
-<p>Rev.54 時点では以下を禁止する。</p>
+<p>Rev.55 時点では以下を禁止する。</p>
 <ul>
 <li>起動時の自動マイグレーション</li>
 <li>開発リポジトリ内でのマイグレーション作業ファイル作成</li>
@@ -4066,6 +4114,7 @@ asb migrate --storage /var/asb --from-schema 0 --to-schema 1 --apply</code></pre
 17 変更履歴</h2>
 <div class="tbl-wrap"><table>
 <tr><th>バージョン</th><th>日付</th><th>内容</th></tr>
+<tr><td>Rev.55</td><td>2026-09-09</td><td>asb init-runtime、asb start、実行時データ初期化、起動時非生成、Project初期files.json作成境界を実装レベルで整理</td></tr>
 <tr><td>Rev.54</td><td>2026-09-09</td><td>SSLStatusレスポンス、無料独自SSL APIごとの返却条件、SSL操作競合エラーを実装レベルで整理</td></tr>
 <tr><td>Rev.53</td><td>2026-09-09</td><td>無料独自SSL / Let’s Encrypt ACME v2 / HTTP-01の状態、JSON保存スキーマ、証明書取得・更新状態遷移、retry/backoffを実装レベルで整理</td></tr>
 <tr><td>Rev.52</td><td>2026-09-09</td><td>ASB SDKを単一の公式SDK名称として固定し、Browser JavaScript、Deno専用TypeScript、Goを対応実装として整理</td></tr>

@@ -6,7 +6,7 @@
 
 本ファイルは、`ASB-spec.md` に基づいて実装タスクを管理する。
 
-参照仕様バージョン: `ASB-spec.md Rev.54`
+参照仕様バージョン: `ASB-spec.md Rev.55`
 
 `ASB-spec.md` で仕様確定済みの事項のみを実装タスクとして扱う。
 
@@ -110,6 +110,8 @@
 - `internal/config/config.go`、`internal/config/loader.go`、`internal/config/validate.go` を実装する。
 - `internal/server/router.go`、`internal/server/response.go`、`internal/server/middleware.go` を実装する。
 - `internal/data/json_repository.go` を実装する。
+- `asb init-runtime` コマンドを実装する。
+- `asb start` コマンドを実装し、起動時に不足ディレクトリ、JSON、証明書、ログ、一時ファイルを作成しないことを保証する。
 - `server.port`、`server.host`、`server.tlsCertFile`、`server.tlsKeyFile`、`server.shutdownTimeout`、`storage.basePath`、`storage.maxProjectSize`、`ssl.email`、`ssl.renewBefore`、`ssl.renewCheckInterval`、`log.level`、`log.format`、`log.maxSize` の起動時バリデーションを実装する。
 - 任意設定項目の未指定時、親 object 未指定時、空文字、型不一致、数値の小数・指数表記・負数・`null` 拒否を仕様通り実装する。
 - `storage.basePath` と `deploy.sourcePath` の絶対パス正規化、開発リポジトリ配下判定、Git worktree 判定を実装する。
@@ -117,6 +119,16 @@
 - 起動時に設定済み実行時データ領域の存在確認と権限検証を実装する。
 - 起動時に実行時データ用のディレクトリまたはファイルを自動生成しない。
 - 開発リポジトリを実行時データ保存先として扱わない。
+- `asb init-runtime` は `storage.basePath` が開発リポジトリ配下の場合に初期化を開始せず `ERR_STORAGE_VALIDATION_FAILED` で失敗する。
+- `asb init-runtime` は作成予定パスがすべて `storage.basePath` 配下に収まることを検証する。
+- `asb init-runtime` は `storage.basePath/`、`config/`、`storage/`、`storage/projects/`、`logs/`、`certs/` を仕様順序で作成または検証する。
+- `asb init-runtime` は `config/projects.json`、`config/domains.json`、`config/backups.json`、`config/webhooks.json`、`config/acme_accounts.json`、`config/acme_orders.json`、`config/acme_authorizations.json`、`config/acme_challenges.json`、`config/acme_renewals.json` を空状態で作成する。
+- `asb init-runtime` は `storage/projects/:projectId/files.json` を作成しない。
+- `asb init-runtime` は既存 JSON が妥当な場合は変更せず、既存 JSON が不正な場合は自動修復または上書きを行わない。
+- `asb init-runtime` は既存ファイルまたはディレクトリを上書き、削除、移動、truncate しない。
+- `asb init-runtime` は必須 JSON を同一ディレクトリ内の一時ファイル、`fsync`、atomic rename で作成する。
+- `asb init-runtime` 成功時は stdout へ `ASB_RUNTIME_INITIALIZED storageBasePath="..."` を単一行出力し、終了コード `0` とする。
+- `asb init-runtime` 失敗時は stderr へ `ASB_RUNTIME_INIT_ERROR code=... message="..."` を単一行出力し、終了コード `1` とする。
 - `storage.basePath` 配下の `config/`、`storage/`、`storage/projects/`、`logs/`、`certs/` の順序付き存在検証を実装する。
 - `config/projects.json`、`config/domains.json`、`config/backups.json`、`config/webhooks.json`、各 Project の `storage/projects/:projectId/files.json` の順序付き起動時存在検証を実装する。
 - 必須 JSON ファイルの構文検証、必須フィールド検証、未知フィールド拒否を実装する。
@@ -145,7 +157,7 @@
 - `204 No Content` を使用しない。
 - 配列レスポンスは対象データが空でも空配列を返す。
 - URL パラメータ `:id`、`:domain`、`:name` の URL decode、正規化、バリデーションを実装する。
-- `:id` は Rev.54 の UUID 正規表現に一致する値のみ許可する。
+- `:id` は Rev.55 の UUID 正規表現に一致する値のみ許可する。
 - `:domain` は小文字正規化後、label数、全体長、label正規表現、末尾 `.` 除去を仕様通り検証する。
 - `:name` は長さ、NUL、パス区切り、`.`、`..`、先頭 `.`、空白のみを仕様通り拒否する。
 - JSON ファイル更新時の読み込み検証、保存前再検証、同一ファイル排他書き込みを実装する。
@@ -161,15 +173,17 @@
 - 複数JSON更新の途中失敗時に更新済みJSON名、未更新JSON名、操作名、requestId をエラーログへ記録する。
 - 複数ファイル更新の途中失敗時に、更新予定JSON、更新済みJSON、`files.json` path、実ファイル、`projects.used` の整合性検証を実装する。
 - 整合性検証失敗時は `ERR_STORAGE_VALIDATION_FAILED` を error log へ記録する。
-- Rev.54 時点では複数JSON更新に外部トランザクション機構を導入しない。
-- Rev.54 時点の API エンドポイント固定表に記載されたメソッド、パス、成功ステータス、失敗コードを実装する。
-- Rev.54 API 成功レスポンス固定表に記載された JSON キーと型を実装する。
+- Rev.55 時点では複数JSON更新に外部トランザクション機構を導入しない。
+- Rev.55 時点の API エンドポイント固定表に記載されたメソッド、パス、成功ステータス、失敗コードを実装する。
+- Rev.55 API 成功レスポンス固定表に記載された JSON キーと型を実装する。
 - プロジェクト作成 API `POST /api/projects` を実装する。
 - プロジェクト一覧 API `GET /api/projects` を実装する。
 - プロジェクト削除 API `DELETE /api/projects/:id` を実装する。
 - プロジェクト名、quota、ID、作成日時のバリデーションを実装する。
 - `config/projects.json` によるプロジェクト情報の永続化を実装する。
 - `config/projects.json` の `projects[]` スキーマ、`createdAt` 昇順、同一時刻時 `id` 昇順を実装する。
+- Project 作成 API は `storage/projects/{projectId}/`、`storage/projects/{projectId}/contents/`、`storage/projects/{projectId}/files.json` を作成する。
+- Project 作成 API は既存 Project ディレクトリまたは `files.json` が存在する場合、上書きせず `ERR_STORAGE_VALIDATION_FAILED` で失敗する。
 - Project削除処理順序を Project検証、関連Domain列挙、関連Backup列挙、`files.json`検証、`contents/`削除、`files.json`削除、`domains.json`更新、`backups.json`更新、`projects.json`更新、成功応答の順に固定して実装する。
 - Project削除を best effort 成功扱いにしない。
 - プロジェクト名重複を `ERR_PROJECT_ALREADY_EXISTS` として扱う。
@@ -179,6 +193,12 @@
 ### 完了条件
 
 - 起動時検証順序、終了コード、stderr 形式のテストが成功する。
+- `asb init-runtime` の作成順序、空 JSON、stdout、終了コードのテストが成功する。
+- `asb init-runtime` が既存妥当 JSON を変更しないテストが成功する。
+- `asb init-runtime` が既存不正 JSON を修復または上書きしないテストが成功する。
+- `asb init-runtime` が開発リポジトリ配下に実行時データを作成しないテストが成功する。
+- `asb start` が不足ディレクトリまたは不足 JSON を自動生成せず起動失敗するテストが成功する。
+- Project 作成 API が Project ディレクトリ、`contents/`、`files.json` を作成し、既存ファイルを上書きしないテストが成功する。
 - 全API成功レスポンスの固定JSONキー検証テストが成功する。
 - 全APIエラーレスポンスの固定JSONキー検証テストが成功する。
 - 保存JSONの未知フィールド拒否、相対パス保存、ソート順検証テストが成功する。
@@ -245,7 +265,7 @@
 - `Last-Modified` を HTTP-date 形式で返す。
 - `Cache-Control` を既定で `public, max-age=60` とする。
 - `If-None-Match` と `If-Modified-Since` による `304 Not Modified` を実装する。
-- Range request は Rev.54 時点では実装せず、`Range` ヘッダーを無視して `206 Partial Content` を返さない。
+- Range request は Rev.55 時点では実装せず、`Range` ヘッダーを無視して `206 Partial Content` を返さない。
 - `Accept-Encoding: br` では Brotli 応答を返さない。
 - Brotli 用の `.br`、キャッシュ、一時ファイル、メタデータを開発リポジトリ内にも `storage.basePath` 配下にも生成しない。
 - 静的配信でディレクトリ一覧を返さない。
@@ -353,6 +373,7 @@
 - 証明書ファイルを `storage.basePath/certs/{domain}/fullchain.pem` と `storage.basePath/certs/{domain}/privkey.pem` に保存する。
 - 証明書本文と秘密鍵本文の対応確認、有効期限確認を Go 標準ライブラリ `crypto/x509`、`encoding/pem`、`crypto/tls` で実装する。
 - ACME 内部状態を `storage.basePath` 配下の `config/acme_accounts.json`、`config/acme_orders.json`、`config/acme_authorizations.json`、`config/acme_challenges.json`、`config/acme_renewals.json` に保存する。
+- 無料独自SSL有効化 API は ACME JSON ファイルを初回作成せず、既存ACME JSONの構文、`schemaVersion: 1`、必須トップレベルキー、未知フィールド不在を検証した後に更新する。
 - `config/acme_accounts.json` の `schemaVersion`、`accounts` と account の `id`、`ca`、`directoryUrl`、`accountUrl`、`email`、`privateKeyPem`、`status`、`createdAt`、`updatedAt` を実装する。
 - `config/acme_orders.json` の `schemaVersion`、`orders` と order の `id`、`domain`、`accountId`、`orderUrl`、`finalizeUrl`、`certificateUrl`、`status`、`expiresAt`、`createdAt`、`updatedAt` を実装する。
 - `config/acme_authorizations.json` の `schemaVersion`、`authorizations` と authorization の `id`、`orderId`、`domain`、`authorizationUrl`、`status`、`expiresAt`、`createdAt`、`updatedAt` を実装する。
@@ -378,6 +399,7 @@
 - 無料独自SSL 更新 API の競合状態で `409 Conflict` と `ERR_SSL_OPERATION_CONFLICT` が返る。
 - Let’s Encrypt ACME v2 のHTTP-01 challengeフローをテスト用ACMEサーバーまたはモックで検証する。
 - ACME account、order、authorization、challenge、renewal の JSON 保存スキーマが仕様通りである。
+- 無料独自SSL有効化 API が ACME JSON ファイルを初回作成しないことを確認する。
 - 新規取得、更新、失敗、backoff、期限切れの状態遷移が仕様通りである。
 - `nextRetryAt` より前に自動更新が再実行されない。
 - HTTP-01 challenge token が通常静的ファイル配信へ fallback しない。
@@ -491,7 +513,7 @@
 - バックアップ作成用一時tarを `storage.basePath/backups/.tmp/` 配下に限定する。
 - atomic rename 後に履歴保存へ失敗した場合は、作成済みtar.gzを削除する。
 - バックアップ保存先を別障害領域へ複製する作業をASB外の運用責務として扱う。
-- 外部ストレージ連携を Rev.54 時点では実装対象外として扱う。
+- 外部ストレージ連携を Rev.55 時点では実装対象外として扱う。
 - Backup復旧前退避先を `storage.basePath/backups/restore-staging/{restoreId}/previous/` に固定する。
 - Backup復旧用展開先を `storage.basePath/backups/restore-staging/{restoreId}/next/` に固定する。
 - Backup履歴の `status` が `completed` でない場合は復旧を拒否する。
@@ -752,7 +774,7 @@
 - 認証 UI、ユーザー管理 UI、テナント管理 UI、課金 UI、契約管理 UI、FTP / FTPS / SFTP UI、クラウドサービス管理 UI、ウイルススキャン UI を実装しない。
 - ブラウザストレージ、cookie、Service Worker、Cache Storage、IndexedDB を永続状態として使用しない。
 - `package.json`、`node_modules/`、`deno.json`、`deno.lock`、`dist/`、`build/`、一時ファイル、ログファイル、ビルド成果物を生成しない。
-- Rev.54 時点では、ASB 標準Web UIに認証 UI を実装しない。
+- Rev.55 時点では、ASB 標準Web UIに認証 UI を実装しない。
 - 外部ネットワークから利用可能にする場合は、VPN、SSH tunnel、reverse proxy、ファイアウォール、IP制限等のASB外部の運用境界で保護する。
 - 外部開発者の独自Web UIまたは独自フロントエンドは、公式 ASB 標準Web UI の実装タスクとして扱わない。
 
@@ -787,18 +809,18 @@
 
 優先度: 低
 
-目的: Rev.54 時点で実装対象外の機能が混入していないことを確認する。
+目的: Rev.55 時点で実装対象外の機能が混入していないことを確認する。
 
 ### 実装タスク
 
-- 未確定のASB互換目標を将来の到達目標として扱い、Rev.54 時点の実装対象として扱わない。
+- 未確定のASB互換目標を将来の到達目標として扱い、Rev.55 時点の実装対象として扱わない。
 - `internal/asb_forbidden_test.go` を作成する。
 - XServer Static互換機能セットの実装対象が、静的配信、独自ドメイン、無料独自SSL、GitHub Webhookデプロイ、HTTPS JSON APIによるファイル管理、ログ・状態確認、バックアップ・復旧に限定されていることを確認する。
 - XServer Static互換機能セットを理由に、XServer Static完全互換、管理画面再現、内部実装再現、DNS管理、DNS provider API、DNS-01、wildcard、複数CA、CDN完全互換、課金・契約・アカウント管理、クラウドサービス化、ウイルススキャンを追加しない。
 - ASB互換目標に含まれることを、未確定機能の実装根拠として扱わない。
 - ASB互換目標を理由に `.gitignore`、外部DB、未承認外部ライブラリ、未承認外部サービス連携、開発リポジトリ内実行時データ、起動時自動生成、ビルド成果物自動生成を追加しない。
 - ASB互換目標を理由に APIキー管理、ユーザー認証、Rate limiting、Brotli圧縮、CA選定、SDK専用通信を実装しない。
-- 将来計画、保留事項、検討・調査中事項を Rev.54 時点の実装対象として扱わない。
+- 将来計画、保留事項、検討・調査中事項を Rev.55 時点の実装対象として扱わない。
 - GUIという曖昧カテゴリ、ASB本体へのWeb UI内包、デスクトップアプリ、モバイルアプリ、ユーザー管理、マルチテナント、課金管理、契約管理、複数インスタンス管理、クラスタ管理、分散ロック、NFS専用連携、分散ストレージ専用連携、外部ストレージサービス連携、ログファイル暗号化、HTTP/2実装詳細、FTP、FTPS、SFTPをASB本体に実装しない。
 - 将来計画機能または転送プロトコル互換を理由に ASB本体内包Web UI用API、モバイル専用API、テナント用API、課金用API、契約用API、外部ストレージ用API、ログ暗号化用API、FTP / FTPS / SFTP 用 APIを追加しない。
 - 将来計画機能または転送プロトコル互換を理由に `ui.*`、`webui.*`、`desktop.*`、`mobile.*`、`tenant.*`、`billing.*`、`nfs.*`、`cluster.*`、`distributedStorage.*`、`externalStorage.*`、`logEncryption.*`、`ftp.*`、`ftps.*`、`sftp.*` 設定項目を追加しない。
@@ -840,7 +862,7 @@
 
 ## 17. 実装フェーズ外の仕様未確定タスク
 
-以下は Rev.54 時点では実装フェーズに含めない。
+以下は Rev.55 時点では実装フェーズに含めない。
 
 - ASB SDK の認証仕様、デスクトップアプリ向け利用、モバイルアプリ向け利用を確定する。
 - HTTP/2 実装詳細を実装対象へ昇格する場合の API、設定項目、テスト条件を仕様改訂で確定する。
