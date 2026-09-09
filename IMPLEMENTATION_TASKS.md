@@ -6,7 +6,7 @@
 
 本ファイルは、`ASB-spec.md` に基づいて実装タスクを管理する。
 
-参照仕様バージョン: `ASB-spec.md Rev.88`
+参照仕様バージョン: `ASB-spec.md Rev.89`
 
 `ASB-spec.md` で仕様確定済みの事項のみを実装タスクとして扱う。
 
@@ -28,7 +28,7 @@
 
 フェーズ完了時は、該当フェーズの完了条件をすべて満たし、`go test ./...`、`git diff --check`、`.gitignore` 不在確認、開発リポジトリ内生成物確認、CI 品質ゲート確認を行う。
 
-完了したフェーズは `13. 実装済みフェーズ` へ移動する。
+完了したフェーズは `16. 実装済みフェーズ` へ移動する。
 
 `ASB-spec.md` の仕様改訂によりタスク内容が変わる場合は、本ファイルも正本仕様に合わせて更新する。
 
@@ -37,21 +37,20 @@
 | 優先度 | フェーズ | バージョン | 実装単位 | 状態 |
 |-------|---------|-----------|----------|------|
 | 最高 | P0 | v0.1 | 基盤 | 未着手 |
-| 最高 | P1 | v0.2 | API・JSON・起動検証 | 未着手 |
+| 最高 | P1 | v0.2 | API・JSON・起動検証・単一システム管理者認証 | 未着手 |
 | 高 | P2 | v0.3 | 静的配信・ファイル管理 | 未着手 |
 | 高 | P3 | v0.4 | ドメイン管理・SSL状態基盤 | 未着手 |
-| 高 | P4 | v0.5 | 無料独自SSL / Let’s Encrypt ACME v2 | 未着手 |
-| 高 | P5 | v0.6 | GitHub Webhook デプロイ | 未着手 |
-| 中 | P6 | v0.7 | バックアップ・復旧 | 未着手 |
-| 中 | P7 | v0.8 | ログ・監視 | 未着手 |
+| 高 | P4 | v0.5 | ログ・監視 | 未着手 |
+| 中 | P5 | v0.6 | バックアップ・復旧 | 未着手 |
+| 高 | P6 | v0.7 | GitHub Webhook デプロイ | 未着手 |
+| 高 | P7 | v0.8 | 無料独自SSL / Let’s Encrypt ACME v2 | 未着手 |
 | 中 | P8 | v0.9 | マイグレーション | 未着手 |
 | 低 | P9 | v0.10 | 配布・install/update | 未着手 |
 | 低 | P10 | v0.11 | ASB SDK | 未着手 |
 | 低 | P11 | v0.12 | ASB 標準Web UI | 未着手 |
 | 低 | P12 | v0.13 | 禁止機能・非実装確認 | 未着手 |
-| 高 | P13 | v0.14 | 単一システム管理者認証 | 未着手 |
 
-### 2.1 Rev.88 実装開始ゲート
+### 2.1 Rev.89 実装開始ゲート
 
 実装フェーズへ着手する前に、以下を満たす。
 
@@ -64,7 +63,7 @@
 - 開発リポジトリ内に実行時データ、ログ、一時ファイル、cache、coverage output、build output、release artifact、download 済み asset、`dist/`、`.asb/` が存在しない。
 - 仕様不足が見つかった場合は、コードで補完せず `ASB-spec.md` の改訂へ戻す。
 
-### 2.2 Rev.88 共通完了ゲート
+### 2.2 Rev.89 共通完了ゲート
 
 各フェーズは、個別完了条件に加えて以下を満たすまで完了扱いにしない。
 
@@ -213,7 +212,7 @@ P0-4 では `asb start` の実運用起動、起動設定ファイル読み込�
 
 ### 開始条件
 
-- Rev.88 実装開始ゲートを満たしている。
+- Rev.89 実装開始ゲートを満たしている。
 - `go.mod` が未作成である場合、P0で新規作成する。
 - `.github/workflows/` はP0では作成しない。
 - `.gitignore` はP0では作成しない。
@@ -319,11 +318,11 @@ P0-4 では `asb start` の実運用起動、起動設定ファイル読み込�
 - マイグレーション
 - 配布成果物生成
 
-## 4. P1 / v0.2 / API・JSON・起動検証
+## 4. P1 / v0.2 / API・JSON・起動検証・単一システム管理者認証
 
 優先度: 最高
 
-目的: HTTPS JSON API、設定、起動時検証、JSON保存の共通契約を実装する。
+目的: HTTPS JSON API、設定、起動時検証、JSON保存の共通契約、単一システム管理者認証を実装する。
 
 ### 実装タスク
 
@@ -448,11 +447,11 @@ P0-4 では `asb start` の実運用起動、起動設定ファイル読み込�
 - 複数JSON更新の途中失敗時に更新済みJSON名、未更新JSON名、操作名、requestId をエラーログへ記録する。
 - 複数ファイル更新の途中失敗時に、更新予定JSON、更新済みJSON、`files.json` path、実ファイル、`projects.used` の整合性検証を実装する。
 - 整合性検証失敗時は `ERR_STORAGE_VALIDATION_FAILED` を error log へ記録する。
-- Rev.88 時点では複数JSON更新に外部トランザクション機構を導入しない。
-- Rev.88 時点の API エンドポイント固定表に記載されたメソッド、パス、成功ステータス、失敗コードを実装する。
-- Rev.88 API 成功レスポンス固定表に記載された JSON キーと型を実装する。
-- Rev.88 API 個別実装契約に記載された request schema、保存先、更新順序、audit 対象を実装する。
-- Rev.88 API 別失敗条件固定表に記載された失敗条件、HTTP status、error code を実装する。
+- Rev.89 時点では複数JSON更新に外部トランザクション機構を導入しない。
+- Rev.89 時点の API エンドポイント固定表に記載されたメソッド、パス、成功ステータス、失敗コードを実装する。
+- Rev.89 API 成功レスポンス固定表に記載された JSON キーと型を実装する。
+- Rev.89 API 個別実装契約に記載された request schema、保存先、更新順序、audit 対象を実装する。
+- Rev.89 API 別失敗条件固定表に記載された失敗条件、HTTP status、error code を実装する。
 - HTTP status / error code 選択優先順位を共通 middleware または handler 境界で統一する。
 - 保存 JSON の field 固定表に従い、Project、Domain、File、Backup、WebhookEvent の型、必須、default、validation、object key 出力順序を実装する。
 - プロジェクト作成 API `POST /api/projects` を実装する。
@@ -468,6 +467,55 @@ P0-4 では `asb start` の実運用起動、起動設定ファイル読み込�
 - プロジェクト名重複を `ERR_PROJECT_ALREADY_EXISTS` として扱う。
 - 存在しないプロジェクト参照を `ERR_PROJECT_NOT_FOUND` として扱う。
 - `internal/config/loader_test.go`、`internal/config/validate_test.go`、`internal/server/response_test.go`、`internal/data/json_repository_test.go` を作成する。
+
+### 単一システム管理者認証タスク
+
+以下をP1の実装タスクとして扱う。
+
+- `internal/system/auth.go` を作成し、単一システム管理者認証、パスワード検証、パスワード変更、ハッシュ処理を実装する。
+- `internal/system/auth_test.go` を作成する。
+- `config/auth.json` の `schemaVersion`、`admin.passwordHash`、`admin.passwordSalt`、`admin.passwordChanged`、`admin.updatedAt` を実装する。
+- `config/auth.json` の空状態を `{"schemaVersion":1,"admin":{"passwordHash":"","passwordSalt":"","passwordChanged":false,"updatedAt":""}}` に固定する。
+- 初期デフォルトパスワードを `asb-admin-change-me` として扱う。
+- 初期デフォルトパスワードが未変更の場合、`POST /api/auth/change-password` 以外の管理 API を `403 Forbidden`、`ERR_AUTH_PASSWORD_CHANGE_REQUIRED` で拒否する。
+- `POST /api/auth/change-password` を実装する。
+- 管理者パスワード変更 API は `currentPassword` と `newPassword` を受け取り、現在パスワード照合後に `config/auth.json` を atomic rename で更新する。
+- `newPassword` は12文字以上128文字以下、初期デフォルトパスワード不一致、NUL文字および制御文字なし、先頭末尾空白なしを検証する。
+- `POST /api/auth/change-password` を除く管理 API に `X-ASB-Admin-Password` ヘッダー検証 middleware を適用する。
+- `X-ASB-Admin-Password` が未指定、空文字、不一致の場合は `401 Unauthorized`、`ERR_AUTH_FAILED` を返す。
+- `POST /api/webhook/github` には `X-ASB-Admin-Password` を要求せず、GitHub Webhook 署名検証のみを認証境界とする。
+- 静的コンテンツ配信、ACME HTTP-01 challenge 応答、ヘルスチェックには `X-ASB-Admin-Password` を要求しない。
+- パスワードハッシュは Go 標準ライブラリのみで実装する。
+- PBKDF2-HMAC-SHA256 相当処理を `crypto/hmac`、`crypto/sha256`、`crypto/rand`、`crypto/subtle`、`encoding/base64` で内製実装する。
+- salt は32 bytes、hash は32 bytes、iteration は210000回とする。
+- `passwordHash` と `passwordSalt` は `base64.RawURLEncoding` で保存する。
+- パスワード照合は `crypto/subtle.ConstantTimeCompare` で行う。
+- 平文パスワードを JSON、ログ、標準出力、標準エラー、エラーレスポンスへ保存または出力しない。
+- APIキー、複数ユーザー、ロール、権限分離、組織、チーム、テナント、セッション、JWT、OAuth/OIDC、Basic認証、Bearer token、cookie認証を実装しない。
+- `Authorization` ヘッダーまたは `X-API-Key` ヘッダーを認証判断に使用しない。
+
+以下をP1の完了条件として扱う。
+
+- `config/auth.json` の空状態、読み込み、未知フィールド拒否、atomic save のテストが成功する。
+- 初期デフォルトパスワードで管理者パスワード変更 API のみ実行できるテストが成功する。
+- `X-ASB-Admin-Password` 未指定、空文字、不一致で `ERR_AUTH_FAILED` を返すテストが成功する。
+- 管理者パスワード変更 API が `X-ASB-Admin-Password` ヘッダーを要求せず、`currentPassword` を認証入力として扱うテストが成功する。
+- 管理者パスワード変更後、変更後パスワードのみが有効になるテストが成功する。
+- Webhook、静的配信、ACME HTTP-01 challenge、ヘルスチェックが管理者パスワードを要求しないテストが成功する。
+- 平文パスワードが JSON、ログ、標準出力、標準エラー、エラーレスポンスへ出力されないことを確認する。
+- APIキー、複数ユーザー、ロール、セッション、token、cookie 認証の実装が追加されていないことを確認する。
+- `go test ./...` が成功する。
+- `.gitignore` が存在しない。
+- 開発リポジトリ内に実行時データ、ログ、一時ファイル、ビルド成果物が残っていない。
+
+以下はP1では実装しない。
+
+- 複数ユーザー管理
+- ユーザー別権限管理
+- APIキー管理
+- セッション管理
+- JWT / OAuth / OIDC / Basic / Bearer token / cookie 認証
+- SDK 認証拡張仕様
 
 ### 完了条件
 
@@ -595,7 +643,7 @@ P0-4 では `asb start` の実運用起動、起動設定ファイル読み込�
 - `Cache-Control` を既定で `public, max-age=60` とする。
 - `If-None-Match` と `If-Modified-Since` による `304 Not Modified` を実装し、両方が存在する場合は `If-None-Match` を優先する。
 - `304 Not Modified` では `Content-Type`、`ETag`、`Last-Modified`、`Cache-Control` を返し、`Content-Encoding` を返さない。
-- Range request は Rev.88 時点では実装せず、`Range` ヘッダーを無視して `206 Partial Content` を返さない。
+- Range request は Rev.89 時点では実装せず、`Range` ヘッダーを無視して `206 Partial Content` を返さない。
 - `Accept-Encoding: br` では Brotli 応答を返さない。
 - Brotli 用の `.br`、キャッシュ、一時ファイル、メタデータを開発リポジトリ内にも `storage.basePath` 配下にも生成しない。
 - 静的配信でディレクトリ一覧を返さない。
@@ -689,233 +737,7 @@ P0-4 では `asb start` の実運用起動、起動設定ファイル読み込�
 - CA 選定
 - CA failover
 
-## 7. P4 / v0.5 / 無料独自SSL / Let’s Encrypt ACME v2
-
-優先度: 高
-
-目的: XServer Static互換目標の無料独自SSLを、Let’s Encrypt ACME v2 と HTTP-01 に限定して実装する。
-
-### 実装タスク
-
-- 無料独自SSLを実装する。
-- 無料独自SSL 有効化 API `POST /api/projects/:id/domains/:domain/ssl/enable` を実装する。
-- 無料独自SSL 状態確認 API `GET /api/projects/:id/domains/:domain/ssl` を実装する。
-- 無料独自SSL 更新 API `POST /api/projects/:id/domains/:domain/ssl/renew` を実装する。
-- 無料独自SSL 無効化 API `POST /api/projects/:id/domains/:domain/ssl/disable` を実装する。
-- 無料独自SSL API の成功レスポンスを SSLStatus object に統一する。
-- SSLStatus object の `domain`、`projectId`、`status`、`enabled`、`issuer`、`challenge`、`certificatePath`、`privateKeyPath`、`expiresAt`、`renewAfter`、`nextRetryAt`、`lastErrorCode`、`lastErrorMessage`、`updatedAt` を実装する。
-- SSLStatus object に仕様外キーを含めない。
-- SSLStatus の `issuer` は `LetsEncrypt`、`challenge` は `http-01` に固定する。
-- SSLStatus の `status` ごとに、証明書パス、有効期限、更新予定、次回再試行時刻、失敗理由の空文字条件を仕様通りに実装する。
-- `renewAfter` を `expiresAt - ssl.renewBefore` で算出する。
-- 無料独自SSL 更新 API は対象 Domain が `disabled`、`pending`、`challenge_ready`、`renewing` の場合に `409 Conflict` と `ERR_SSL_OPERATION_CONFLICT` を返す。
-- 無料独自SSLの有効化、無効化、状態確認、証明書取得、証明書自動更新を実装する。
-- Domain 単位の無料独自SSL状態 `disabled`、`pending`、`challenge_ready`、`issued`、`renewing`、`failed`、`expired` を実装する。
-- 有効化 API は対象 Domain が `disabled` または `failed` の場合のみ新規 ACME order を作成する。
-- 有効化 API は対象 Domain が `pending`、`challenge_ready`、`issued`、`renewing` の場合に重複 ACME order を作成せず既存状態を返す。
-- 無効化 API は無料独自SSL状態を `disabled` に変更し、既存証明書ファイルを即時削除しない。
-- Let’s Encrypt ACME v2 client を実装する。
-- ACME account 登録、account key 生成・保存、directory 取得、nonce 管理、order 作成、authorization 取得、HTTP-01 challenge 応答、finalize、certificate download を実装する。
-- 無料独自SSL enable、renew、disable、ACME 更新処理のみが、仕様定義済み ACME JSON、証明書ファイル、秘密鍵ファイル、HTTP-01 challenge 応答状態を変更できるようにする。
-- 起動時、Health Check、Monitoring、Domain list、SSL status read は ACME JSON、証明書ファイル、秘密鍵ファイル、challenge file を生成しない。
-- HTTP-01 challenge 応答は、仕様で管理された challenge token のみを返し、開発リポジトリ内または公開 `contents/` 配下へ challenge file を生成しない。
-- DNS-01、TLS-ALPN-01、wildcard、複数CA、DNS provider API を理由に設定、JSON、cache、token、challenge file を生成しない。
-- HTTP-01 challenge 応答を通常の静的ファイル配信より優先する。
-- `/.well-known/acme-challenge/{token}` を ASB の challenge handler で応答する。
-- HTTP-01 challenge handler は token が存在しない場合に通常の静的ファイル探索へ fallback せず `404 Not Found` を返す。
-- ASB 前段にリバースプロキシを置く場合、`/.well-known/acme-challenge/` が ASB へ転送される構成を前提として検証する。
-- HTTP-01 challenge token を `storage.basePath/acme/challenges/{domain}/{token}` に保存し、開発リポジトリ内に生成しない。
-- HTTP-01 challenge token の内容を ACME key authorization 文字列のみにする。
-- authorization が `valid`、`invalid`、`expired` になった場合に HTTP-01 challenge token を削除対象にする。
-- 証明書ファイルを `storage.basePath/certs/{domain}/fullchain.pem` と `storage.basePath/certs/{domain}/privkey.pem` に保存する。
-- 証明書本文と秘密鍵本文の対応確認、有効期限確認を Go 標準ライブラリ `crypto/x509`、`encoding/pem`、`crypto/tls` で実装する。
-- ACME 内部状態を `storage.basePath` 配下の `config/acme_accounts.json`、`config/acme_orders.json`、`config/acme_authorizations.json`、`config/acme_challenges.json`、`config/acme_renewals.json` に保存する。
-- 無料独自SSL有効化 API は ACME JSON ファイルを初回作成せず、既存ACME JSONの構文、`schemaVersion: 1`、必須トップレベルキー、未知フィールド不在を検証した後に更新する。
-- `config/acme_accounts.json` の `schemaVersion`、`accounts` と account の `id`、`ca`、`directoryUrl`、`accountUrl`、`email`、`privateKeyPem`、`status`、`createdAt`、`updatedAt` を実装する。
-- `config/acme_orders.json` の `schemaVersion`、`orders` と order の `id`、`domain`、`accountId`、`orderUrl`、`finalizeUrl`、`certificateUrl`、`status`、`expiresAt`、`createdAt`、`updatedAt` を実装する。
-- `config/acme_authorizations.json` の `schemaVersion`、`authorizations` と authorization の `id`、`orderId`、`domain`、`authorizationUrl`、`status`、`expiresAt`、`createdAt`、`updatedAt` を実装する。
-- `config/acme_challenges.json` の `schemaVersion`、`challenges` と challenge の `id`、`authorizationId`、`domain`、`type`、`challengeUrl`、`token`、`keyAuthorizationPath`、`status`、`createdAt`、`updatedAt` を実装する。
-- `config/acme_renewals.json` の `schemaVersion`、`renewals` と renewal の `id`、`domain`、`kind`、`status`、`attemptCount`、`lastErrorCode`、`lastErrorMessage`、`nextRetryAt`、`notBefore`、`notAfter`、`createdAt`、`updatedAt` を実装する。
-- 無料独自SSLの新規取得状態遷移を `disabled` / `failed` から `pending`、`challenge_ready`、`issued` または `failed` へ進める実装にする。
-- 証明書更新状態遷移を `issued` から `renewing`、`challenge_ready`、`issued`、`expired` へ進める実装にする。
-- 証明書自動更新スケジューラー、`ssl.renewBefore`、`ssl.renewCheckInterval`、retry / backoff、Let’s Encrypt rate limit 配慮を実装する。
-- 証明書自動更新は、証明書有効期限の `ssl.renewBefore` 秒前から対象にする。
-- `ssl.renewBefore` は `86400` 以上 `15552000` 以下の秒数整数のみ許可する。
-- `ssl.renewCheckInterval` は `3600` 以上 `86400` 以下の秒数整数のみ許可する。
-- retry / backoff は Domain 単位で管理し、`attemptCount` に基づき最小 `3600` 秒、最大 `86400` 秒の範囲で `nextRetryAt` を決定する。
-- `nextRetryAt` より前に同一 Domain の自動更新を再実行しない。
-- 複数 CA、CA 選定、CA failover、任意 ACME directory URL を実装しない。
-- DNS-01 challenge、TLS-ALPN-01 challenge、wildcard 証明書、DNS provider API 連携、手動 TXT 登録、EAB、ARI、OCSP stapling を実装しない。
-- `internal/management/acme_test.go`、`internal/management/ssl_acme_test.go` を作成する。
-
-### 完了条件
-
-- 無料独自SSLの有効化、無効化、状態確認、証明書取得、証明書自動更新のテストが成功する。
-- 無料独自SSL 有効化、状態確認、更新、無効化 API が SSLStatus object を仕様通り返す。
-- SSLStatus の状態別空文字条件、`enabled`、`issuer`、`challenge`、`renewAfter`、`nextRetryAt`、`lastErrorCode` が仕様通りである。
-- 無料独自SSL 更新 API の競合状態で `409 Conflict` と `ERR_SSL_OPERATION_CONFLICT` が返る。
-- Let’s Encrypt ACME v2 のHTTP-01 challengeフローをテスト用ACMEサーバーまたはモックで検証する。
-- ACME account、order、authorization、challenge、renewal の JSON 保存スキーマが仕様通りである。
-- 無料独自SSL有効化 API が ACME JSON ファイルを初回作成しないことを確認する。
-- 新規取得、更新、失敗、backoff、期限切れの状態遷移が仕様通りである。
-- `nextRetryAt` より前に自動更新が再実行されない。
-- HTTP-01 challenge token が通常静的ファイル配信へ fallback しない。
-- 既存有効証明書が更新失敗で削除されない。
-- DNS-01、TLS-ALPN-01、wildcard、DNS provider API、複数CA、CA選定、CA failoverが実装されていないことを確認する。
-- `go test ./...` が成功する。
-- `.gitignore` が存在しない。
-
-### 非対象
-
-- DNS-01 challenge
-- TLS-ALPN-01 challenge
-- wildcard 証明書
-- DNS provider API 連携
-- 複数 CA
-- CA 選定
-- CA failover
-
-## 8. P5 / v0.6 / GitHub Webhook デプロイ
-
-優先度: 高
-
-目的: ローカルcheckoutを唯一のデプロイ元とする GitHub Push Webhook デプロイを実装する。
-
-### 実装タスク
-
-- GitHub Webhook API `POST /api/webhook/github` を実装する。
-- `internal/delivery/webhook.go` を実装する。
-- GitHub Push イベントの検出を実装する。
-- `X-GitHub-Event` が `push` 以外の場合は `200 OK` と `{"status":"ignored"}` を返す。
-- 対象ブランチ設定と対象外ブランチの成功扱い無視を実装する。
-- 対象外ブランチの場合は `200 OK` と `{"status":"ignored"}` を返す。
-- 同一冪等キー受信時は `200 OK` と `{"status":"duplicate"}` を返す。
-- `webhook.githubSecret` 未設定時はWebhook署名検証を行わない。
-- `webhook.githubSecret` 設定時は `X-Hub-Signature-256` を必須にする。
-- Webhook署名をGo標準ライブラリ `crypto/hmac` と `crypto/sha256` で検証する。
-- Webhook署名比較を `hmac.Equal` で実装する。
-- Webhook署名検証はJSON decode前のリクエストBody生バイト列に対して実行する。
-- 署名なし、不正形式、不一致を `401 Unauthorized` と `ERR_WEBHOOK_SIGNATURE_INVALID` で拒否する。
-- 署名検証失敗、payload形式不正、対象外event、対象外branchでは `config/webhooks.json` に冪等履歴を追加しない。
-- GitHub Push payload の `repository.clone_url`、`repository.ssh_url`、`repository.html_url` をデプロイ元に使わない。
-- GitHub Push payload の `ref`、`after`、`repository` object 必須検証を実装する。
-- `ref` は `refs/heads/{branch}` のみ処理し、それ以外は `ignored` とする。
-- `ref` から抽出した branch と `deploy.branch` の完全一致判定を実装する。
-- `deploy.projectId` をWebhookデプロイ先Projectとして扱う。
-- `deploy.projectId` 未設定時は `ERR_WEBHOOK_PROJECT_NOT_CONFIGURED` を返す。
-- `deploy.sourcePath` のローカルcheckoutを唯一のデプロイ元として扱う。
-- Webhook処理時にネットワーク越しのGit clone、fetch、pullを行わない。
-- `deploy.sourcePath` は既存 checkout を読むのみとし、ASB は checkout、clone、pull、build、package install、dependency install、cache 生成を行わない。
-- `deploy.sourcePath` の存在、Git worktree、`after` commit 参照可否を検証する。
-- `deploy.sourcePath` 不正時は `ERR_WEBHOOK_SOURCE_INVALID` を返す。
-- 指定ブランチの自動デプロイ処理を実装する。
-- Webhookデプロイ対象から `.git/`、`.github/`、主要仕様・管理ドキュメントを除外する。
-- Webhookデプロイ対象を `after` commit の通常ファイルに限定し、symlink、submodule、directory、Git管理外ファイルを除外する。
-- Webhookデプロイ対象pathの絶対パス、NUL、`\`、`.`、`..`、空白のみセグメント、先頭 `.` セグメントを拒否する。
-- Webhookデプロイ先を対象Projectの `storage/projects/:projectId/contents/` 配下に限定する。
-- Webhookデプロイを一時ディレクトリ作成、静的ファイルコピー、fsync、atomic rename、`files.json`更新、`webhooks.json`保存の順に実装する。
-- Webhook deploy 成功時に変更できる対象を、対象 Project の `contents/`、`files.json`、`projects.json`、`config/webhooks.json`、必要な access log / error log のみに限定する。
-- Webhook deploy 失敗時に deploy state file、retry queue、failed payload dump、checkout cache、build cache、一時ログを開発リポジトリ内または `storage.basePath` 配下へ生成しない。
-- Webhook deploy で一時ファイルが必要な場合は、対象 Project の `contents/` 配下または仕様定義済み staging のみに限定する。
-- Webhookデプロイでは既存 `contents/` を `deploy-staging/{deployId}/previous-contents/` へ退避し、新 `contents/` 公開失敗または `files.json` 更新失敗時に仕様に従って復元する。
-- Webhookデプロイ反映後のファイル集合から `files.json` を再生成する。
-- Webhookデプロイで生成する File object の必須キーを `name`、`path`、`size`、`uploadedAt` に固定し、`path` 昇順で保存する。
-- `deploy-staging/{deployId}/` 削除失敗時は `Operational warning` を記録し、確定済み処理結果を変更しない。
-- デプロイ状態を確認できる管理モデルを実装する。
-- Webhook処理成功・失敗ログを実装する。
-- Webhook 処理の冪等性方針を仕様に従って実装する。
-- `config/webhooks.json` による Webhook 冪等キー履歴保存を実装する。
-- `config/webhooks.json` の `events[]` スキーマ、`status`、`completedAt`、`errorCode`、`receivedAt` 降順、同一時刻時 `key` 昇順を実装する。
-- Webhook失敗時は `failed` と `errorCode` を `config/webhooks.json` に保存する。
-- Webhook失敗時の自動リトライスケジューラーを実装しない。
-- `internal/delivery/webhook_test.go` を作成する。
-
-### 完了条件
-
-- GitHub Push payload の正常系、対象外イベント、対象外ブランチ、重複イベント、署名不正、sourcePath不正のテストが成功する。
-- Webhook処理時にネットワーク越しのGit clone、fetch、pullを行わないテストまたはレビューが完了する。
-- Webhookデプロイ処理順序テストが成功する。
-- Webhook失敗時の自動リトライが存在しないことを確認する。
-- 署名検証前JSON decode禁止、対象外event/branchの冪等履歴非作成、`files.json` 再生成内容とソート順のテストが成功する。
-- `go test ./...` が成功する。
-- `.gitignore` が存在しない。
-
-### 非対象
-
-- GitHub API 連携
-- ネットワーク越しのGit操作
-- 自動リトライスケジューラー
-- Webhookによる GitHub Actions 実行
-
-## 9. P6 / v0.7 / バックアップ・復旧
-
-優先度: 中
-
-目的: JSONファイルベースの実行時データを対象に、tar.gzバックアップと復旧を実装する。
-
-### 実装タスク
-
-- バックアップ一覧 API `GET /api/backups` を実装する。
-- `internal/data/backup.go` を実装する。
-- バックアップ復旧 API `POST /api/backups/restore/:id` を実装する。
-- `config/backups.json` によるバックアップ履歴管理を実装する。
-- `config/backups.json` の `backups[]` スキーマ、`createdAt` 降順、同一時刻時 `id` 昇順を実装する。
-- tar.gz 形式のバックアップ作成を実装する。
-- Backup作成処理順序を Project検証、対象データ読み込み検証、`storage.basePath/backups/` 書き込み検証、tar.gz一時作成、SHA-256計算、atomic rename、`backups.json` へ `status: "completed"` 保存、成功応答の順に固定して実装する。
-- Backup 作成で生成できるファイルを `storage.basePath/backups/.tmp/backup-{backupId}.tar.gz.tmp` と `storage.basePath/backups/backup-{backupId}.tar.gz` のみに限定する。
-- Backup 作成で更新できる JSON を `config/backups.json` のみに限定する。
-- SHA-256 ハッシュによるバックアップ整合性検証を実装する。
-- 復旧前の既存データ退避を実装する。
-- 復旧後の整合性確認を実装する。
-- Backup復旧処理順序を Backup履歴検証、`status: "completed"` 検証、Backupファイル存在検証、SHA-256検証、`previous/` と `next/` 作成、現行データ退避、展開、展開後JSON検証、atomic rename、成功応答の順に固定して実装する。
-- Restore で生成できる directory を `storage.basePath/backups/restore-staging/{restoreId}/previous/` と `storage.basePath/backups/restore-staging/{restoreId}/next/` のみに限定する。
-- Restore で変更できる対象を復旧対象 Project の `files.json`、`contents/`、restore staging、必要な error log のみに限定する。
-- Backup復旧途中失敗時は可能な限り退避領域から復元し、復元失敗時は `ERR_BACKUP_RESTORE_FAILED` を返す。
-- バックアップ保存先を `storage.basePath/backups/` に固定する。
-- バックアップファイル名を `backup-{backupId}.tar.gz` に固定する。
-- `config/backups.json` の `path` を `storage.basePath` からの相対パスとして保存する。
-- `config/backups.json` の `status` を `completed` または `failed` として扱う。
-- バックアップtar.gzには対象Projectの `files.json` と `contents/` のみを含める。
-- バックアップtar.gzに `logs/`、`certs/`、他Projectの `contents/` を含めない。
-- バックアップtar.gzに `config/projects.json`、`config/domains.json`、`config/webhooks.json`、`config/acme_*.json`、`config/migrations.json` を含めない。
-- バックアップtar.gz内の symlink、hardlink、device、FIFO、socket、絶対パス、`..`、NUL、`\` を拒否する。
-- Backup restore 展開時は各tarエントリを展開前に検証し、`next/` 配下外へ出るpathを拒否する。
-- Backup restore 展開後に `next/files.json`、`next/contents/`、実ファイルと `files.json` の整合性を検証する。
-- バックアップ作成用一時tarを `storage.basePath/backups/.tmp/` 配下に限定する。
-- atomic rename 後に履歴保存へ失敗した場合は、作成済みtar.gzを削除する。
-- 作成済みtar.gzの削除に失敗した場合でも、バックアップ作成APIは成功レスポンスを返さない。
-- バックアップ保存先を別障害領域へ複製する作業をASB外の運用責務として扱う。
-- 外部ストレージ連携を Rev.88 時点では実装対象外として扱う。
-- Backup復旧前退避先を `storage.basePath/backups/restore-staging/{restoreId}/previous/` に固定する。
-- Backup復旧用展開先を `storage.basePath/backups/restore-staging/{restoreId}/next/` に固定する。
-- Backup履歴の `status` が `completed` でない場合は復旧を拒否する。
-- 復旧対象Projectが存在しない場合は `ERR_PROJECT_NOT_FOUND` を返す。
-- 同一 `restoreId` の `restore-staging/{restoreId}/` が既に存在する場合は `409 Conflict` と `ERR_BACKUP_RESTORE_CONFLICT` を返す。
-- 復旧対象Projectの現行データ退避に失敗した場合は、復旧処理を開始しない。
-- 復旧途中失敗時は `previous/` から復元する。
-- 復旧処理では `files.json` と `contents/` のみを置換し、Project定義、Domain定義、SSL証明書、ACME状態、Webhook履歴、ログを置換しない。
-- `restore-staging/{restoreId}/` 削除失敗は WARN ログに記録する。
-- 開発リポジトリ内にバックアップ、一時tar、checksum、復旧用一時ファイル、退避データ、展開データを作成しない。
-- Backup / Restore の整合性検証が不整合を自動修復しないことを保証する。
-- `internal/data/backup_test.go` を作成する。
-
-### 完了条件
-
-- Backup作成、Backup復旧、途中失敗、復元失敗、履歴保存失敗のテストが成功する。
-- Project不在、restore staging競合、バックアップ対象外ファイル混入禁止、復旧時の非対象データ非置換のテストが成功する。
-- バックアップtar.gz構成とSHA-256検証テストが成功する。
-- 外部ストレージ連携が存在しないことを確認する。
-- 開発リポジトリ内にバックアップ関連生成物が残っていない。
-- `go test ./...` が成功する。
-- `.gitignore` が存在しない。
-
-### 非対象
-
-- 外部ストレージ連携
-- 別障害領域への自動複製
-- ログファイルと証明書ファイルのバックアップ
-
-## 10. P7 / v0.8 / ログ・監視
+## 7. P4 / v0.5 / ログ・監視
 
 優先度: 中
 
@@ -1015,6 +837,232 @@ P0-4 では `asb start` の実運用起動、起動設定ファイル読み込�
 - ログファイル暗号化
 - 外部監視サービス連携
 - ローテーション済みログAPI
+
+## 8. P5 / v0.6 / バックアップ・復旧
+
+優先度: 中
+
+目的: JSONファイルベースの実行時データを対象に、tar.gzバックアップと復旧を実装する。
+
+### 実装タスク
+
+- バックアップ一覧 API `GET /api/backups` を実装する。
+- `internal/data/backup.go` を実装する。
+- バックアップ復旧 API `POST /api/backups/restore/:id` を実装する。
+- `config/backups.json` によるバックアップ履歴管理を実装する。
+- `config/backups.json` の `backups[]` スキーマ、`createdAt` 降順、同一時刻時 `id` 昇順を実装する。
+- tar.gz 形式のバックアップ作成を実装する。
+- Backup作成処理順序を Project検証、対象データ読み込み検証、`storage.basePath/backups/` 書き込み検証、tar.gz一時作成、SHA-256計算、atomic rename、`backups.json` へ `status: "completed"` 保存、成功応答の順に固定して実装する。
+- Backup 作成で生成できるファイルを `storage.basePath/backups/.tmp/backup-{backupId}.tar.gz.tmp` と `storage.basePath/backups/backup-{backupId}.tar.gz` のみに限定する。
+- Backup 作成で更新できる JSON を `config/backups.json` のみに限定する。
+- SHA-256 ハッシュによるバックアップ整合性検証を実装する。
+- 復旧前の既存データ退避を実装する。
+- 復旧後の整合性確認を実装する。
+- Backup復旧処理順序を Backup履歴検証、`status: "completed"` 検証、Backupファイル存在検証、SHA-256検証、`previous/` と `next/` 作成、現行データ退避、展開、展開後JSON検証、atomic rename、成功応答の順に固定して実装する。
+- Restore で生成できる directory を `storage.basePath/backups/restore-staging/{restoreId}/previous/` と `storage.basePath/backups/restore-staging/{restoreId}/next/` のみに限定する。
+- Restore で変更できる対象を復旧対象 Project の `files.json`、`contents/`、restore staging、必要な error log のみに限定する。
+- Backup復旧途中失敗時は可能な限り退避領域から復元し、復元失敗時は `ERR_BACKUP_RESTORE_FAILED` を返す。
+- バックアップ保存先を `storage.basePath/backups/` に固定する。
+- バックアップファイル名を `backup-{backupId}.tar.gz` に固定する。
+- `config/backups.json` の `path` を `storage.basePath` からの相対パスとして保存する。
+- `config/backups.json` の `status` を `completed` または `failed` として扱う。
+- バックアップtar.gzには対象Projectの `files.json` と `contents/` のみを含める。
+- バックアップtar.gzに `logs/`、`certs/`、他Projectの `contents/` を含めない。
+- バックアップtar.gzに `config/projects.json`、`config/domains.json`、`config/webhooks.json`、`config/acme_*.json`、`config/migrations.json` を含めない。
+- バックアップtar.gz内の symlink、hardlink、device、FIFO、socket、絶対パス、`..`、NUL、`\` を拒否する。
+- Backup restore 展開時は各tarエントリを展開前に検証し、`next/` 配下外へ出るpathを拒否する。
+- Backup restore 展開後に `next/files.json`、`next/contents/`、実ファイルと `files.json` の整合性を検証する。
+- バックアップ作成用一時tarを `storage.basePath/backups/.tmp/` 配下に限定する。
+- atomic rename 後に履歴保存へ失敗した場合は、作成済みtar.gzを削除する。
+- 作成済みtar.gzの削除に失敗した場合でも、バックアップ作成APIは成功レスポンスを返さない。
+- バックアップ保存先を別障害領域へ複製する作業をASB外の運用責務として扱う。
+- 外部ストレージ連携を Rev.89 時点では実装対象外として扱う。
+- Backup復旧前退避先を `storage.basePath/backups/restore-staging/{restoreId}/previous/` に固定する。
+- Backup復旧用展開先を `storage.basePath/backups/restore-staging/{restoreId}/next/` に固定する。
+- Backup履歴の `status` が `completed` でない場合は復旧を拒否する。
+- 復旧対象Projectが存在しない場合は `ERR_PROJECT_NOT_FOUND` を返す。
+- 同一 `restoreId` の `restore-staging/{restoreId}/` が既に存在する場合は `409 Conflict` と `ERR_BACKUP_RESTORE_CONFLICT` を返す。
+- 復旧対象Projectの現行データ退避に失敗した場合は、復旧処理を開始しない。
+- 復旧途中失敗時は `previous/` から復元する。
+- 復旧処理では `files.json` と `contents/` のみを置換し、Project定義、Domain定義、SSL証明書、ACME状態、Webhook履歴、ログを置換しない。
+- `restore-staging/{restoreId}/` 削除失敗は WARN ログに記録する。
+- 開発リポジトリ内にバックアップ、一時tar、checksum、復旧用一時ファイル、退避データ、展開データを作成しない。
+- Backup / Restore の整合性検証が不整合を自動修復しないことを保証する。
+- `internal/data/backup_test.go` を作成する。
+
+### 完了条件
+
+- Backup作成、Backup復旧、途中失敗、復元失敗、履歴保存失敗のテストが成功する。
+- Project不在、restore staging競合、バックアップ対象外ファイル混入禁止、復旧時の非対象データ非置換のテストが成功する。
+- バックアップtar.gz構成とSHA-256検証テストが成功する。
+- 外部ストレージ連携が存在しないことを確認する。
+- 開発リポジトリ内にバックアップ関連生成物が残っていない。
+- `go test ./...` が成功する。
+- `.gitignore` が存在しない。
+
+### 非対象
+
+- 外部ストレージ連携
+- 別障害領域への自動複製
+- ログファイルと証明書ファイルのバックアップ
+
+## 9. P6 / v0.7 / GitHub Webhook デプロイ
+
+優先度: 高
+
+目的: ローカルcheckoutを唯一のデプロイ元とする GitHub Push Webhook デプロイを実装する。
+
+### 実装タスク
+
+- GitHub Webhook API `POST /api/webhook/github` を実装する。
+- `internal/delivery/webhook.go` を実装する。
+- GitHub Push イベントの検出を実装する。
+- `X-GitHub-Event` が `push` 以外の場合は `200 OK` と `{"status":"ignored"}` を返す。
+- 対象ブランチ設定と対象外ブランチの成功扱い無視を実装する。
+- 対象外ブランチの場合は `200 OK` と `{"status":"ignored"}` を返す。
+- 同一冪等キー受信時は `200 OK` と `{"status":"duplicate"}` を返す。
+- `webhook.githubSecret` 未設定時はWebhook署名検証を行わない。
+- `webhook.githubSecret` 設定時は `X-Hub-Signature-256` を必須にする。
+- Webhook署名をGo標準ライブラリ `crypto/hmac` と `crypto/sha256` で検証する。
+- Webhook署名比較を `hmac.Equal` で実装する。
+- Webhook署名検証はJSON decode前のリクエストBody生バイト列に対して実行する。
+- 署名なし、不正形式、不一致を `401 Unauthorized` と `ERR_WEBHOOK_SIGNATURE_INVALID` で拒否する。
+- 署名検証失敗、payload形式不正、対象外event、対象外branchでは `config/webhooks.json` に冪等履歴を追加しない。
+- GitHub Push payload の `repository.clone_url`、`repository.ssh_url`、`repository.html_url` をデプロイ元に使わない。
+- GitHub Push payload の `ref`、`after`、`repository` object 必須検証を実装する。
+- `ref` は `refs/heads/{branch}` のみ処理し、それ以外は `ignored` とする。
+- `ref` から抽出した branch と `deploy.branch` の完全一致判定を実装する。
+- `deploy.projectId` をWebhookデプロイ先Projectとして扱う。
+- `deploy.projectId` 未設定時は `ERR_WEBHOOK_PROJECT_NOT_CONFIGURED` を返す。
+- `deploy.sourcePath` のローカルcheckoutを唯一のデプロイ元として扱う。
+- Webhook処理時にネットワーク越しのGit clone、fetch、pullを行わない。
+- `deploy.sourcePath` は既存 checkout を読むのみとし、ASB は checkout、clone、pull、build、package install、dependency install、cache 生成を行わない。
+- `deploy.sourcePath` の存在、Git worktree、`after` commit 参照可否を検証する。
+- `deploy.sourcePath` 不正時は `ERR_WEBHOOK_SOURCE_INVALID` を返す。
+- 指定ブランチの自動デプロイ処理を実装する。
+- Webhookデプロイ対象から `.git/`、`.github/`、主要仕様・管理ドキュメントを除外する。
+- Webhookデプロイ対象を `after` commit の通常ファイルに限定し、symlink、submodule、directory、Git管理外ファイルを除外する。
+- Webhookデプロイ対象pathの絶対パス、NUL、`\`、`.`、`..`、空白のみセグメント、先頭 `.` セグメントを拒否する。
+- Webhookデプロイ先を対象Projectの `storage/projects/:projectId/contents/` 配下に限定する。
+- Webhookデプロイを一時ディレクトリ作成、静的ファイルコピー、fsync、atomic rename、`files.json`更新、`webhooks.json`保存の順に実装する。
+- Webhook deploy 成功時に変更できる対象を、対象 Project の `contents/`、`files.json`、`projects.json`、`config/webhooks.json`、必要な access log / error log のみに限定する。
+- Webhook deploy 失敗時に deploy state file、retry queue、failed payload dump、checkout cache、build cache、一時ログを開発リポジトリ内または `storage.basePath` 配下へ生成しない。
+- Webhook deploy で一時ファイルが必要な場合は、対象 Project の `contents/` 配下または仕様定義済み staging のみに限定する。
+- Webhookデプロイでは既存 `contents/` を `deploy-staging/{deployId}/previous-contents/` へ退避し、新 `contents/` 公開失敗または `files.json` 更新失敗時に仕様に従って復元する。
+- Webhookデプロイ反映後のファイル集合から `files.json` を再生成する。
+- Webhookデプロイで生成する File object の必須キーを `name`、`path`、`size`、`uploadedAt` に固定し、`path` 昇順で保存する。
+- `deploy-staging/{deployId}/` 削除失敗時は `Operational warning` を記録し、確定済み処理結果を変更しない。
+- デプロイ状態を確認できる管理モデルを実装する。
+- Webhook処理成功・失敗ログを実装する。
+- Webhook 処理の冪等性方針を仕様に従って実装する。
+- `config/webhooks.json` による Webhook 冪等キー履歴保存を実装する。
+- `config/webhooks.json` の `events[]` スキーマ、`status`、`completedAt`、`errorCode`、`receivedAt` 降順、同一時刻時 `key` 昇順を実装する。
+- Webhook失敗時は `failed` と `errorCode` を `config/webhooks.json` に保存する。
+- Webhook失敗時の自動リトライスケジューラーを実装しない。
+- `internal/delivery/webhook_test.go` を作成する。
+
+### 完了条件
+
+- GitHub Push payload の正常系、対象外イベント、対象外ブランチ、重複イベント、署名不正、sourcePath不正のテストが成功する。
+- Webhook処理時にネットワーク越しのGit clone、fetch、pullを行わないテストまたはレビューが完了する。
+- Webhookデプロイ処理順序テストが成功する。
+- Webhook失敗時の自動リトライが存在しないことを確認する。
+- 署名検証前JSON decode禁止、対象外event/branchの冪等履歴非作成、`files.json` 再生成内容とソート順のテストが成功する。
+- `go test ./...` が成功する。
+- `.gitignore` が存在しない。
+
+### 非対象
+
+- GitHub API 連携
+- ネットワーク越しのGit操作
+- 自動リトライスケジューラー
+- Webhookによる GitHub Actions 実行
+
+## 10. P7 / v0.8 / 無料独自SSL / Let’s Encrypt ACME v2
+
+優先度: 高
+
+目的: XServer Static互換目標の無料独自SSLを、Let’s Encrypt ACME v2 と HTTP-01 に限定して実装する。
+
+### 実装タスク
+
+- 無料独自SSLを実装する。
+- 無料独自SSL 有効化 API `POST /api/projects/:id/domains/:domain/ssl/enable` を実装する。
+- 無料独自SSL 状態確認 API `GET /api/projects/:id/domains/:domain/ssl` を実装する。
+- 無料独自SSL 更新 API `POST /api/projects/:id/domains/:domain/ssl/renew` を実装する。
+- 無料独自SSL 無効化 API `POST /api/projects/:id/domains/:domain/ssl/disable` を実装する。
+- 無料独自SSL API の成功レスポンスを SSLStatus object に統一する。
+- SSLStatus object の `domain`、`projectId`、`status`、`enabled`、`issuer`、`challenge`、`certificatePath`、`privateKeyPath`、`expiresAt`、`renewAfter`、`nextRetryAt`、`lastErrorCode`、`lastErrorMessage`、`updatedAt` を実装する。
+- SSLStatus object に仕様外キーを含めない。
+- SSLStatus の `issuer` は `LetsEncrypt`、`challenge` は `http-01` に固定する。
+- SSLStatus の `status` ごとに、証明書パス、有効期限、更新予定、次回再試行時刻、失敗理由の空文字条件を仕様通りに実装する。
+- `renewAfter` を `expiresAt - ssl.renewBefore` で算出する。
+- 無料独自SSL 更新 API は対象 Domain が `disabled`、`pending`、`challenge_ready`、`renewing` の場合に `409 Conflict` と `ERR_SSL_OPERATION_CONFLICT` を返す。
+- 無料独自SSLの有効化、無効化、状態確認、証明書取得、証明書自動更新を実装する。
+- Domain 単位の無料独自SSL状態 `disabled`、`pending`、`challenge_ready`、`issued`、`renewing`、`failed`、`expired` を実装する。
+- 有効化 API は対象 Domain が `disabled` または `failed` の場合のみ新規 ACME order を作成する。
+- 有効化 API は対象 Domain が `pending`、`challenge_ready`、`issued`、`renewing` の場合に重複 ACME order を作成せず既存状態を返す。
+- 無効化 API は無料独自SSL状態を `disabled` に変更し、既存証明書ファイルを即時削除しない。
+- Let’s Encrypt ACME v2 client を実装する。
+- ACME account 登録、account key 生成・保存、directory 取得、nonce 管理、order 作成、authorization 取得、HTTP-01 challenge 応答、finalize、certificate download を実装する。
+- 無料独自SSL enable、renew、disable、ACME 更新処理のみが、仕様定義済み ACME JSON、証明書ファイル、秘密鍵ファイル、HTTP-01 challenge 応答状態を変更できるようにする。
+- 起動時、Health Check、Monitoring、Domain list、SSL status read は ACME JSON、証明書ファイル、秘密鍵ファイル、challenge file を生成しない。
+- HTTP-01 challenge 応答は、仕様で管理された challenge token のみを返し、開発リポジトリ内または公開 `contents/` 配下へ challenge file を生成しない。
+- DNS-01、TLS-ALPN-01、wildcard、複数CA、DNS provider API を理由に設定、JSON、cache、token、challenge file を生成しない。
+- HTTP-01 challenge 応答を通常の静的ファイル配信より優先する。
+- `/.well-known/acme-challenge/{token}` を ASB の challenge handler で応答する。
+- HTTP-01 challenge handler は token が存在しない場合に通常の静的ファイル探索へ fallback せず `404 Not Found` を返す。
+- ASB 前段にリバースプロキシを置く場合、`/.well-known/acme-challenge/` が ASB へ転送される構成を前提として検証する。
+- HTTP-01 challenge token を `storage.basePath/acme/challenges/{domain}/{token}` に保存し、開発リポジトリ内に生成しない。
+- HTTP-01 challenge token の内容を ACME key authorization 文字列のみにする。
+- authorization が `valid`、`invalid`、`expired` になった場合に HTTP-01 challenge token を削除対象にする。
+- 証明書ファイルを `storage.basePath/certs/{domain}/fullchain.pem` と `storage.basePath/certs/{domain}/privkey.pem` に保存する。
+- 証明書本文と秘密鍵本文の対応確認、有効期限確認を Go 標準ライブラリ `crypto/x509`、`encoding/pem`、`crypto/tls` で実装する。
+- ACME 内部状態を `storage.basePath` 配下の `config/acme_accounts.json`、`config/acme_orders.json`、`config/acme_authorizations.json`、`config/acme_challenges.json`、`config/acme_renewals.json` に保存する。
+- 無料独自SSL有効化 API は ACME JSON ファイルを初回作成せず、既存ACME JSONの構文、`schemaVersion: 1`、必須トップレベルキー、未知フィールド不在を検証した後に更新する。
+- `config/acme_accounts.json` の `schemaVersion`、`accounts` と account の `id`、`ca`、`directoryUrl`、`accountUrl`、`email`、`privateKeyPem`、`status`、`createdAt`、`updatedAt` を実装する。
+- `config/acme_orders.json` の `schemaVersion`、`orders` と order の `id`、`domain`、`accountId`、`orderUrl`、`finalizeUrl`、`certificateUrl`、`status`、`expiresAt`、`createdAt`、`updatedAt` を実装する。
+- `config/acme_authorizations.json` の `schemaVersion`、`authorizations` と authorization の `id`、`orderId`、`domain`、`authorizationUrl`、`status`、`expiresAt`、`createdAt`、`updatedAt` を実装する。
+- `config/acme_challenges.json` の `schemaVersion`、`challenges` と challenge の `id`、`authorizationId`、`domain`、`type`、`challengeUrl`、`token`、`keyAuthorizationPath`、`status`、`createdAt`、`updatedAt` を実装する。
+- `config/acme_renewals.json` の `schemaVersion`、`renewals` と renewal の `id`、`domain`、`kind`、`status`、`attemptCount`、`lastErrorCode`、`lastErrorMessage`、`nextRetryAt`、`notBefore`、`notAfter`、`createdAt`、`updatedAt` を実装する。
+- 無料独自SSLの新規取得状態遷移を `disabled` / `failed` から `pending`、`challenge_ready`、`issued` または `failed` へ進める実装にする。
+- 証明書更新状態遷移を `issued` から `renewing`、`challenge_ready`、`issued`、`expired` へ進める実装にする。
+- 証明書自動更新スケジューラー、`ssl.renewBefore`、`ssl.renewCheckInterval`、retry / backoff、Let’s Encrypt rate limit 配慮を実装する。
+- 証明書自動更新は、証明書有効期限の `ssl.renewBefore` 秒前から対象にする。
+- `ssl.renewBefore` は `86400` 以上 `15552000` 以下の秒数整数のみ許可する。
+- `ssl.renewCheckInterval` は `3600` 以上 `86400` 以下の秒数整数のみ許可する。
+- retry / backoff は Domain 単位で管理し、`attemptCount` に基づき最小 `3600` 秒、最大 `86400` 秒の範囲で `nextRetryAt` を決定する。
+- `nextRetryAt` より前に同一 Domain の自動更新を再実行しない。
+- 複数 CA、CA 選定、CA failover、任意 ACME directory URL を実装しない。
+- DNS-01 challenge、TLS-ALPN-01 challenge、wildcard 証明書、DNS provider API 連携、手動 TXT 登録、EAB、ARI、OCSP stapling を実装しない。
+- `internal/management/acme_test.go`、`internal/management/ssl_acme_test.go` を作成する。
+
+### 完了条件
+
+- 無料独自SSLの有効化、無効化、状態確認、証明書取得、証明書自動更新のテストが成功する。
+- 無料独自SSL 有効化、状態確認、更新、無効化 API が SSLStatus object を仕様通り返す。
+- SSLStatus の状態別空文字条件、`enabled`、`issuer`、`challenge`、`renewAfter`、`nextRetryAt`、`lastErrorCode` が仕様通りである。
+- 無料独自SSL 更新 API の競合状態で `409 Conflict` と `ERR_SSL_OPERATION_CONFLICT` が返る。
+- Let’s Encrypt ACME v2 のHTTP-01 challengeフローをテスト用ACMEサーバーまたはモックで検証する。
+- ACME account、order、authorization、challenge、renewal の JSON 保存スキーマが仕様通りである。
+- 無料独自SSL有効化 API が ACME JSON ファイルを初回作成しないことを確認する。
+- 新規取得、更新、失敗、backoff、期限切れの状態遷移が仕様通りである。
+- `nextRetryAt` より前に自動更新が再実行されない。
+- HTTP-01 challenge token が通常静的ファイル配信へ fallback しない。
+- 既存有効証明書が更新失敗で削除されない。
+- DNS-01、TLS-ALPN-01、wildcard、DNS provider API、複数CA、CA選定、CA failoverが実装されていないことを確認する。
+- `go test ./...` が成功する。
+- `.gitignore` が存在しない。
+
+### 非対象
+
+- DNS-01 challenge
+- TLS-ALPN-01 challenge
+- wildcard 証明書
+- DNS provider API 連携
+- 複数 CA
+- CA 選定
+- CA failover
 
 ## 11. P8 / v0.9 / マイグレーション
 
@@ -1170,7 +1218,7 @@ P0-4 では `asb start` の実運用起動、起動設定ファイル読み込�
 - ASB SDK の Go 実装を `sdk/go/` 配下に配置し、package 名を `asb` とする。
 - ASB SDK の Go 実装で `go.mod` を作成する場合、module path を `github.com/fqwink/Adlaire-Static-Base/sdk/go` に固定する。
 - ASB SDK の Go 実装の tag を ASB 本体の安定版リリースタグと同一にする。
-- ASB SDK の Go 実装を Rev.88 時点では外部配布サービスへ登録しない。
+- ASB SDK の Go 実装を Rev.89 時点では外部配布サービスへ登録しない。
 - ASB SDK の Go 実装は `net/http`、`net/url`、`encoding/json`、`context`、`time`、`mime/multipart` を中心に Go標準ライブラリで実装する。
 - ASB SDK の Go 実装は ASB 本体の `internal/` package を import しない。
 - ASB SDK の Go 実装は外部HTTP client library、外部JSON library、generated client を前提にしない。
@@ -1316,20 +1364,20 @@ P0-4 では `asb start` の実運用起動、起動設定ファイル読み込�
 
 優先度: 低
 
-目的: Rev.88 時点で実装対象外の機能が混入していないことを確認する。
+目的: Rev.89 時点で実装対象外の機能が混入していないことを確認する。
 
 ### 実装タスク
 
-- 未昇格のASB互換目標を将来の到達目標として扱い、Rev.88 時点の実装対象として扱わない。
+- 未昇格のASB互換目標を将来の到達目標として扱い、Rev.89 時点の実装対象として扱わない。
 - `internal/asb_forbidden_test.go` を作成する。
 - XServer Static互換機能セットの実装対象が、静的配信、独自ドメイン、無料独自SSL、GitHub Webhookデプロイ、HTTPS JSON APIによるファイル管理、ログ・状態確認、バックアップ・復旧に限定されていることを確認する。
 - XServer Static互換機能セットを理由に、XServer Static完全互換、管理画面再現、内部実装再現、DNS管理、DNS provider API、DNS-01、wildcard、複数CA、CDN完全互換、課金・契約・アカウント管理を追加しない。
 - ASB互換目標に含まれることを、未昇格機能の実装根拠として扱わない。
 - ASB互換目標を理由に `.gitignore`、外部DB、未承認外部ライブラリ、未承認外部サービス連携、開発リポジトリ内実行時データ、起動時自動生成、ビルド成果物自動生成を追加しない。
 - ASB互換目標を理由に APIキー管理、複数ユーザー管理、Rate limiting、Brotli圧縮、HTTP/2、CA選定、SDK専用通信を実装しない。
-- HTTP/2 が暗黙的に有効化されないよう、Rev.88 の実装では `http.Server.TLSNextProto` を空 map に設定する。
+- HTTP/2 が暗黙的に有効化されないよう、Rev.89 の実装では `http.Server.TLSNextProto` を空 map に設定する。
 - HTTP/2 専用設定項目、h2c、ALPN独自制御、server push、stream priority、専用handler、専用middleware、専用ログ項目を実装しない。
-- 将来計画、保留事項、検討・調査中事項を Rev.88 時点の実装対象として扱わない。
+- 将来計画、保留事項、検討・調査中事項を Rev.89 時点の実装対象として扱わない。
 - GUIという曖昧カテゴリ、ASB本体へのWeb UI内包、デスクトップアプリ、モバイルアプリ、複数ユーザー管理、ユーザー別権限管理、マルチテナント、課金管理、契約管理、複数インスタンス管理、クラスタ管理、分散ロック、NFS専用連携、分散ストレージ専用連携、外部ストレージサービス連携、ログファイル暗号化、HTTP/2実装詳細、FTP、FTPS、SFTPをASB本体に実装しない。
 - 将来計画機能または転送プロトコル互換を理由に ASB本体内包Web UI用API、モバイル専用API、テナント用API、課金用API、契約用API、外部ストレージ用API、ログ暗号化用API、FTP / FTPS / SFTP 用 APIを追加しない。
 - 将来計画機能または転送プロトコル互換を理由に `ui.*`、`webui.*`、`desktop.*`、`mobile.*`、`tenant.*`、`billing.*`、`nfs.*`、`cluster.*`、`distributedStorage.*`、`externalStorage.*`、`logEncryption.*`、`ftp.*`、`ftps.*`、`sftp.*` 設定項目を追加しない。
@@ -1347,7 +1395,7 @@ P0-4 では `asb start` の実運用起動、起動設定ファイル読み込�
 - Auteur リポジトリ `https://github.com/fqwink/Auteur` の `Auteur_Master_Specification.md` は仕様移管元としてのみ扱い、source code、runtime、CLI、fixture、test、CI、release automation、package、lock file、設定ファイル、生成物を ASB へ移管しない。
 - Auteur リポジトリ内の `.gitignore`、`deno.json`、TypeScript 実装、fixture、test が ASB の仕様、実装、生成物、依存関係、開発手順としてコピーされていないことを確認する。
 - `auteur.config.json`、`.auteur/`、`auteur-project/`、`src/pages/**/*.astro`、`src/pages/api/**/*.go`、`ui/`、`content/`、`dist/`、`.env`、`deno.json`、`deno.lock`、`AUTEUR_*` error code、Auteur 固有 hydration directive、Auteur 固有 component syntax が ASB の有効仕様として追加されていないことを確認する。
-- Content Pipeline、Site Routing、Site Rendering、Site Output、Blog、Docs、Sitemap、Ad Slot、Asset Pipeline、Source Sync、External Data Integration、Runtime Cache、Database Gateway、Database Adapter が Rev.88 時点の実装対象へ昇格していないことを確認する。
+- Content Pipeline、Site Routing、Site Rendering、Site Output、Blog、Docs、Sitemap、Ad Slot、Asset Pipeline、Source Sync、External Data Integration、Runtime Cache、Database Gateway、Database Adapter が Rev.89 時点の実装対象へ昇格していないことを確認する。
 - 管理 API が `Authorization` ヘッダーまたは `X-API-Key` ヘッダーの有無でレスポンスを変えないことをテストする。
 - APIキー、複数ユーザー、ロール、セッションを表す JSON ファイルまたはディレクトリを生成しないことをテストする。
 - 起動設定ファイル `config.json` に認証関連フィールドが存在する場合に未知フィールドとして起動失敗することをテストする。
@@ -1388,66 +1436,13 @@ P0-4 では `asb start` の実運用起動、起動設定ファイル読み込�
 - 未確定タスクの実装
 - 将来計画機能の仕様昇格
 
-## 16. P13 / v0.14 / 単一システム管理者認証
-
-優先度: 高
-
-目的: ASB 管理 HTTPS JSON API に、単一システム管理者パスワード認証を実装する。
-
-### 実装タスク
-
-- `internal/system/auth.go` を作成し、単一システム管理者認証、パスワード検証、パスワード変更、ハッシュ処理を実装する。
-- `internal/system/auth_test.go` を作成する。
-- `config/auth.json` の `schemaVersion`、`admin.passwordHash`、`admin.passwordSalt`、`admin.passwordChanged`、`admin.updatedAt` を実装する。
-- `config/auth.json` の空状態を `{"schemaVersion":1,"admin":{"passwordHash":"","passwordSalt":"","passwordChanged":false,"updatedAt":""}}` に固定する。
-- 初期デフォルトパスワードを `asb-admin-change-me` として扱う。
-- 初期デフォルトパスワードが未変更の場合、`POST /api/auth/change-password` 以外の管理 API を `403 Forbidden`、`ERR_AUTH_PASSWORD_CHANGE_REQUIRED` で拒否する。
-- `POST /api/auth/change-password` を実装する。
-- 管理者パスワード変更 API は `currentPassword` と `newPassword` を受け取り、現在パスワード照合後に `config/auth.json` を atomic rename で更新する。
-- `newPassword` は12文字以上128文字以下、初期デフォルトパスワード不一致、NUL文字および制御文字なし、先頭末尾空白なしを検証する。
-- `POST /api/auth/change-password` を除く管理 API に `X-ASB-Admin-Password` ヘッダー検証 middleware を適用する。
-- `X-ASB-Admin-Password` が未指定、空文字、不一致の場合は `401 Unauthorized`、`ERR_AUTH_FAILED` を返す。
-- `POST /api/webhook/github` には `X-ASB-Admin-Password` を要求せず、GitHub Webhook 署名検証のみを認証境界とする。
-- 静的コンテンツ配信、ACME HTTP-01 challenge 応答、ヘルスチェックには `X-ASB-Admin-Password` を要求しない。
-- パスワードハッシュは Go 標準ライブラリのみで実装する。
-- PBKDF2-HMAC-SHA256 相当処理を `crypto/hmac`、`crypto/sha256`、`crypto/rand`、`crypto/subtle`、`encoding/base64` で内製実装する。
-- salt は32 bytes、hash は32 bytes、iteration は210000回とする。
-- `passwordHash` と `passwordSalt` は `base64.RawURLEncoding` で保存する。
-- パスワード照合は `crypto/subtle.ConstantTimeCompare` で行う。
-- 平文パスワードを JSON、ログ、標準出力、標準エラー、エラーレスポンスへ保存または出力しない。
-- APIキー、複数ユーザー、ロール、権限分離、組織、チーム、テナント、セッション、JWT、OAuth/OIDC、Basic認証、Bearer token、cookie認証を実装しない。
-- `Authorization` ヘッダーまたは `X-API-Key` ヘッダーを認証判断に使用しない。
-
-### 完了条件
-
-- `config/auth.json` の空状態、読み込み、未知フィールド拒否、atomic save のテストが成功する。
-- 初期デフォルトパスワードで管理者パスワード変更 API のみ実行できるテストが成功する。
-- `X-ASB-Admin-Password` 未指定、空文字、不一致で `ERR_AUTH_FAILED` を返すテストが成功する。
-- 管理者パスワード変更 API が `X-ASB-Admin-Password` ヘッダーを要求せず、`currentPassword` を認証入力として扱うテストが成功する。
-- 管理者パスワード変更後、変更後パスワードのみが有効になるテストが成功する。
-- Webhook、静的配信、ACME HTTP-01 challenge、ヘルスチェックが管理者パスワードを要求しないテストが成功する。
-- 平文パスワードが JSON、ログ、標準出力、標準エラー、エラーレスポンスへ出力されないことを確認する。
-- APIキー、複数ユーザー、ロール、セッション、token、cookie 認証の実装が追加されていないことを確認する。
-- `go test ./...` が成功する。
-- `.gitignore` が存在しない。
-- 開発リポジトリ内に実行時データ、ログ、一時ファイル、ビルド成果物が残っていない。
-
-### 非対象
-
-- 複数ユーザー管理
-- ユーザー別権限管理
-- APIキー管理
-- セッション管理
-- JWT / OAuth / OIDC / Basic / Bearer token / cookie 認証
-- SDK 認証拡張仕様
-
-## 17. 実装済みフェーズ
+## 16. 実装済みフェーズ
 
 現時点ではなし。
 
-## 18. 実装フェーズ外の昇格待ちタスク
+## 17. 実装フェーズ外の昇格待ちタスク
 
-以下は Rev.88 時点では実装フェーズに含めない。
+以下は Rev.89 時点では実装フェーズに含めない。
 
 - SDK認証拡張を実装対象へ昇格する場合の認証方式、対象SDK実装、ASB管理APIとの関係、単一システム管理者認証との併存または置換、APIキー管理、複数ユーザー化、保存JSON、公開API、Web UI、監査ログ、migration、downgrade、テスト条件を仕様改訂で確定する。
 - 移管元由来の Content Pipeline を実装対象へ昇格する場合は、`.md`、`.mdx`、`.json`、JSON Front Matter、metadata 型、slug 重複、draft、未来日付、unsafe HTML、script tag、link URL scheme、parser / sanitizer 採否、保存JSON、cache、Site Output との責務境界、migration、downgrade、テスト条件を仕様改訂で確定する。
