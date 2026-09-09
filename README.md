@@ -10,7 +10,7 @@ ASB SDK は単一の公式SDKとして扱い、Browser JavaScript、Deno専用 T
 
 ASB Web UI は、ASB 本体外の内製標準管理画面クライアントとして扱い、静的 HTML / CSS / JavaScript とブラウザ標準 API のみで実装します。ASB 標準Web UI は、ASB SDK の Browser JavaScript 実装を利用して ASB 管理 HTTPS JSON API と通信します。
 
-Rev.74 では、実行時データの初期化・自動生成・不足補完を禁止し、`asb init-runtime` を実装対象外に固定しています。
+Rev.75 では、実行時データの初期化・自動生成・不足補完を禁止し、起動設定ファイルと `storage.basePath` 配下の実行時 JSON を分離しています。実行時 JSON、必須ディレクトリ、ログファイルは ASB 起動前に運用者が事前配置します。
 
 旧 Auteur 仕様は ASB に仕様のみを吸収し、`https://github.com/fqwink/Auteur` を移管元として記録します。旧名称の別枠は作らず、Content Pipeline、Site Routing、Site Rendering、Site Output、Blog、Docs、Sitemap、Ad Slot などの ASB 通常機能名へ分解します。Auteur の source code、runtime、CLI、fixture、CI、package、設定ファイル、生成物は移管しません。
 
@@ -22,7 +22,7 @@ Rev.74 では、実行時データの初期化・自動生成・不足補完を�
 
 ## Documents
 
-- `ASB-spec.md`: 仕様正本（Rev.74）
+- `ASB-spec.md`: 仕様正本（Rev.75）
 - `ASB-spec.html`: `ASB-spec.md` から生成するHTML版仕様書
 - `DOCUMENT_INDEX.md`: 文書索引
 - `IMPLEMENTATION_TASKS.md`: `ASB-spec.md` に基づく実装フェーズ別タスクリスト
