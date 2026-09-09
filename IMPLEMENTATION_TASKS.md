@@ -6,7 +6,7 @@
 
 本ファイルは、`ASB-spec.md` に基づいて実装タスクを管理する。
 
-参照仕様バージョン: `ASB-spec.md Rev.72`
+参照仕様バージョン: `ASB-spec.md Rev.77`
 
 `ASB-spec.md` で仕様確定済みの事項のみを実装タスクとして扱う。
 
@@ -51,7 +51,7 @@
 | 低 | P12 | v0.13 | 禁止機能・非実装確認 | 未着手 |
 | 高 | P13 | v0.14 | 単一システム管理者認証 | 未着手 |
 
-### 2.1 Rev.72 共通完了ゲート
+### 2.1 Rev.77 共通完了ゲート
 
 各フェーズは、個別完了条件に加えて以下を満たすまで完了扱いにしない。
 
@@ -61,14 +61,16 @@
 - 保存状態は JSON ファイルベースとし、外部DB、SQLite、KVS、外部ストレージを追加しない。
 - 保存 JSON は `schemaVersion`、未知フィールド拒否、deterministic output、atomic write を満たす。
 - 開発リポジトリ内に実行時データ、一時ファイル、cache、log、build output、`.gitignore` を生成しない。
-- Project、Domain、File、SSL、GitHub Webhook、Backup / Restore、Log / Audit の対象フェーズでは、Rev.72 の排他制御・整合性検証固定仕様に定義した lock 粒度、lock 取得順序、同時操作時の競合条件を満たす。
+- 実行時データの初期化、自動生成、不足補完を目的とする CLI、API、background job、startup hook、maintenance task を追加しない。
+- `storage.basePath` 配下の不足 directory、必須 JSON、ログファイル、証明書ファイルを ASB が補完生成しない。
+- Project、Domain、File、SSL、GitHub Webhook、Backup / Restore、Log / Audit の対象フェーズでは、Rev.76 の排他制御・整合性検証固定仕様に定義した lock 粒度、lock 取得順序、同時操作時の競合条件を満たす。
 - lock 取得失敗時は、専用 error code が定義された場合を除き `409 ERR_OPERATION_CONFLICT` を返す。
 - lock 状態を JSON、通常ファイル、ディレクトリ、`.gitignore`、外部DB、SQLite、KVS、外部ストレージ、分散 lock service に保存しない。
 - 複数プロセス、複数インスタンス、分散 lock、共有 lock file、NFS lock、外部 lock service を実装しない。
 - mutation API 実行前、mutation API 永続化後かつ response 前、Webhook deploy 前後、Backup create 前後、Restore 前後、SSL status / renew、Log API read の整合性検証タイミングが `ASB-spec.md` と一致する。
 - 整合性検証、startup validation、read API、静的 GET/HEAD、monitoring API は保存状態を変更しない。
 - 整合性検証は自動修復を行わず、JSON、静的ファイル、証明書、backup archive、log file、directory を作成、削除、上書き、移動、rename しない。
-- 静的配信、Webhook、無料独自SSL、Backup / Restore、Log / Audit の対象フェーズでは、Rev.72 の固定仕様に定義した失敗時復元、途中状態非公開、非生成条件を満たす。
+- 静的配信、Webhook、無料独自SSL、Backup / Restore、Log / Audit の対象フェーズでは、Rev.76 の固定仕様に定義した失敗時復元、途中状態非公開、非生成条件を満たす。
 - 対象 API の request schema、validation、保存先、更新順序、audit log 対象が `ASB-spec.md` の API 個別実装契約と一致する。
 - 対象 JSON の field、型、必須、default、validation、object key 出力順序が `ASB-spec.md` の保存JSON field 固定表と一致する。
 - 対象 API の失敗条件、HTTP status、error code、成功レスポンス禁止条件が `ASB-spec.md` の API 別失敗条件固定表と一致する。
@@ -132,11 +134,13 @@
 
 ### 実装タスク
 
-- `config/config.json` の読み込み、デフォルト値適用、起動時バリデーションを実装する。
+- `--config` で指定された起動設定ファイルの読み込み、デフォルト値適用、起動時バリデーションを実装する。
+- 標準運用パスを `/etc/asb/config.json` とし、起動設定ファイルを `storage.basePath` 配下の実行時 JSON として扱わない。
 - `internal/config/config.go`、`internal/config/loader.go`、`internal/config/validate.go` を実装する。
 - `internal/server/router.go`、`internal/server/response.go`、`internal/server/middleware.go` を実装する。
 - `internal/data/json_repository.go` を実装する。
-- `asb init-runtime` コマンドを実装する。
+- `asb init-runtime` コマンドを実装しない。
+- 実行時データ初期化、不足補完、空 JSON 作成、必須 directory 作成を目的とする CLI、API、background job、startup hook、maintenance task を実装しない。
 - `asb start` コマンドを実装し、起動時に不足ディレクトリ、JSON、証明書、ログ、一時ファイルを作成しないことを保証する。
 - `server.port`、`server.host`、`server.tlsCertFile`、`server.tlsKeyFile`、`server.shutdownTimeout`、`storage.basePath`、`storage.maxProjectSize`、`ssl.email`、`ssl.renewBefore`、`ssl.renewCheckInterval`、`log.level`、`log.format`、`log.maxSize` の起動時バリデーションを実装する。
 - 任意設定項目の未指定時、親 object 未指定時、空文字、型不一致、数値の小数・指数表記・負数・`null` 拒否を仕様通り実装する。
@@ -144,19 +148,13 @@
 - 設定未知フィールド検出時の起動失敗を実装する。
 - 起動時に設定済み実行時データ領域の存在確認と権限検証を実装する。
 - 起動時に実行時データ用のディレクトリまたはファイルを自動生成しない。
+- 起動時にログファイル、証明書、ACME challenge file、一時ファイルを自動生成しない。
 - 開発リポジトリを実行時データ保存先として扱わない。
-- `asb init-runtime` は `storage.basePath` が開発リポジトリ配下の場合に初期化を開始せず `ERR_STORAGE_VALIDATION_FAILED` で失敗する。
-- `asb init-runtime` は作成予定パスがすべて `storage.basePath` 配下に収まることを検証する。
-- `asb init-runtime` は `storage.basePath/`、`config/`、`storage/`、`storage/projects/`、`logs/`、`certs/` を仕様順序で作成または検証する。
-- `asb init-runtime` は `config/projects.json`、`config/domains.json`、`config/backups.json`、`config/auth.json`、`config/webhooks.json`、`config/acme_accounts.json`、`config/acme_orders.json`、`config/acme_authorizations.json`、`config/acme_challenges.json`、`config/acme_renewals.json` を空状態で作成する。
-- `asb init-runtime` は `storage/projects/:projectId/files.json` を作成しない。
-- `asb init-runtime` は既存 JSON が妥当な場合は変更せず、既存 JSON が不正な場合は自動修復または上書きを行わない。
-- `asb init-runtime` は既存ファイルまたはディレクトリを上書き、削除、移動、truncate しない。
-- `asb init-runtime` は必須 JSON を同一ディレクトリ内の一時ファイル、`fsync`、atomic rename で作成する。
-- `asb init-runtime` 成功時は stdout へ `ASB_RUNTIME_INITIALIZED storageBasePath="..."` を単一行出力し、終了コード `0` とする。
-- `asb init-runtime` 失敗時は stderr へ `ASB_RUNTIME_INIT_ERROR code=... message="..."` を単一行出力し、終了コード `1` とする。
 - `storage.basePath` 配下の `config/`、`storage/`、`storage/projects/`、`logs/`、`certs/` の順序付き存在検証を実装する。
-- `config/projects.json`、`config/domains.json`、`config/backups.json`、`config/auth.json`、`config/webhooks.json`、`config/acme_accounts.json`、`config/acme_orders.json`、`config/acme_authorizations.json`、`config/acme_challenges.json`、`config/acme_renewals.json`、各 Project の `storage/projects/:projectId/files.json` の順序付き起動時存在検証を実装する。
+- `config/projects.json`、`config/domains.json`、`config/backups.json`、`config/auth.json`、`config/webhooks.json`、`config/acme_accounts.json`、`config/acme_orders.json`、`config/acme_authorizations.json`、`config/acme_challenges.json`、`config/acme_renewals.json` の順序付き起動時存在検証を実装する。
+- `logs/access.log`、`logs/error.log` の順序付き存在、通常ファイル、読み取り権限、追記権限検証を実装する。
+- `config/projects.json` に存在する Project のみ、`storage/projects/:projectId/`、`contents/`、`files.json` を起動時検証対象にする。
+- 初回起動前の空状態 JSON は運用者の事前配置要件として扱い、ASB が空状態 JSON を作成しないことを実装する。
 - 必須 JSON ファイルの構文検証、必須フィールド検証、未知フィールド拒否を実装する。
 - `server.tlsCertFile` と `server.tlsKeyFile` の絶対パス、存在、通常ファイル、秘密鍵ファイルの group/world writable 禁止を検証する。
 - 管理 API 用 TLS 証明書ファイルまたは秘密鍵ファイルを開発リポジトリ内へ生成しない。
@@ -183,7 +181,7 @@
 - `204 No Content` を使用しない。
 - 配列レスポンスは対象データが空でも空配列を返す。
 - URL パラメータ `:id`、`:domain`、`:name` の URL decode、正規化、バリデーションを実装する。
-- `:id` は Rev.72 の UUID 正規表現に一致する値のみ許可する。
+- `:id` は Rev.76 の UUID 正規表現に一致する値のみ許可する。
 - `:domain` は小文字正規化後、label数、全体長、label正規表現、末尾 `.` 除去を仕様通り検証する。
 - `:name` は長さ、NUL、パス区切り、`.`、`..`、先頭 `.`、空白のみを仕様通り拒否する。
 - JSON ファイル更新時の読み込み検証、保存前再検証、同一ファイル排他書き込みを実装する。
@@ -199,11 +197,11 @@
 - 複数JSON更新の途中失敗時に更新済みJSON名、未更新JSON名、操作名、requestId をエラーログへ記録する。
 - 複数ファイル更新の途中失敗時に、更新予定JSON、更新済みJSON、`files.json` path、実ファイル、`projects.used` の整合性検証を実装する。
 - 整合性検証失敗時は `ERR_STORAGE_VALIDATION_FAILED` を error log へ記録する。
-- Rev.72 時点では複数JSON更新に外部トランザクション機構を導入しない。
-- Rev.72 時点の API エンドポイント固定表に記載されたメソッド、パス、成功ステータス、失敗コードを実装する。
-- Rev.72 API 成功レスポンス固定表に記載された JSON キーと型を実装する。
-- Rev.72 API 個別実装契約に記載された request schema、保存先、更新順序、audit 対象を実装する。
-- Rev.72 API 別失敗条件固定表に記載された失敗条件、HTTP status、error code を実装する。
+- Rev.77 時点では複数JSON更新に外部トランザクション機構を導入しない。
+- Rev.77 時点の API エンドポイント固定表に記載されたメソッド、パス、成功ステータス、失敗コードを実装する。
+- Rev.77 API 成功レスポンス固定表に記載された JSON キーと型を実装する。
+- Rev.77 API 個別実装契約に記載された request schema、保存先、更新順序、audit 対象を実装する。
+- Rev.77 API 別失敗条件固定表に記載された失敗条件、HTTP status、error code を実装する。
 - HTTP status / error code 選択優先順位を共通 middleware または handler 境界で統一する。
 - 保存 JSON の field 固定表に従い、Project、Domain、File、Backup、WebhookEvent の型、必須、default、validation、object key 出力順序を実装する。
 - プロジェクト作成 API `POST /api/projects` を実装する。
@@ -223,11 +221,11 @@
 ### 完了条件
 
 - 起動時検証順序、終了コード、stderr 形式のテストが成功する。
-- `asb init-runtime` の作成順序、空 JSON、stdout、終了コードのテストが成功する。
-- `asb init-runtime` が既存妥当 JSON を変更しないテストが成功する。
-- `asb init-runtime` が既存不正 JSON を修復または上書きしないテストが成功する。
-- `asb init-runtime` が開発リポジトリ配下に実行時データを作成しないテストが成功する。
-- `asb start` が不足ディレクトリまたは不足 JSON を自動生成せず起動失敗するテストが成功する。
+- 起動設定ファイルが `--config` 指定パスから読み込まれ、`storage.basePath/config/config.json` を標準実行時JSONとして扱わないテストが成功する。
+- `asb init-runtime` が実装されていないことを確認するテストが成功する。
+- 実行時データ初期化、不足補完、空 JSON 作成、必須 directory 作成を目的とする CLI、API、background job、startup hook、maintenance task が存在しないことを確認する。
+- `asb start` が不足ディレクトリ、不足 JSON、不足ログファイル、不足証明書を自動生成せず起動失敗するテストが成功する。
+- 空状態 JSON の schemaVersion、必須トップレベルキー、未知フィールド拒否が仕様通り検証される。
 - Project 作成 API が Project ディレクトリ、`contents/`、`files.json` を作成し、既存ファイルを上書きしないテストが成功する。
 - 全API成功レスポンスの固定JSONキー検証テストが成功する。
 - 全APIエラーレスポンスの固定JSONキー検証テストが成功する。
@@ -312,7 +310,7 @@
 - `Cache-Control` を既定で `public, max-age=60` とする。
 - `If-None-Match` と `If-Modified-Since` による `304 Not Modified` を実装し、両方が存在する場合は `If-None-Match` を優先する。
 - `304 Not Modified` では `Content-Type`、`ETag`、`Last-Modified`、`Cache-Control` を返し、`Content-Encoding` を返さない。
-- Range request は Rev.72 時点では実装せず、`Range` ヘッダーを無視して `206 Partial Content` を返さない。
+- Range request は Rev.77 時点では実装せず、`Range` ヘッダーを無視して `206 Partial Content` を返さない。
 - `Accept-Encoding: br` では Brotli 応答を返さない。
 - Brotli 用の `.br`、キャッシュ、一時ファイル、メタデータを開発リポジトリ内にも `storage.basePath` 配下にも生成しない。
 - 静的配信でディレクトリ一覧を返さない。
@@ -585,7 +583,7 @@
 - atomic rename 後に履歴保存へ失敗した場合は、作成済みtar.gzを削除する。
 - 作成済みtar.gzの削除に失敗した場合でも、バックアップ作成APIは成功レスポンスを返さない。
 - バックアップ保存先を別障害領域へ複製する作業をASB外の運用責務として扱う。
-- 外部ストレージ連携を Rev.72 時点では実装対象外として扱う。
+- 外部ストレージ連携を Rev.77 時点では実装対象外として扱う。
 - Backup復旧前退避先を `storage.basePath/backups/restore-staging/{restoreId}/previous/` に固定する。
 - Backup復旧用展開先を `storage.basePath/backups/restore-staging/{restoreId}/next/` に固定する。
 - Backup履歴の `status` が `completed` でない場合は復旧を拒否する。
@@ -635,10 +633,18 @@
 - 起動時検証失敗時のみ stderr へ `ASB_STARTUP_ERROR code=... message="..."` 形式で単一行を出力する。
 - `log.maxSize` 到達後、次回書き込み前にログローテーションする。
 - ローテーション後ファイル名を `access.log.{unixTime}` または `error.log.{unixTime}` に固定する。
+- ローテーション直後の新しい `access.log` または `error.log` 作成は、既存現行ログファイルの rename 成功後に限って実行する。
+- ローテーション後の新しい現行ログファイル作成に失敗した場合、rename 済みログファイルを元の現行ログファイル名へ戻す復旧を1回だけ試行する。
+- 復旧に成功した場合でも対象ログ書き込みは失敗扱いとし、`ERR_LOG_WRITE_FAILED` を返す。
+- 復旧に失敗した場合は追加の補完生成を行わず、`ERR_LOG_WRITE_FAILED` を返す。
 - ローテーション済みログは7日経過後に削除対象とする。
-- ログローテーションおよび期限切れ削除失敗を WARN として記録する。
-- `storage.basePath/logs/` と現行ログファイルは、LogService の書き込み処理または起動時検証で明示的に必要な場合のみ作成する。
+- 期限切れローテーション済みログの削除失敗は、対象リクエストの主処理が確定済みの場合に限り WARN として記録し、成功レスポンスを維持できるようにする。
+- `storage.basePath/logs/` と現行ログファイルは ASB 起動前に存在する前提とし、LogService は存在しないログディレクトリまたはログファイルを作成しない。
+- LogService は既存ログファイルへの追記と既存ログファイルの rotation のみを実行する。
 - ログAPI、監視API、静的配信、File API、Domain API、SSL状態確認API、Backup一覧APIではログファイルを初回作成しない。
+- `access.log` または `error.log` が存在しない状態でログ書き込みが必要になった場合、ログファイルを作成せず `ERR_LOG_WRITE_FAILED` を返す。
+- ログファイル破損を検出して切り詰め、上書き、削除、退避、再作成しない。
+- 開発リポジトリ内にログ、一時ログ、ローテーション済みログ、ログ検証結果を作成しない。
 - アクセスログ書き込みはレスポンスステータス確定後、レスポンス送信前に実行する。
 - 成功レスポンス送信前にアクセスログ書き込みまたはローテーションへ失敗した場合は `500 Internal Server Error` と `ERR_LOG_WRITE_FAILED` を返す。
 - エラーレスポンス生成中の error log 書き込み失敗時は、内部パスや詳細原因をレスポンス本文に含めない。
@@ -655,18 +661,35 @@
 - ログ API ではログファイルを作成、更新、ローテーション、削除しない。
 - システムステータス API `GET /api/monitoring/stats` を実装する。
 - CPU、メモリ、ディスク、接続数、リクエスト数の監視値取得を実装する。
+- `GET /api/monitoring/stats` は管理 HTTPS JSON API として `X-ASB-Admin-Password` ヘッダー認証を必須にする。
+- `GET /api/monitoring/stats` は request body を拒否する。
+- Monitoring API の成功レスポンスキーを `cpu`、`memory`、`disk`、`connections`、`requests`、`checkedAt` に固定する。
+- `cpu`、`memory`、`disk` は取得できる場合 0 以上 100 以下、小数第1位までの使用率として返す。
+- `disk` は `storage.basePath` が属するファイルシステムの使用率として計算する。
+- `connections` は ASB プロセスが把握する現在の HTTP 接続数として 0 以上の整数を返す。
+- `requests` は ASB プロセス起動後の累計 HTTP リクエスト数として 0 以上の整数を返す。
+- `checkedAt` は UTC RFC3339 秒精度文字列として常に返す。
 - OS 依存で取得できない監視値は `null` として成功レスポンスに含める。
 - 監視APIは既存の実行時JSON、プロセス情報、OS情報、`storage.basePath` の状態から値を計算する。
-- 監視APIではメトリクス保存用JSON、キャッシュファイル、一時ファイルを作成しない。
+- `connections` と `requests` は process-local in-memory counter とし、ファイルへ永続化しない。
+- `connections` と `requests` は ASB プロセス再起動により初期化される。
+- 監視APIではメトリクス保存用JSON、履歴JSON、キャッシュファイル、一時ファイル、lock file、監視DB、その他の実行時データを作成、更新、削除しない。
+- 監視APIはログファイル、ローテーション済みログ、監査ログを監視値の集計元として読まない。
+- 監視APIは外部監視サービス、外部メトリクスサービス、外部DB、外部ライブラリに依存しない。
+- 監視APIの response 生成不能、response serialization 不能、または `storage.basePath` 判定に必要な起動設定読込不能は `ERR_INTERNAL` を返す。
 - 開発リポジトリ内にログファイルを作成しない。
 - `internal/system/log_test.go`、`internal/system/monitoring_test.go` を作成する。
 
 ### 完了条件
 
 - アクセスログとエラーログのJSON Linesフィールド、フィールド順、requestId一致、stdout非出力、stderr起動失敗出力、ローテーションのテストが成功する。
+- ログファイル欠落時に初回作成せず、`ERR_LOG_WRITE_FAILED` または `ERR_LOG_READ_FAILED` になるテストが成功する。
+- ローテーション後の新現行ログ作成失敗時に復旧を1回だけ試行し、成功レスポンスを返さないテストが成功する。
 - ログ API の新しい順、壊れたJSON行検出、現行ログのみ対象のテストが成功する。
-- Monitoring API の成功レスポンスと取得不可項目 `null` のテストが成功する。
-- ログAPI/監視APIがログファイル、メトリクスJSON、キャッシュ、一時ファイルを作成しないテストが成功する。
+- Monitoring API の認証必須、body拒否、成功レスポンスキー、型、単位、丸め、`checkedAt` のテストが成功する。
+- Monitoring API の取得不可項目 `null` と `200 OK` のテストが成功する。
+- Monitoring API の `connections` と `requests` が in-memory counter であり、ファイル永続化せず、プロセス再起動で初期化されるテストが成功する。
+- ログAPI/監視APIがログファイル、メトリクスJSON、履歴JSON、キャッシュ、一時ファイル、lock file、監視DB、その他の実行時データを作成しないテストが成功する。
 - 成功レスポンス送信前のアクセスログ書き込み失敗が `ERR_LOG_WRITE_FAILED` になるテストが成功する。
 - 開発リポジトリ内にログファイルが残っていない。
 - `go test ./...` が成功する。
@@ -701,8 +724,8 @@
 - マイグレーション作業ファイル、一時ファイル、退避ファイル、履歴ファイルを開発リポジトリ内に作成しない。
 - `config/migrations.json` の `schemaVersion`、`migrations[]`、`status`、`backupPath` スキーマを実装する。
 - `config/migrations.json` は起動時必須 JSON ファイルとして扱わない。
-- `config/migrations.json` は `asb init-runtime` の初期作成対象に含めない。
-- `config/migrations.json` は `asb migrate --apply` 実行時のみ初回作成し、起動時、API、静的配信、Webhook、Backup、Log API、SSL 管理境界では作成しない。
+- `config/migrations.json` は ASB が初回作成しない。
+- `config/migrations.json` は `asb migrate --apply` 実行時にも初回作成せず、存在しない場合は失敗する。
 - `config/migrations.json` 作成または更新失敗時はマイグレーション成功扱いにしない。
 - マイグレーション失敗時の事前バックアップからのロールバックを実装する。
 - ロールバック失敗時に標準エラー、エラーログ、`config/migrations.json` へ `failed` として記録する。
@@ -714,8 +737,8 @@
 - 未対応 `schemaVersion` の起動失敗テストが成功する。
 - `--dry-run` が実行時 JSON ファイルを変更しないテストが成功する。
 - `--apply` が対象 JSON ファイルを atomic rename で更新するテストが成功する。
-- `config/migrations.json` が `asb init-runtime` で作成されないテストが成功する。
-- `config/migrations.json` が `asb migrate --apply` 実行時のみ初回作成されるテストが成功する。
+- `config/migrations.json` が ASB の全実行境界で初回作成されないテストが成功する。
+- `config/migrations.json` が存在しない状態で `asb migrate --apply` が失敗するテストが成功する。
 - 事前バックアップ作成、途中失敗時の成功禁止、ロールバック成功、ロールバック失敗時の `failed` 記録テストが成功する。
 - 開発リポジトリ内に移行作業ファイルを作成しないテストが成功する。
 - `go test ./...` が成功する。
@@ -737,32 +760,44 @@
 
 - 安定版リリース判定基準を実装手順として固定する。
 - GitHub Releases を標準配布先として扱う。
+- GitHub Releases 以外の配布元を標準配布元として扱わない。
 - リリースタグを安定版バージョンと同一文字列にする。
 - `asb-linux-amd64-vX.Y`、`asb-linux-arm64-vX.Y`、`checksums.txt` を標準配布成果物として生成する。
 - `checksums.txt` のSHA-256形式と配布ファイル名一致を検証する。
+- `checksums.txt` は小文字16進64文字のSHA-256、半角スペース2文字、ファイル名、改行の形式に固定する。
+- `checksums.txt` に空行、コメント行、相対path、絶対path、URL、glob、タブ区切り、CRLF、未配布ファイル名がある場合は失敗する。
 - Linux amd64 と Linux arm64 の標準ビルドコマンドを実装する。
 - ビルド成果物を開発リポジトリへ残さないリリース手順を実装する。
 - `install.sh --version vX.Y --arch amd64|arm64` を実装する。
 - `update.sh --version vX.Y --arch amd64|arm64` を実装する。
 - `scripts/install_test.sh`、`scripts/update_test.sh` を作成する。
 - `latest` 指定、自動最新版選択、未指定バージョンでの install/update 実行を拒否する。
+- `--version` は `^v[1-9][0-9]*\.[1-9][0-9]*$` に一致する値のみ許可し、`v0.N`、branch 名、commit hash、`latest`、`stable`、`nightly` を拒否する。
 - install/update でダウンロード失敗、checksum不一致、`--version` 不一致、systemd操作失敗を成功扱いしない。
-- `install.sh` は既存 `/usr/local/bin/asb` が存在する場合に上書きせず失敗する。
+- install/update は `sha256sum` または `shasum -a 256` が存在しない場合に失敗する。
+- install/update は検証完了前に root 権限が必要な配置、停止、置換、systemd 操作を行わない。
+- install/update は `curl` 失敗時に `wget` へ暗黙 fallback しない。
+- `install.sh` は既存 `/usr/local/bin/asb`、既存 `/etc/systemd/system/asb.service`、既存 `asb` service が存在する場合に上書きせず失敗する。
 - `install.sh` は checksum 検証、`--version` 出力確認、配置、`asb.service` 配置、`daemon-reload`、`enable`、`start` の順に実装する。
 - `install.sh` / `update.sh` が配置する `/usr/local/bin/asb` と `/usr/local/bin/asb.previous` の owner、group、mode を仕様通り固定する。
 - `update.sh` は checksum 検証と `--version` 出力確認が完了するまで、既存サービス停止、既存バイナリ退避、バイナリ置換を実行しない。
 - `update.sh` は `/usr/local/bin/asb` 不在、または `/usr/local/bin/asb.previous` 既存の場合に失敗する。
-- `update.sh` の起動失敗時に `/usr/local/bin/asb.previous` から復旧を試行する。
+- `update.sh` は既存 `/usr/local/bin/asb` を `/usr/local/bin/asb.previous` へ rename し、新バイナリ配置、`systemctl start asb`、`systemctl is-active --quiet asb` を実行する。
+- `update.sh` の起動失敗時に `/usr/local/bin/asb.previous` から rename による復旧を1回だけ試行する。
 - `update.sh` は復旧に成功した場合でも終了コード `1` で失敗する。
+- install/update は `/etc/asb/config.json`、`storage.basePath`、runtime JSON、静的コンテンツ、証明書、ログを自動生成または変更しない。
 - `asb.service` を `/etc/systemd/system/asb.service` 向けの固定仕様で提供する。
 - `asb.service` の owner、group、mode と、`asb` system user のログイン不可・homeなし作成を実装する。
-- `asb.service` の `ExecStart=/usr/local/bin/asb --config /etc/asb/config.json`、`Restart=on-failure`、`NoNewPrivileges=true` を実装する。
+- `asb.service` の `ExecStart=/usr/local/bin/asb --config /etc/asb/config.json`、`Restart=on-failure`、`NoNewPrivileges=true`、`PrivateTmp=true`、`ProtectSystem=full`、`ProtectHome=true` を実装する。
+- install/update は `.gitignore`、`go.mod`、`deno.json`、`package.json`、lock file、cache directory、log file を開発リポジトリ内に作成しない。
 
 ### 完了条件
 
 - Linux amd64 と Linux arm64 のビルドが成功する。
 - 配布成果物名と `checksums.txt` の整合テストが成功する。
-- install/update の正常系、失敗系、`latest` 拒否、`--version` 不一致、checksum不一致、復旧処理のテストが成功する。
+- install/update の正常系、失敗系、`latest` 拒否、`v0.N` 拒否、`--version` 不一致、checksum不一致、既存ファイル拒否、復旧処理のテストが成功する。
+- install/update が `/etc/asb/config.json`、runtime JSON、静的コンテンツ、証明書、ログを自動生成または変更しないテストが成功する。
+- `asb.service` の unit 内容、owner、group、mode、`systemctl daemon-reload`、`systemctl is-active --quiet asb` のテストが成功する。
 - ビルド成果物が開発リポジトリに残っていない。
 - `go test ./...` が成功する。
 - `.gitignore` が存在しない。
@@ -798,7 +833,7 @@
 - ASB SDK の Go 実装を `sdk/go/` 配下に配置し、package 名を `asb` とする。
 - ASB SDK の Go 実装で `go.mod` を作成する場合、module path を `github.com/fqwink/Adlaire-Static-Base/sdk/go` に固定する。
 - ASB SDK の Go 実装の tag を ASB 本体の安定版リリースタグと同一にする。
-- ASB SDK の Go 実装を Rev.72 時点では外部配布サービスへ登録しない。
+- ASB SDK の Go 実装を Rev.77 時点では外部配布サービスへ登録しない。
 - ASB SDK の Go 実装は `net/http`、`net/url`、`encoding/json`、`context`、`time`、`mime/multipart` を中心に Go標準ライブラリで実装する。
 - ASB SDK の Go 実装は ASB 本体の `internal/` package を import しない。
 - ASB SDK の Go 実装は外部HTTP client library、外部JSON library、generated client を前提にしない。
@@ -944,20 +979,20 @@
 
 優先度: 低
 
-目的: Rev.72 時点で実装対象外の機能が混入していないことを確認する。
+目的: Rev.77 時点で実装対象外の機能が混入していないことを確認する。
 
 ### 実装タスク
 
-- 未昇格のASB互換目標を将来の到達目標として扱い、Rev.72 時点の実装対象として扱わない。
+- 未昇格のASB互換目標を将来の到達目標として扱い、Rev.77 時点の実装対象として扱わない。
 - `internal/asb_forbidden_test.go` を作成する。
 - XServer Static互換機能セットの実装対象が、静的配信、独自ドメイン、無料独自SSL、GitHub Webhookデプロイ、HTTPS JSON APIによるファイル管理、ログ・状態確認、バックアップ・復旧に限定されていることを確認する。
 - XServer Static互換機能セットを理由に、XServer Static完全互換、管理画面再現、内部実装再現、DNS管理、DNS provider API、DNS-01、wildcard、複数CA、CDN完全互換、課金・契約・アカウント管理を追加しない。
 - ASB互換目標に含まれることを、未昇格機能の実装根拠として扱わない。
 - ASB互換目標を理由に `.gitignore`、外部DB、未承認外部ライブラリ、未承認外部サービス連携、開発リポジトリ内実行時データ、起動時自動生成、ビルド成果物自動生成を追加しない。
 - ASB互換目標を理由に APIキー管理、複数ユーザー管理、Rate limiting、Brotli圧縮、HTTP/2、CA選定、SDK専用通信を実装しない。
-- HTTP/2 が暗黙的に有効化されないよう、Rev.72 の実装では `http.Server.TLSNextProto` を空 map に設定する。
+- HTTP/2 が暗黙的に有効化されないよう、Rev.77 の実装では `http.Server.TLSNextProto` を空 map に設定する。
 - HTTP/2 専用設定項目、h2c、ALPN独自制御、server push、stream priority、専用handler、専用middleware、専用ログ項目を実装しない。
-- 将来計画、保留事項、検討・調査中事項を Rev.72 時点の実装対象として扱わない。
+- 将来計画、保留事項、検討・調査中事項を Rev.77 時点の実装対象として扱わない。
 - GUIという曖昧カテゴリ、ASB本体へのWeb UI内包、デスクトップアプリ、モバイルアプリ、複数ユーザー管理、ユーザー別権限管理、マルチテナント、課金管理、契約管理、複数インスタンス管理、クラスタ管理、分散ロック、NFS専用連携、分散ストレージ専用連携、外部ストレージサービス連携、ログファイル暗号化、HTTP/2実装詳細、FTP、FTPS、SFTPをASB本体に実装しない。
 - 将来計画機能または転送プロトコル互換を理由に ASB本体内包Web UI用API、モバイル専用API、テナント用API、課金用API、契約用API、外部ストレージ用API、ログ暗号化用API、FTP / FTPS / SFTP 用 APIを追加しない。
 - 将来計画機能または転送プロトコル互換を理由に `ui.*`、`webui.*`、`desktop.*`、`mobile.*`、`tenant.*`、`billing.*`、`nfs.*`、`cluster.*`、`distributedStorage.*`、`externalStorage.*`、`logEncryption.*`、`ftp.*`、`ftps.*`、`sftp.*` 設定項目を追加しない。
@@ -975,13 +1010,13 @@
 - Auteur リポジトリ `https://github.com/fqwink/Auteur` の `Auteur_Master_Specification.md` は仕様移管元としてのみ扱い、source code、runtime、CLI、fixture、test、CI、release automation、package、lock file、設定ファイル、生成物を ASB へ移管しない。
 - Auteur リポジトリ内の `.gitignore`、`deno.json`、TypeScript 実装、fixture、test が ASB の仕様、実装、生成物、依存関係、開発手順としてコピーされていないことを確認する。
 - `auteur.config.json`、`.auteur/`、`auteur-project/`、`src/pages/**/*.astro`、`src/pages/api/**/*.go`、`ui/`、`content/`、`dist/`、`.env`、`deno.json`、`deno.lock`、`AUTEUR_*` error code、Auteur 固有 hydration directive、Auteur 固有 component syntax が ASB の有効仕様として追加されていないことを確認する。
-- Content Pipeline、Site Routing、Site Rendering、Site Output、Blog、Docs、Sitemap、Ad Slot、Asset Pipeline、Source Sync、External Data Integration、Runtime Cache、Database Gateway、Database Adapter が Rev.72 時点の実装対象へ昇格していないことを確認する。
+- Content Pipeline、Site Routing、Site Rendering、Site Output、Blog、Docs、Sitemap、Ad Slot、Asset Pipeline、Source Sync、External Data Integration、Runtime Cache、Database Gateway、Database Adapter が Rev.77 時点の実装対象へ昇格していないことを確認する。
 - 管理 API が `Authorization` ヘッダーまたは `X-API-Key` ヘッダーの有無でレスポンスを変えないことをテストする。
 - APIキー、複数ユーザー、ロール、セッションを表す JSON ファイルまたはディレクトリを生成しないことをテストする。
-- `config/config.json` に認証関連フィールドが存在する場合に未知フィールドとして起動失敗することをテストする。
+- 起動設定ファイル `config.json` に認証関連フィールドが存在する場合に未知フィールドとして起動失敗することをテストする。
 - Rate limiting 用 middleware、制限アルゴリズム、永続カウンタ、設定項目、JSON ファイルまたはディレクトリを生成しないことをテストする。
 - 管理 API、静的配信、Webhook 受信が Rate limiting 関連条件でレスポンスを変えないことをテストする。
-- `config/config.json` に Rate limiting 関連フィールドが存在する場合に未知フィールドとして起動失敗することをテストする。
+- 起動設定ファイル `config.json` に Rate limiting 関連フィールドが存在する場合に未知フィールドとして起動失敗することをテストする。
 - Rate limiting を理由に `429 Too Many Requests`、`Retry-After`、Rate limiting 用 error code、監査イベント、メトリクスが返却または生成されないことをテストする。
 - Rate limiting を理由に管理 API、静的配信、Webhook 受信、ACME HTTP-01 challenge 応答、ヘルスチェックのルーティング順序が変わらないことを確認する。
 - HTTP/2 が無効化され、HTTP/2 関連設定項目が未知フィールドとして起動失敗することをテストする。
@@ -990,12 +1025,12 @@
 - ASB 標準Web UI が ASB 本体の内部 JSON、Service、Repository、Storage を直接参照しないことを確認する。
 - ASB 本体に Web UI 画面、Web UI テンプレート、Web UI フロントエンドビルド、Web UI 専用保存 JSON、Web UI 専用実行時データが追加されていないことを確認する。
 - SDK 専用プロトコル、SDK 専用エンドポイント、SDK 専用セッション、SDK 専用 JSON ファイルまたはディレクトリを生成しないことをテストする。
-- `config/config.json` に SDK 通信関連フィールドが存在する場合に未知フィールドとして起動失敗することをテストする。
+- 起動設定ファイル `config.json` に SDK 通信関連フィールドが存在する場合に未知フィールドとして起動失敗することをテストする。
 - SDK認証拡張用の token、session、client registration、credential cache、scope、secret を表す JSON ファイル、ディレクトリ、設定項目、実行時データが生成されないことをテストする。
 - ASB SDK が単一システム管理者パスワード以外の認証入力を保持、更新、ローテーション、永続化しないことを確認する。
-- `config/config.json` に SDK認証拡張関連フィールドが存在する場合に未知フィールドとして起動失敗することをテストする。
+- 起動設定ファイル `config.json` に SDK認証拡張関連フィールドが存在する場合に未知フィールドとして起動失敗することをテストする。
 - 複数インスタンス、NFS、分散ストレージ、外部ストレージ、ログ暗号化、デスクトップアプリ、モバイルアプリ用の設定項目、JSON ファイル、ディレクトリ、実行時データが生成されないことをテストする。
-- `config/config.json` に `cluster.*`、`node.*`、`lock.*`、`nfs.*`、`distributedStorage.*`、`externalStorage.*`、`logEncryption.*`、`desktop.*`、`desktopSdk.*`、`mobile.*`、`mobileSdk.*` 相当の関連フィールドが存在する場合に未知フィールドとして起動失敗することをテストする。
+- 起動設定ファイル `config.json` に `cluster.*`、`node.*`、`lock.*`、`nfs.*`、`distributedStorage.*`、`externalStorage.*`、`logEncryption.*`、`desktop.*`、`desktopSdk.*`、`mobile.*`、`mobileSdk.*` 相当の関連フィールドが存在する場合に未知フィールドとして起動失敗することをテストする。
 - `config/auteur.json`、`config/auteur_compat.json`、`config/auteur_migration.json`、`storage/auteur/`、`storage/auteur_compat/`、`storage/auteur_migration/`、`auteur.*`、`auteurCompat.*`、`auteurMigration.*` が追加または生成されないことをテストする。
 - 旧プロジェクト名が実装入力元、互換対象、migration 元、独立サブシステム名、ASB の有効な通常機能名として使用されていないことをレビューで確認する。ただし、`ASB-spec.md` で固定した仕様移管元の記録と変更履歴は除く。
 - 将来計画機能を理由に未昇格 API、設定項目、JSONファイル、ディレクトリ、外部依存が追加されていないことをテストまたはレビューで確認する。
@@ -1075,7 +1110,7 @@
 
 ## 18. 実装フェーズ外の昇格待ちタスク
 
-以下は Rev.72 時点では実装フェーズに含めない。
+以下は Rev.77 時点では実装フェーズに含めない。
 
 - SDK認証拡張を実装対象へ昇格する場合の認証方式、対象SDK実装、ASB管理APIとの関係、単一システム管理者認証との併存または置換、APIキー管理、複数ユーザー化、保存JSON、公開API、Web UI、監査ログ、migration、downgrade、テスト条件を仕様改訂で確定する。
 - 移管元由来の Content Pipeline を実装対象へ昇格する場合は、`.md`、`.mdx`、`.json`、JSON Front Matter、metadata 型、slug 重複、draft、未来日付、unsafe HTML、script tag、link URL scheme、parser / sanitizer 採否、保存JSON、cache、Site Output との責務境界、migration、downgrade、テスト条件を仕様改訂で確定する。
