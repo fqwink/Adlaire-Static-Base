@@ -16,7 +16,7 @@ ASB Web UI は、ASB 本体外の内製標準管理画面クライアントと�
 
 ## Documents
 
-- `ASB-spec.md`: 仕様正本（Rev.56）
+- `ASB-spec.md`: 仕様正本（Rev.57）
 - `ASB-spec.html`: `ASB-spec.md` から生成するHTML版仕様書
 - `DOCUMENT_INDEX.md`: 文書索引
 - `IMPLEMENTATION_TASKS.md`: `ASB-spec.md` に基づく実装フェーズ別タスクリスト
