@@ -6,7 +6,7 @@
 
 本ファイルは、`ASB-spec.md` に基づいて実装タスクを管理する。
 
-参照仕様バージョン: `ASB-spec.md Rev.73`
+参照仕様バージョン: `ASB-spec.md Rev.74`
 
 `ASB-spec.md` で仕様確定済みの事項のみを実装タスクとして扱う。
 
@@ -51,7 +51,7 @@
 | 低 | P12 | v0.13 | 禁止機能・非実装確認 | 未着手 |
 | 高 | P13 | v0.14 | 単一システム管理者認証 | 未着手 |
 
-### 2.1 Rev.73 共通完了ゲート
+### 2.1 Rev.74 共通完了ゲート
 
 各フェーズは、個別完了条件に加えて以下を満たすまで完了扱いにしない。
 
@@ -61,14 +61,16 @@
 - 保存状態は JSON ファイルベースとし、外部DB、SQLite、KVS、外部ストレージを追加しない。
 - 保存 JSON は `schemaVersion`、未知フィールド拒否、deterministic output、atomic write を満たす。
 - 開発リポジトリ内に実行時データ、一時ファイル、cache、log、build output、`.gitignore` を生成しない。
-- Project、Domain、File、SSL、GitHub Webhook、Backup / Restore、Log / Audit の対象フェーズでは、Rev.73 の排他制御・整合性検証固定仕様に定義した lock 粒度、lock 取得順序、同時操作時の競合条件を満たす。
+- 実行時データの初期化、自動生成、不足補完を目的とする CLI、API、background job、startup hook、maintenance task を追加しない。
+- `storage.basePath` 配下の不足 directory、必須 JSON、ログファイル、証明書ファイルを ASB が補完生成しない。
+- Project、Domain、File、SSL、GitHub Webhook、Backup / Restore、Log / Audit の対象フェーズでは、Rev.74 の排他制御・整合性検証固定仕様に定義した lock 粒度、lock 取得順序、同時操作時の競合条件を満たす。
 - lock 取得失敗時は、専用 error code が定義された場合を除き `409 ERR_OPERATION_CONFLICT` を返す。
 - lock 状態を JSON、通常ファイル、ディレクトリ、`.gitignore`、外部DB、SQLite、KVS、外部ストレージ、分散 lock service に保存しない。
 - 複数プロセス、複数インスタンス、分散 lock、共有 lock file、NFS lock、外部 lock service を実装しない。
 - mutation API 実行前、mutation API 永続化後かつ response 前、Webhook deploy 前後、Backup create 前後、Restore 前後、SSL status / renew、Log API read の整合性検証タイミングが `ASB-spec.md` と一致する。
 - 整合性検証、startup validation、read API、静的 GET/HEAD、monitoring API は保存状態を変更しない。
 - 整合性検証は自動修復を行わず、JSON、静的ファイル、証明書、backup archive、log file、directory を作成、削除、上書き、移動、rename しない。
-- 静的配信、Webhook、無料独自SSL、Backup / Restore、Log / Audit の対象フェーズでは、Rev.73 の固定仕様に定義した失敗時復元、途中状態非公開、非生成条件を満たす。
+- 静的配信、Webhook、無料独自SSL、Backup / Restore、Log / Audit の対象フェーズでは、Rev.74 の固定仕様に定義した失敗時復元、途中状態非公開、非生成条件を満たす。
 - 対象 API の request schema、validation、保存先、更新順序、audit log 対象が `ASB-spec.md` の API 個別実装契約と一致する。
 - 対象 JSON の field、型、必須、default、validation、object key 出力順序が `ASB-spec.md` の保存JSON field 固定表と一致する。
 - 対象 API の失敗条件、HTTP status、error code、成功レスポンス禁止条件が `ASB-spec.md` の API 別失敗条件固定表と一致する。
@@ -136,7 +138,8 @@
 - `internal/config/config.go`、`internal/config/loader.go`、`internal/config/validate.go` を実装する。
 - `internal/server/router.go`、`internal/server/response.go`、`internal/server/middleware.go` を実装する。
 - `internal/data/json_repository.go` を実装する。
-- `asb init-runtime` コマンドを実装する。
+- `asb init-runtime` コマンドを実装しない。
+- 実行時データ初期化、不足補完、空 JSON 作成、必須 directory 作成を目的とする CLI、API、background job、startup hook、maintenance task を実装しない。
 - `asb start` コマンドを実装し、起動時に不足ディレクトリ、JSON、証明書、ログ、一時ファイルを作成しないことを保証する。
 - `server.port`、`server.host`、`server.tlsCertFile`、`server.tlsKeyFile`、`server.shutdownTimeout`、`storage.basePath`、`storage.maxProjectSize`、`ssl.email`、`ssl.renewBefore`、`ssl.renewCheckInterval`、`log.level`、`log.format`、`log.maxSize` の起動時バリデーションを実装する。
 - 任意設定項目の未指定時、親 object 未指定時、空文字、型不一致、数値の小数・指数表記・負数・`null` 拒否を仕様通り実装する。
@@ -145,16 +148,6 @@
 - 起動時に設定済み実行時データ領域の存在確認と権限検証を実装する。
 - 起動時に実行時データ用のディレクトリまたはファイルを自動生成しない。
 - 開発リポジトリを実行時データ保存先として扱わない。
-- `asb init-runtime` は `storage.basePath` が開発リポジトリ配下の場合に初期化を開始せず `ERR_STORAGE_VALIDATION_FAILED` で失敗する。
-- `asb init-runtime` は作成予定パスがすべて `storage.basePath` 配下に収まることを検証する。
-- `asb init-runtime` は `storage.basePath/`、`config/`、`storage/`、`storage/projects/`、`logs/`、`certs/` を仕様順序で作成または検証する。
-- `asb init-runtime` は `config/projects.json`、`config/domains.json`、`config/backups.json`、`config/auth.json`、`config/webhooks.json`、`config/acme_accounts.json`、`config/acme_orders.json`、`config/acme_authorizations.json`、`config/acme_challenges.json`、`config/acme_renewals.json` を空状態で作成する。
-- `asb init-runtime` は `storage/projects/:projectId/files.json` を作成しない。
-- `asb init-runtime` は既存 JSON が妥当な場合は変更せず、既存 JSON が不正な場合は自動修復または上書きを行わない。
-- `asb init-runtime` は既存ファイルまたはディレクトリを上書き、削除、移動、truncate しない。
-- `asb init-runtime` は必須 JSON を同一ディレクトリ内の一時ファイル、`fsync`、atomic rename で作成する。
-- `asb init-runtime` 成功時は stdout へ `ASB_RUNTIME_INITIALIZED storageBasePath="..."` を単一行出力し、終了コード `0` とする。
-- `asb init-runtime` 失敗時は stderr へ `ASB_RUNTIME_INIT_ERROR code=... message="..."` を単一行出力し、終了コード `1` とする。
 - `storage.basePath` 配下の `config/`、`storage/`、`storage/projects/`、`logs/`、`certs/` の順序付き存在検証を実装する。
 - `config/projects.json`、`config/domains.json`、`config/backups.json`、`config/auth.json`、`config/webhooks.json`、`config/acme_accounts.json`、`config/acme_orders.json`、`config/acme_authorizations.json`、`config/acme_challenges.json`、`config/acme_renewals.json`、各 Project の `storage/projects/:projectId/files.json` の順序付き起動時存在検証を実装する。
 - 必須 JSON ファイルの構文検証、必須フィールド検証、未知フィールド拒否を実装する。
@@ -183,7 +176,7 @@
 - `204 No Content` を使用しない。
 - 配列レスポンスは対象データが空でも空配列を返す。
 - URL パラメータ `:id`、`:domain`、`:name` の URL decode、正規化、バリデーションを実装する。
-- `:id` は Rev.73 の UUID 正規表現に一致する値のみ許可する。
+- `:id` は Rev.74 の UUID 正規表現に一致する値のみ許可する。
 - `:domain` は小文字正規化後、label数、全体長、label正規表現、末尾 `.` 除去を仕様通り検証する。
 - `:name` は長さ、NUL、パス区切り、`.`、`..`、先頭 `.`、空白のみを仕様通り拒否する。
 - JSON ファイル更新時の読み込み検証、保存前再検証、同一ファイル排他書き込みを実装する。
@@ -199,11 +192,11 @@
 - 複数JSON更新の途中失敗時に更新済みJSON名、未更新JSON名、操作名、requestId をエラーログへ記録する。
 - 複数ファイル更新の途中失敗時に、更新予定JSON、更新済みJSON、`files.json` path、実ファイル、`projects.used` の整合性検証を実装する。
 - 整合性検証失敗時は `ERR_STORAGE_VALIDATION_FAILED` を error log へ記録する。
-- Rev.73 時点では複数JSON更新に外部トランザクション機構を導入しない。
-- Rev.73 時点の API エンドポイント固定表に記載されたメソッド、パス、成功ステータス、失敗コードを実装する。
-- Rev.73 API 成功レスポンス固定表に記載された JSON キーと型を実装する。
-- Rev.73 API 個別実装契約に記載された request schema、保存先、更新順序、audit 対象を実装する。
-- Rev.73 API 別失敗条件固定表に記載された失敗条件、HTTP status、error code を実装する。
+- Rev.74 時点では複数JSON更新に外部トランザクション機構を導入しない。
+- Rev.74 時点の API エンドポイント固定表に記載されたメソッド、パス、成功ステータス、失敗コードを実装する。
+- Rev.74 API 成功レスポンス固定表に記載された JSON キーと型を実装する。
+- Rev.74 API 個別実装契約に記載された request schema、保存先、更新順序、audit 対象を実装する。
+- Rev.74 API 別失敗条件固定表に記載された失敗条件、HTTP status、error code を実装する。
 - HTTP status / error code 選択優先順位を共通 middleware または handler 境界で統一する。
 - 保存 JSON の field 固定表に従い、Project、Domain、File、Backup、WebhookEvent の型、必須、default、validation、object key 出力順序を実装する。
 - プロジェクト作成 API `POST /api/projects` を実装する。
@@ -223,10 +216,8 @@
 ### 完了条件
 
 - 起動時検証順序、終了コード、stderr 形式のテストが成功する。
-- `asb init-runtime` の作成順序、空 JSON、stdout、終了コードのテストが成功する。
-- `asb init-runtime` が既存妥当 JSON を変更しないテストが成功する。
-- `asb init-runtime` が既存不正 JSON を修復または上書きしないテストが成功する。
-- `asb init-runtime` が開発リポジトリ配下に実行時データを作成しないテストが成功する。
+- `asb init-runtime` が実装されていないことを確認するテストが成功する。
+- 実行時データ初期化、不足補完、空 JSON 作成、必須 directory 作成を目的とする CLI、API、background job、startup hook、maintenance task が存在しないことを確認する。
 - `asb start` が不足ディレクトリまたは不足 JSON を自動生成せず起動失敗するテストが成功する。
 - Project 作成 API が Project ディレクトリ、`contents/`、`files.json` を作成し、既存ファイルを上書きしないテストが成功する。
 - 全API成功レスポンスの固定JSONキー検証テストが成功する。
@@ -312,7 +303,7 @@
 - `Cache-Control` を既定で `public, max-age=60` とする。
 - `If-None-Match` と `If-Modified-Since` による `304 Not Modified` を実装し、両方が存在する場合は `If-None-Match` を優先する。
 - `304 Not Modified` では `Content-Type`、`ETag`、`Last-Modified`、`Cache-Control` を返し、`Content-Encoding` を返さない。
-- Range request は Rev.73 時点では実装せず、`Range` ヘッダーを無視して `206 Partial Content` を返さない。
+- Range request は Rev.74 時点では実装せず、`Range` ヘッダーを無視して `206 Partial Content` を返さない。
 - `Accept-Encoding: br` では Brotli 応答を返さない。
 - Brotli 用の `.br`、キャッシュ、一時ファイル、メタデータを開発リポジトリ内にも `storage.basePath` 配下にも生成しない。
 - 静的配信でディレクトリ一覧を返さない。
@@ -585,7 +576,7 @@
 - atomic rename 後に履歴保存へ失敗した場合は、作成済みtar.gzを削除する。
 - 作成済みtar.gzの削除に失敗した場合でも、バックアップ作成APIは成功レスポンスを返さない。
 - バックアップ保存先を別障害領域へ複製する作業をASB外の運用責務として扱う。
-- 外部ストレージ連携を Rev.73 時点では実装対象外として扱う。
+- 外部ストレージ連携を Rev.74 時点では実装対象外として扱う。
 - Backup復旧前退避先を `storage.basePath/backups/restore-staging/{restoreId}/previous/` に固定する。
 - Backup復旧用展開先を `storage.basePath/backups/restore-staging/{restoreId}/next/` に固定する。
 - Backup履歴の `status` が `completed` でない場合は復旧を拒否する。
@@ -637,7 +628,8 @@
 - ローテーション後ファイル名を `access.log.{unixTime}` または `error.log.{unixTime}` に固定する。
 - ローテーション済みログは7日経過後に削除対象とする。
 - ログローテーションおよび期限切れ削除失敗を WARN として記録する。
-- `storage.basePath/logs/` と現行ログファイルは、LogService の書き込み処理または起動時検証で明示的に必要な場合のみ作成する。
+- `storage.basePath/logs/` と現行ログファイルは ASB 起動前に存在する前提とし、LogService は存在しないログディレクトリまたはログファイルを作成しない。
+- LogService は既存ログファイルへの追記と既存ログファイルの rotation のみを実行する。
 - ログAPI、監視API、静的配信、File API、Domain API、SSL状態確認API、Backup一覧APIではログファイルを初回作成しない。
 - アクセスログ書き込みはレスポンスステータス確定後、レスポンス送信前に実行する。
 - 成功レスポンス送信前にアクセスログ書き込みまたはローテーションへ失敗した場合は `500 Internal Server Error` と `ERR_LOG_WRITE_FAILED` を返す。
@@ -701,8 +693,8 @@
 - マイグレーション作業ファイル、一時ファイル、退避ファイル、履歴ファイルを開発リポジトリ内に作成しない。
 - `config/migrations.json` の `schemaVersion`、`migrations[]`、`status`、`backupPath` スキーマを実装する。
 - `config/migrations.json` は起動時必須 JSON ファイルとして扱わない。
-- `config/migrations.json` は `asb init-runtime` の初期作成対象に含めない。
-- `config/migrations.json` は `asb migrate --apply` 実行時のみ初回作成し、起動時、API、静的配信、Webhook、Backup、Log API、SSL 管理境界では作成しない。
+- `config/migrations.json` は ASB が初回作成しない。
+- `config/migrations.json` は `asb migrate --apply` 実行時にも初回作成せず、存在しない場合は失敗する。
 - `config/migrations.json` 作成または更新失敗時はマイグレーション成功扱いにしない。
 - マイグレーション失敗時の事前バックアップからのロールバックを実装する。
 - ロールバック失敗時に標準エラー、エラーログ、`config/migrations.json` へ `failed` として記録する。
@@ -714,8 +706,8 @@
 - 未対応 `schemaVersion` の起動失敗テストが成功する。
 - `--dry-run` が実行時 JSON ファイルを変更しないテストが成功する。
 - `--apply` が対象 JSON ファイルを atomic rename で更新するテストが成功する。
-- `config/migrations.json` が `asb init-runtime` で作成されないテストが成功する。
-- `config/migrations.json` が `asb migrate --apply` 実行時のみ初回作成されるテストが成功する。
+- `config/migrations.json` が ASB の全実行境界で初回作成されないテストが成功する。
+- `config/migrations.json` が存在しない状態で `asb migrate --apply` が失敗するテストが成功する。
 - 事前バックアップ作成、途中失敗時の成功禁止、ロールバック成功、ロールバック失敗時の `failed` 記録テストが成功する。
 - 開発リポジトリ内に移行作業ファイルを作成しないテストが成功する。
 - `go test ./...` が成功する。
@@ -810,7 +802,7 @@
 - ASB SDK の Go 実装を `sdk/go/` 配下に配置し、package 名を `asb` とする。
 - ASB SDK の Go 実装で `go.mod` を作成する場合、module path を `github.com/fqwink/Adlaire-Static-Base/sdk/go` に固定する。
 - ASB SDK の Go 実装の tag を ASB 本体の安定版リリースタグと同一にする。
-- ASB SDK の Go 実装を Rev.73 時点では外部配布サービスへ登録しない。
+- ASB SDK の Go 実装を Rev.74 時点では外部配布サービスへ登録しない。
 - ASB SDK の Go 実装は `net/http`、`net/url`、`encoding/json`、`context`、`time`、`mime/multipart` を中心に Go標準ライブラリで実装する。
 - ASB SDK の Go 実装は ASB 本体の `internal/` package を import しない。
 - ASB SDK の Go 実装は外部HTTP client library、外部JSON library、generated client を前提にしない。
@@ -956,20 +948,20 @@
 
 優先度: 低
 
-目的: Rev.73 時点で実装対象外の機能が混入していないことを確認する。
+目的: Rev.74 時点で実装対象外の機能が混入していないことを確認する。
 
 ### 実装タスク
 
-- 未昇格のASB互換目標を将来の到達目標として扱い、Rev.73 時点の実装対象として扱わない。
+- 未昇格のASB互換目標を将来の到達目標として扱い、Rev.74 時点の実装対象として扱わない。
 - `internal/asb_forbidden_test.go` を作成する。
 - XServer Static互換機能セットの実装対象が、静的配信、独自ドメイン、無料独自SSL、GitHub Webhookデプロイ、HTTPS JSON APIによるファイル管理、ログ・状態確認、バックアップ・復旧に限定されていることを確認する。
 - XServer Static互換機能セットを理由に、XServer Static完全互換、管理画面再現、内部実装再現、DNS管理、DNS provider API、DNS-01、wildcard、複数CA、CDN完全互換、課金・契約・アカウント管理を追加しない。
 - ASB互換目標に含まれることを、未昇格機能の実装根拠として扱わない。
 - ASB互換目標を理由に `.gitignore`、外部DB、未承認外部ライブラリ、未承認外部サービス連携、開発リポジトリ内実行時データ、起動時自動生成、ビルド成果物自動生成を追加しない。
 - ASB互換目標を理由に APIキー管理、複数ユーザー管理、Rate limiting、Brotli圧縮、HTTP/2、CA選定、SDK専用通信を実装しない。
-- HTTP/2 が暗黙的に有効化されないよう、Rev.73 の実装では `http.Server.TLSNextProto` を空 map に設定する。
+- HTTP/2 が暗黙的に有効化されないよう、Rev.74 の実装では `http.Server.TLSNextProto` を空 map に設定する。
 - HTTP/2 専用設定項目、h2c、ALPN独自制御、server push、stream priority、専用handler、専用middleware、専用ログ項目を実装しない。
-- 将来計画、保留事項、検討・調査中事項を Rev.73 時点の実装対象として扱わない。
+- 将来計画、保留事項、検討・調査中事項を Rev.74 時点の実装対象として扱わない。
 - GUIという曖昧カテゴリ、ASB本体へのWeb UI内包、デスクトップアプリ、モバイルアプリ、複数ユーザー管理、ユーザー別権限管理、マルチテナント、課金管理、契約管理、複数インスタンス管理、クラスタ管理、分散ロック、NFS専用連携、分散ストレージ専用連携、外部ストレージサービス連携、ログファイル暗号化、HTTP/2実装詳細、FTP、FTPS、SFTPをASB本体に実装しない。
 - 将来計画機能または転送プロトコル互換を理由に ASB本体内包Web UI用API、モバイル専用API、テナント用API、課金用API、契約用API、外部ストレージ用API、ログ暗号化用API、FTP / FTPS / SFTP 用 APIを追加しない。
 - 将来計画機能または転送プロトコル互換を理由に `ui.*`、`webui.*`、`desktop.*`、`mobile.*`、`tenant.*`、`billing.*`、`nfs.*`、`cluster.*`、`distributedStorage.*`、`externalStorage.*`、`logEncryption.*`、`ftp.*`、`ftps.*`、`sftp.*` 設定項目を追加しない。
@@ -987,7 +979,7 @@
 - Auteur リポジトリ `https://github.com/fqwink/Auteur` の `Auteur_Master_Specification.md` は仕様移管元としてのみ扱い、source code、runtime、CLI、fixture、test、CI、release automation、package、lock file、設定ファイル、生成物を ASB へ移管しない。
 - Auteur リポジトリ内の `.gitignore`、`deno.json`、TypeScript 実装、fixture、test が ASB の仕様、実装、生成物、依存関係、開発手順としてコピーされていないことを確認する。
 - `auteur.config.json`、`.auteur/`、`auteur-project/`、`src/pages/**/*.astro`、`src/pages/api/**/*.go`、`ui/`、`content/`、`dist/`、`.env`、`deno.json`、`deno.lock`、`AUTEUR_*` error code、Auteur 固有 hydration directive、Auteur 固有 component syntax が ASB の有効仕様として追加されていないことを確認する。
-- Content Pipeline、Site Routing、Site Rendering、Site Output、Blog、Docs、Sitemap、Ad Slot、Asset Pipeline、Source Sync、External Data Integration、Runtime Cache、Database Gateway、Database Adapter が Rev.73 時点の実装対象へ昇格していないことを確認する。
+- Content Pipeline、Site Routing、Site Rendering、Site Output、Blog、Docs、Sitemap、Ad Slot、Asset Pipeline、Source Sync、External Data Integration、Runtime Cache、Database Gateway、Database Adapter が Rev.74 時点の実装対象へ昇格していないことを確認する。
 - 管理 API が `Authorization` ヘッダーまたは `X-API-Key` ヘッダーの有無でレスポンスを変えないことをテストする。
 - APIキー、複数ユーザー、ロール、セッションを表す JSON ファイルまたはディレクトリを生成しないことをテストする。
 - `config/config.json` に認証関連フィールドが存在する場合に未知フィールドとして起動失敗することをテストする。
@@ -1087,7 +1079,7 @@
 
 ## 18. 実装フェーズ外の昇格待ちタスク
 
-以下は Rev.73 時点では実装フェーズに含めない。
+以下は Rev.74 時点では実装フェーズに含めない。
 
 - SDK認証拡張を実装対象へ昇格する場合の認証方式、対象SDK実装、ASB管理APIとの関係、単一システム管理者認証との併存または置換、APIキー管理、複数ユーザー化、保存JSON、公開API、Web UI、監査ログ、migration、downgrade、テスト条件を仕様改訂で確定する。
 - 移管元由来の Content Pipeline を実装対象へ昇格する場合は、`.md`、`.mdx`、`.json`、JSON Front Matter、metadata 型、slug 重複、draft、未来日付、unsafe HTML、script tag、link URL scheme、parser / sanitizer 採否、保存JSON、cache、Site Output との責務境界、migration、downgrade、テスト条件を仕様改訂で確定する。
