@@ -10,7 +10,7 @@ ASB SDK は単一の公式SDKとして扱い、Browser JavaScript、Deno専用 T
 
 ASB Web UI は、ASB 本体外の内製標準管理画面クライアントとして扱い、静的 HTML / CSS / JavaScript とブラウザ標準 API のみで実装します。ASB 標準Web UI は、ASB SDK の Browser JavaScript 実装を利用して ASB 管理 HTTPS JSON API と通信します。
 
-Rev.81 では、実行時データの初期化・自動生成・不足補完を禁止し、起動設定ファイルと `storage.basePath` 配下の実行時 JSON を分離しています。Host header は Domain 解決専用、client IP は `Request.RemoteAddr` 由来に固定し、proxy header は信頼境界として使用しません。HTTP server timeout、request size、panic recovery、client disconnect、graceful shutdown、CORS非実装、Health Check をサーバー実行境界として固定しています。
+Rev.82 では、実行時データの初期化・自動生成・不足補完を禁止し、起動設定ファイルと `storage.basePath` 配下の実行時 JSON を分離しています。Host header、client IP、proxy header、server execution、起動設定、CLI、ログ、package 依存境界に加え、JSON保存、ファイル実体操作、Backup / Restore、Log rotation、SSL / ACME、Webhook deploy の保存・生成・副作用境界を固定しています。
 
 旧 Auteur 仕様は ASB に仕様のみを吸収し、`https://github.com/fqwink/Auteur` を移管元として記録します。旧名称の別枠は作らず、Content Pipeline、Site Routing、Site Rendering、Site Output、Blog、Docs、Sitemap、Ad Slot などの ASB 通常機能名へ分解します。Auteur の source code、runtime、CLI、fixture、CI、package、設定ファイル、生成物は移管しません。
 
@@ -22,7 +22,7 @@ Rev.81 では、実行時データの初期化・自動生成・不足補完を�
 
 ## Documents
 
-- `ASB-spec.md`: 仕様正本（Rev.81）
+- `ASB-spec.md`: 仕様正本（Rev.82）
 - `ASB-spec.html`: `ASB-spec.md` から生成するHTML版仕様書
 - `DOCUMENT_INDEX.md`: 文書索引
 - `IMPLEMENTATION_TASKS.md`: `ASB-spec.md` に基づく実装フェーズ別タスクリスト
