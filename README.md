@@ -10,7 +10,9 @@ ASB SDK は単一の公式SDKとして扱い、Browser JavaScript、Deno専用 T
 
 ASB Web UI は、ASB 本体外の内製標準管理画面クライアントとして扱い、静的 HTML / CSS / JavaScript とブラウザ標準 API のみで実装します。ASB 標準Web UI は、ASB SDK の Browser JavaScript 実装を利用して ASB 管理 HTTPS JSON API と通信します。
 
-Rev.90 では、READMEを仕様判断の正本ではなく入口文書として位置づけ、ASB本体、ASB SDK、ASB標準Web UI、将来計画、実装フェーズ管理の境界を仕様正本と一致させています。
+Rev.91 では、文書テンプレートとルールブックテンプレートを追加し、テンプレートは雛形であり正本ではないこと、現行 `AGENTS.md` を最上位ルールとして扱うことを固定しています。
+
+テンプレートは `templates/docs/` と `templates/rulebook/` で管理します。テンプレートは雛形であり、仕様正本、現行ルールブック、実装フェーズ管理の代替ではありません。
 
 旧 Auteur 仕様は ASB に仕様のみを吸収し、`https://github.com/fqwink/Auteur` を移管元として記録します。旧名称の別枠は作らず、Content Pipeline、Site Routing、Site Rendering、Site Output、Blog、Docs、Sitemap、Ad Slot などの ASB 通常機能名へ分解します。Auteur の source code、runtime、CLI、fixture、CI、package、設定ファイル、生成物は移管しません。
 
@@ -22,17 +24,21 @@ Rev.90 では、READMEを仕様判断の正本ではなく入口文書として�
 
 ## Documents
 
-- `ASB-spec.md`: 仕様正本（Rev.90）
+- `ASB-spec.md`: 仕様正本（Rev.91）
 - `ASB-spec.html`: `ASB-spec.md` から生成するHTML版仕様書
 - `DOCUMENT_INDEX.md`: 文書索引
 - `IMPLEMENTATION_TASKS.md`: `ASB-spec.md` に基づく実装フェーズ別タスクリスト
 - `AGENTS.md`: 最上位作業ルールブック
+- `templates/docs/`: 文書テンプレート
+- `templates/rulebook/`: ルールブックテンプレート
 
 ## Document Roles
 
 README は、ASB の概要、現在状態、主要文書への入口を示す文書です。仕様判断、実装判断、フェーズ判断の正本ではありません。
 
 仕様内容は `ASB-spec.md` を正とします。実装フェーズ番号、優先度、開発版バージョン、フェーズ別タスク、フェーズ別完了条件は `IMPLEMENTATION_TASKS.md` を正とします。`ASB-spec.html` は `ASB-spec.md` から生成される閲覧用HTMLです。
+
+テンプレートは正本ではありません。現行リポジトリの作業ルールは `AGENTS.md` を正とし、`templates/rulebook/AGENTS.md` は新規・派生リポジトリ向けの雛形として扱います。
 
 ## Implementation Order
 
